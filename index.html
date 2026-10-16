@@ -29,5 +29,11 @@
   <p class="soon">Opening soon in Houston</p>
 </main>
 <a class="corner" href="launch.html" aria-hidden="true" tabindex="-1"></a>
+<script>
+  // Counts clicks on the hidden corner square (anonymous; no personal data sent).
+  document.querySelector('.corner').addEventListener('click', function () {
+    try { fetch('https://abacus.jasoncameron.dev/hit/brochuredesk/secret-corner', { keepalive: true, mode: 'no-cors' }); } catch (e) {}
+  });
+</script>
 </body>
 </html>
