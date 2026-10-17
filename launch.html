@@ -50,6 +50,7 @@
   @keyframes grow { to { width:120px; } }
   @keyframes shimmer { 0%,100% { background-position:100% 0; } 50% { background-position:0 0; } }
   .spark { position:fixed; width:4px; height:4px; border-radius:50%; background:var(--gold-soft); opacity:0; pointer-events:none; }
+  .corner { position:fixed; right:0; bottom:0; width:96px; height:96px; z-index:10; display:block; background:transparent; cursor:pointer; }
   @media (prefers-reduced-motion: reduce) { .num, .reveal * { animation-duration:.01s !important; } }
 </style>
 </head>
@@ -59,6 +60,7 @@
   <div class="num" id="num">3</div>
 </div>
 <div class="flash" id="flash"></div>
+<a class="corner" href="desk/" aria-hidden="true" tabindex="-1" rel="nofollow"></a>
 <div class="reveal" id="reveal">
   <div>
     <div class="kicker">BrochureDesk</div>

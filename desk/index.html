@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="no-referrer">
+<title>BrochureDesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&family=Figtree:wght@400;500;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+  /* Back end: sign in, then the design set from private storage. Site design rules (direction A2). */
+  :root{
+    --marble:#ECECE9; --paper:#FBFBF9; --graphite:#1E2226; --slate:#4A5157; --emerald:#1F4D3F; --brass:#9C7B45;
+    --line:rgba(30,34,38,.14); --warn:#8A2E22;
+    --display:'Bodoni Moda',Didot,'Times New Roman',serif;
+    --ui:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--marble);color:var(--graphite)}
+  body{font:400 15px/1.55 var(--ui);-webkit-font-smoothing:antialiased}
+  [hidden]{display:none!important}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right)) 56px max(16px,env(safe-area-inset-left))}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .mark{font:400 22px/1 var(--display)}
+  .who{font-size:13px;color:var(--slate);display:flex;gap:12px;align-items:center}
+  .link{background:none;border:0;padding:0;font:inherit;color:var(--emerald);text-decoration:underline;cursor:pointer}
+
+  /* sign-in */
+  .gate{min-height:70vh;display:grid;place-items:center}
+  .gate form,.gate .msg{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:28px;width:min(100%,400px)}
+  .gate h1{font:400 32px/1.05 var(--display);margin:0 0 8px}
+  .gate p{color:var(--slate);margin:0 0 18px}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  input[type=email]{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:3px;font:inherit;background:#fff;color:var(--graphite)}
+  .btn{margin-top:14px;width:100%;background:var(--emerald);color:var(--paper);border:0;border-radius:3px;padding:12px 18px;font:600 15px var(--ui);cursor:pointer}
+  .btn:disabled{opacity:.6;cursor:default}
+  .note{font-size:13px;color:var(--slate);margin-top:12px;min-height:1.2em}
+  .note.err{color:var(--warn)}
+  :focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+
+  /* set viewer */
+  .intro{padding-block:26px 18px}
+  h2{font:400 clamp(28px,4vw,42px)/1.05 var(--display);margin:0;text-wrap:balance}
+  .intro p{margin:8px 0 0;color:var(--slate);max-width:62ch}
+  .tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line)}
+  .tab{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:10px 14px;font:500 14px/1.2 var(--ui);color:var(--slate);cursor:pointer;white-space:nowrap}
+  .tab[aria-selected="true"]{color:var(--graphite);border-bottom-color:var(--graphite)}
+  .tab .sz{display:block;font-size:11.5px;font-weight:400;margin-top:2px}
+  .stage{background:var(--paper);border:1px solid var(--line);border-top:0;padding:clamp(14px,3vw,30px)}
+  .stagehead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+  .stagehead h3{font:400 24px/1.1 var(--display);margin:0}
+  .tools{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .chk{font-size:12.5px;color:var(--emerald);font-weight:600;display:flex;align-items:center;gap:6px}
+  .chk::before{content:"";width:6px;height:6px;transform:rotate(45deg);background:var(--brass)}
+  .chk.bad{color:var(--warn)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .seg button{background:none;border:0;padding:6px 12px;font:500 13px var(--ui);color:var(--slate);cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--graphite);color:var(--paper)}
+  .sheets{display:grid;gap:18px;justify-items:center}
+  .sheets.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width:640px){.sheets.two{grid-template-columns:minmax(0,1fr)}}
+  figure{margin:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
+  figure img{display:block;height:auto;max-width:100%;box-shadow:0 1px 2px rgba(30,34,38,.12),0 10px 28px rgba(30,34,38,.14);background:var(--marble)}
+  figcaption{font-size:12.5px;color:var(--slate)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">BrochureDesk</div>
+    <div class="who" id="who" hidden><span id="whoEmail"></span><button class="link" id="signOut">Sign out</button></div>
+  </header>
+
+  <section class="gate" id="gate">
+    <form id="loginForm" novalidate>
+      <h1>Back office</h1>
+      <p>Sign in with your email. We'll send you a one-time sign-in link.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="email" required>
+      <button class="btn" id="sendBtn" type="submit">Send sign-in link</button>
+      <div class="note" id="loginNote" role="status"></div>
+    </form>
+    <div class="msg" id="denied" hidden>
+      <h1>No access</h1>
+      <p>This account can't open the back office. Sign out and use the approved email.</p>
+      <button class="btn" id="deniedOut">Sign out</button>
+    </div>
+    <div class="msg" id="loading" hidden><p>Checking your access…</p></div>
+  </section>
+
+  <main id="app" hidden>
+    <section class="intro">
+      <h2 id="title">Ivory design set</h2>
+      <p id="sub"></p>
+    </section>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="stage" role="tabpanel">
+      <div class="stagehead"><h3 id="pieceTitle"></h3><div class="tools" id="tools"></div></div>
+      <div class="sheets" id="sheets"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const SUPABASE_URL = 'https://depwvwewbmxspoxidxrx.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_mF60NaxAKLQV_pDLBoR2og_PzJ9fxxH';   // public browser key; access is enforced in the database
+  const BUCKET = 'backstage';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = id => document.getElementById(id);
+  const show = (id, on) => { $(id).hidden = !on; };
+
+  // ---------- sign-in ----------
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('email').value.trim().toLowerCase();
+    const note = $('loginNote'); note.className = 'note';
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ note.className = 'note err'; note.textContent = 'Enter a full email address.'; return; }
+    $('sendBtn').disabled = true; note.textContent = 'Sending…';
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + location.pathname } });
+    $('sendBtn').disabled = false;
+    // Same answer whether or not the address has access, so the page never confirms who does.
+    if(error && !/signups? not allowed|not found/i.test(error.message)){ note.className = 'note err'; note.textContent = 'The link could not be sent. Wait a minute and try again.'; return; }
+    note.textContent = 'If that address has access, a sign-in link is on its way. Open it on this device.';
+  });
+
+  const signOut = async () => { await sb.auth.signOut(); location.replace(location.pathname); };
+  $('signOut').onclick = signOut; $('deniedOut').onclick = signOut;
+
+  let entered = false;
+  async function enter(session){
+    if(entered) return; entered = true;
+    show('loginForm', false); show('loading', true);
+    const { data: ok, error } = await sb.rpc('has_backstage');
+    show('loading', false);
+    if(error || ok !== true){ show('denied', true); return; }
+    $('whoEmail').textContent = session.user.email; show('who', true);
+    await loadSet();
+  }
+
+  // ---------- the design set, from private storage ----------
+  let M, urls = {}, state = 'pending', current = 'foldover', cardSize = '6x11';
+  const tabs = [
+    {key:'foldover', label:'Fold-over brochure', sz:'11 x 17', parts:['foldover']},
+    {key:'listing', label:'Listing flyer', sz:'8.5 x 11', parts:['listing-flyer']},
+    {key:'justlisted', label:'Just Listed flyer', sz:'8.5 x 11', parts:['just-listed-flyer']},
+    {key:'openhouse', label:'Open House flyer', sz:'8.5 x 11', parts:['open-house-flyer']},
+    {key:'postcard', label:'Just Listed postcard', sz:'6 x 11 or 6 x 9', parts:['postcard-6x11-front','postcard-6x11-back','postcard-6x9-front','postcard-6x9-back']}
+  ];
+  const panelNames = {'panel-1-front':'Front cover','panel-2-top':'Inside, top','panel-3-bottom':'Inside, bottom','panel-4-back':'Back cover'};
+
+  async function loadSet(){
+    const { data: mf, error } = await sb.storage.from(BUCKET).download('manifest.json');
+    if(error){ $('sub').textContent = 'The design files could not be loaded. Refresh to try again.'; show('app', true); show('gate', false); return; }
+    M = JSON.parse(await mf.text());
+    const names = [];
+    M.pieces.forEach(p => p.images.forEach(im => ['pending','final'].forEach(s => names.push(`${s}-${im.name}.jpg`))));
+    const { data: signed } = await sb.storage.from(BUCKET).createSignedUrls(names, 3600);
+    (signed||[]).forEach(s => { if(s.signedUrl) urls[s.path] = s.signedUrl; });
+    $('title').textContent = `${M.design} design set`;
+    $('sub').textContent = `Sample listing ${M.address} for ${M.agent}, ${M.brokerage}. Switch between the preview an agent sees first and the finished copy.`;
+    $('tabs').innerHTML = tabs.map(t => `<button class="tab" role="tab" data-key="${t.key}">${t.label}<span class="sz">${t.sz}</span></button>`).join('');
+    $('tabs').onclick = e => { const b = e.target.closest('.tab'); if(b){ current = b.dataset.key; draw(); } };
+    show('gate', false); show('app', true); draw();
+  }
+
+  function draw(){
+    const P = Object.fromEntries(M.pieces.map(p => [p.id, p]));
+    const t = tabs.find(x => x.key === current);
+    $('tabs').querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.key === current));
+    $('pieceTitle').textContent = t.label;
+    const issues = t.parts.reduce((n,id) => n + (P[id] ? P[id].issues : 0), 0);
+    let tools = `<div class="seg" role="group" aria-label="Copy"><button data-s="pending" aria-pressed="${state==='pending'}">Preview</button><button data-s="final" aria-pressed="${state==='final'}">With copy</button></div>`;
+    if(current === 'postcard') tools += `<div class="seg" role="group" aria-label="Postcard size"><button data-z="6x11" aria-pressed="${cardSize==='6x11'}">6 x 11</button><button data-z="6x9" aria-pressed="${cardSize==='6x9'}">6 x 9</button></div>`;
+    tools += `<span class="chk ${issues?'bad':''}">${issues ? issues + ' print check issue(s)' : 'Passes print checks'}</span>`;
+    $('tools').innerHTML = tools;
+    $('tools').querySelectorAll('[data-s]').forEach(b => b.onclick = () => { state = b.dataset.s; draw(); });
+    $('tools').querySelectorAll('[data-z]').forEach(b => b.onclick = () => { cardSize = b.dataset.z; draw(); });
+    const img = (name, w, h, alt, max) => `<img src="${urls[`${state}-${name}.jpg`]||''}" width="${w}" height="${h}" alt="${alt}" style="width:min(100%, ${max}px)">`;
+    let html = '', cls = '';
+    if(current === 'foldover'){ cls = 'two'; P.foldover.images.forEach(im => html += `<figure>${img(im.name, im.w, im.h, panelNames[im.name], 600)}<figcaption>${panelNames[im.name]}</figcaption></figure>`); }
+    else if(current === 'postcard'){ ['front','back'].forEach(side => { const p = P[`postcard-${cardSize}-${side}`], im = p.images[0]; html += `<figure>${img(im.name, im.w, im.h, p.label, cardSize==='6x11'?760:660)}<figcaption>${side==='front'?'Front':'Back, with the mailing area'}</figcaption></figure>`; }); }
+    else { const p = P[t.parts[0]], im = p.images[0]; html = `<figure>${img(im.name, im.w, im.h, p.label, 600)}</figure>`; }
+    $('sheets').className = 'sheets ' + cls; $('sheets').innerHTML = html;
+  }
+
+  // ---------- start ----------
+  sb.auth.onAuthStateChange((event, session) => { if(event === 'SIGNED_IN' && session) enter(session); });
+  sb.auth.getSession().then(({ data }) => { if(data.session) enter(data.session); });
+})();
+</script>
+</body>
+</html>
