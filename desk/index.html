@@ -29,7 +29,12 @@
 
   /* sign-in */
   .gate{min-height:70vh;display:grid;place-items:center}
-  .gate form,.gate .msg{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:28px;width:min(100%,400px)}
+  .gate .card,.gate .msg{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:32px 28px;width:min(100%,400px)}
+  .gate .gbtn{min-height:44px;display:flex;justify-content:center}
+  .gbtn .fallback{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--graphite);border:1px solid #DADCE0;border-radius:999px;padding:11px 18px;font:500 15px var(--ui);cursor:pointer}
+  .or{display:flex;align-items:center;gap:12px;color:var(--slate);font-size:13px;margin:20px 0 14px}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+  .alt{display:block;margin:0 auto;font-size:14px}
   .gate h1{font:400 32px/1.05 var(--display);margin:0 0 8px}
   .gate p{color:var(--slate);margin:0 0 18px}
   label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
@@ -74,14 +79,20 @@
   </header>
 
   <section class="gate" id="gate">
-    <form id="loginForm" novalidate>
-      <h1>Back office</h1>
-      <p>Sign in with your email. We'll send you a one-time sign-in link.</p>
-      <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="email" required>
-      <button class="btn" id="sendBtn" type="submit">Send sign-in link</button>
-      <div class="note" id="loginNote" role="status"></div>
-    </form>
+    <div class="card" id="loginForm">
+      <h1>Sign in</h1>
+      <p>BrochureDesk back office.</p>
+      <div class="gbtn" id="gbtn"></div>
+      <div class="note" id="gNote" role="status"></div>
+      <div class="or">or</div>
+      <button class="link alt" type="button" id="showEmail">Email me a sign-in link instead</button>
+      <form id="emailForm" novalidate hidden>
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="email" required>
+        <button class="btn" id="sendBtn" type="submit">Send sign-in link</button>
+        <div class="note" id="loginNote" role="status"></div>
+      </form>
+    </div>
     <div class="msg" id="denied" hidden>
       <h1>No access</h1>
       <p>This account can't open the back office. Sign out and use the approved email.</p>
@@ -113,7 +124,31 @@
   const show = (id, on) => { $(id).hidden = !on; };
 
   // ---------- sign-in ----------
-  $('loginForm').addEventListener('submit', async e => {
+  // Google's own button on this page; Supabase only checks the Google ID token. Access is still checked after sign-in.
+  const GOOGLE_CLIENT_ID = '714598699762-rvremas98q7p4o0kla4llm604mm4f880.apps.googleusercontent.com';
+  const gFail = msg => { $('gNote').className = 'note err'; $('gNote').textContent = msg; };
+  function googleButton(){
+    const host = $('gbtn');
+    if(!window.google?.accounts?.id){
+      host.innerHTML = '<button class="fallback" type="button">Continue with Google</button>';
+      host.firstChild.onclick = () => sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID, ux_mode: 'popup',
+      callback: async ({ credential }) => {
+        const { data, error } = await sb.auth.signInWithIdToken({ provider:'google', token: credential });
+        if(error){ gFail("That Google account can't sign in here."); return; }
+        enter(data.session);
+      }
+    });
+    google.accounts.id.renderButton(host, { type:'standard', theme:'outline', size:'large', shape:'pill', text:'continue_with', logo_alignment:'left', width: Math.min(host.clientWidth || 340, 400) });
+  }
+  const gsi = document.createElement('script'); gsi.src = 'https://accounts.google.com/gsi/client'; gsi.async = true;
+  gsi.onload = googleButton; gsi.onerror = googleButton; document.head.appendChild(gsi);
+
+  $('showEmail').onclick = () => { $('emailForm').hidden = false; $('showEmail').hidden = true; $('email').focus(); };
+  $('emailForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('email').value.trim().toLowerCase();
     const note = $('loginNote'); note.className = 'note';
