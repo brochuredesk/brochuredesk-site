@@ -70,6 +70,15 @@
   figure{margin:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
   figure img{display:block;height:auto;max-width:100%;box-shadow:0 1px 2px rgba(30,34,38,.12),0 10px 28px rgba(30,34,38,.14);background:var(--marble)}
   figcaption{font-size:12.5px;color:var(--slate)}
+
+  /* back office views: homepage draft first, then the design set */
+  .views{display:flex;gap:22px;margin-top:18px}
+  .views button{background:none;border:0;padding:0 0 6px;font:500 15px var(--ui);color:var(--slate);cursor:pointer;border-bottom:2px solid transparent}
+  .views button[aria-pressed="true"]{color:var(--graphite);border-bottom-color:var(--brass)}
+  .homebar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .frame{background:var(--paper);border:1px solid var(--line);padding:clamp(8px,2vw,18px);display:flex;justify-content:center}
+  .frame iframe{display:block;width:100%;height:calc(100vh - 230px);min-height:520px;border:0;background:#fff;box-shadow:0 1px 2px rgba(30,34,38,.12),0 10px 28px rgba(30,34,38,.14)}
+  .frame.phone iframe{width:min(100%,390px)}
 </style>
 </head>
 <body>
@@ -103,6 +112,22 @@
   </section>
 
   <main id="app" hidden>
+    <nav class="views" aria-label="Back office">
+      <button type="button" data-view="home" aria-pressed="true">Homepage</button>
+      <button type="button" data-view="set" aria-pressed="false">Ivory design set</button>
+    </nav>
+    <div id="homeView">
+      <section class="intro">
+        <h2>Homepage</h2>
+        <p>The working draft of brochuredesk.com, live at /preview/ and hidden from search. The "Opening soon" page stays up until you swap them.</p>
+      </section>
+      <div class="homebar">
+        <div class="seg" role="group" aria-label="Width"><button type="button" data-w="desktop" aria-pressed="true">Desktop</button><button type="button" data-w="phone" aria-pressed="false">Phone</button></div>
+        <a href="../preview/" target="_blank" rel="noopener">Open full page</a>
+      </div>
+      <div class="frame" id="frame"><iframe src="../preview/" title="Homepage draft" loading="lazy"></iframe></div>
+    </div>
+    <div id="setView" hidden>
     <section class="intro">
       <h2 id="title">Ivory design set</h2>
       <p id="sub"></p>
@@ -111,6 +136,7 @@
     <div class="stage" role="tabpanel">
       <div class="stagehead"><h3 id="pieceTitle"></h3><div class="tools" id="tools"></div></div>
       <div class="sheets" id="sheets"></div>
+    </div>
     </div>
   </main>
 </div>
@@ -221,6 +247,16 @@
     else { const p = P[t.parts[0]], im = p.images[0]; html = `<figure>${img(im.name, im.w, im.h, p.label, 600)}</figure>`; }
     $('sheets').className = 'sheets ' + cls; $('sheets').innerHTML = html;
   }
+
+  // ---------- views ----------
+  document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-view]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    show('homeView', b.dataset.view === 'home'); show('setView', b.dataset.view === 'set');
+  });
+  document.querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('[data-w]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    $('frame').classList.toggle('phone', b.dataset.w === 'phone');
+  });
 
   // ---------- start ----------
   sb.auth.onAuthStateChange((event, session) => { if(event === 'SIGNED_IN' && session) enter(session); });
