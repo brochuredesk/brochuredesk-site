@@ -111,16 +111,17 @@
       if(!j.ok) throw {code: j.error};
       const want = Math.min(MAX_PHOTOS, j.photos.length);
       say(`Found ${j.totalPhotos} photo${j.totalPhotos === 1 ? '' : 's'}, picking the best ${want}…`);
-      const got = []; let next = 0, done = 0;
+      // the best 16, plus a few spares to stand in if one turns out to be a collage; they go back in listing order
+      const cand = j.photos.concat(j.spares || []), got = []; let next = 0, done = 0;
       const worker = async () => {
-        while(next < j.photos.length && got.filter(Boolean).length < MAX_PHOTOS){
+        while(next < cand.length && got.filter(Boolean).length < MAX_PHOTOS){
           const i = next++;
-          try { got[i] = await getPhoto(j.photos[i].url); } catch(e) { got[i] = null; }
+          try { const u = await getPhoto(cand[i].url); got[i] = u && {n: cand[i].n, u}; } catch(e) { got[i] = null; }
           done++; if(done <= want) say(`Getting photo ${Math.min(done, want)} of ${want}…`);
         }
       };
       await Promise.all([worker(), worker(), worker(), worker()]);
-      const urls = got.filter(Boolean).slice(0, MAX_PHOTOS);
+      const keep = got.filter(Boolean).slice(0, MAX_PHOTOS).sort((a, b) => a.n - b.n), urls = keep.map(k => k.u);
       if(!urls.length) throw {code: 'unreadable'};
       photos.forEach(u => URL.revokeObjectURL(u)); photos = urls;
       const l = j.listing;
