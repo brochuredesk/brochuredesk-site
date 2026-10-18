@@ -21,6 +21,7 @@
 html{scroll-padding-top:72px}
 body{margin:0;background:var(--marble);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
 img{max-width:100%;height:auto;display:block}
+[hidden]{display:none!important}
 .in{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
 h2{font-size:clamp(30px,3.4vw,44px);line-height:1.05}
@@ -154,6 +155,53 @@ section.s.alt{background:var(--paper);border-block:1px solid var(--line)}
 .final h2{max-width:20ch}
 .final .start{justify-items:center}
 
+/* free preview */
+#try .shead{margin-bottom:28px}
+.trynote{background:#fff;border:1px solid var(--line);border-left:3px solid var(--brass);padding:12px 16px;font-size:15px;color:var(--slate);max-width:62ch}
+.tryform{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:32px;align-items:start}
+@media (max-width:860px){.tryform{grid-template-columns:minmax(0,1fr)}}
+.tryform h3{font-family:var(--body);font-weight:600;font-size:16px;margin-bottom:10px}
+.drop{border:1.5px dashed #9AA0A5;border-radius:3px;padding:22px 16px;text-align:center;cursor:pointer;background:#fff;display:grid;gap:4px;font-size:15px}
+.drop:hover,.drop.over{border-color:var(--emerald);background:#F3F7F5}
+.drop b{color:var(--emerald)}
+.drop small{color:var(--slate);font-size:13.5px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:12px}
+.thumb{margin:0;position:relative;aspect-ratio:4/3;background:var(--ph);overflow:hidden;border-radius:2px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .cover,.thumb [data-cover]{position:absolute;left:4px;bottom:4px;font:600 11px var(--body);background:rgba(30,34,38,.8);color:#fff;border:0;border-radius:2px;padding:3px 6px}
+.thumb [data-cover]{cursor:pointer;opacity:.85}
+.thumb .x{position:absolute;right:4px;top:4px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(30,34,38,.8);color:#fff;font-size:15px;line-height:1;cursor:pointer}
+.small{font-size:13.5px;color:var(--slate);margin-top:8px;min-height:1.2em}
+.fields{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.fields label{display:grid;gap:5px;font-size:13.5px;font-weight:600;grid-column:span 2;min-width:0}
+.fields label.full{grid-column:1/-1}.fields label.half{grid-column:span 3}
+@media (max-width:520px){.fields label,.fields label.half{grid-column:span 3}}
+.fields input{font:inherit;font-weight:400;font-size:16px;padding:11px 12px;border:1px solid #B9BBB5;border-radius:2px;background:#fff;color:var(--ink);width:100%;min-width:0}
+.dpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;margin-bottom:6px}
+.dcard{display:grid;gap:6px;cursor:pointer;font-size:14px;text-align:center}
+.dcard input{position:absolute;opacity:0}
+.dcard img{width:100%;aspect-ratio:900/1165;object-fit:cover;outline:1px solid var(--line);outline-offset:0}
+.dcard input:checked + img{outline:2px solid var(--emerald);outline-offset:3px}
+.dcard input:focus-visible + img{outline:2px solid var(--emerald);outline-offset:3px}
+.trybtn{margin-top:20px}
+.tryout{margin-top:56px;display:grid;gap:30px}
+.tryout h3{font-family:var(--display);font-weight:400;font-size:clamp(26px,3vw,36px)}
+.tryhead{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:26px;align-items:start}
+@media (max-width:760px){.tryhead{grid-template-columns:minmax(0,1fr)}}
+.logo-ok{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px}
+.logo-ok img{max-height:34px;max-width:160px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--slate);text-decoration:underline;cursor:pointer}
+.tryset{background:#fff;border:1px solid var(--line);padding:clamp(14px,2.6vw,26px);display:grid;gap:14px}
+.tryset h4{font-family:var(--body);font-weight:600;font-size:16px;margin:0}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:640px){.two,.three{grid-template-columns:minmax(0,1fr)}}
+.tryset figure{margin:0;min-width:0}
+.sheet{position:relative;width:100%;min-height:120px;overflow:hidden;background:#E6E4DE;box-shadow:0 1px 2px rgba(30,34,38,.12),0 8px 22px rgba(30,34,38,.13)}
+.sheet iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;pointer-events:none}
+.tryset figcaption{font-size:13px;color:var(--slate);margin-top:7px}
+.trygo{background:var(--paper);border:1px solid var(--ink);padding:24px;display:grid;gap:8px;justify-items:start}
+
 footer{border-top:1px solid var(--line);padding-block:34px 44px;font-size:14px;color:var(--slate)}
 footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
 </style>
@@ -179,7 +227,7 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
         <h1>Your listing brochure, done and waiting in your printer's cart.</h1>
         <p class="sub">Paste the listing link. We write it, design it and size it for your printer. You look it over and pay.</p>
         <form class="start" data-start novalidate>
-          <div class="linkbox"><input id="hero-link" type="url" inputmode="url" aria-label="Listing link" placeholder="Paste a HAR.com listing link"><button class="btn" type="submit">Start</button></div>
+          <div class="linkbox"><input id="hero-link" type="url" inputmode="url" aria-label="Listing link" placeholder="Paste your listing link"><button class="btn" type="submit">Start</button></div>
           <p class="startnote" role="status" aria-live="polite"></p>
         </form>
         <ul class="facts"><li>11 x 17 fold-over</li><li>Three 8.5 x 11 flyers</li><li>Just Listed postcard</li></ul>
@@ -188,6 +236,78 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
         <div class="pg p1"><img src="img/open-house-flyer.jpg" alt="" width="900" height="1165"></div>
         <div class="pg p2"><img src="img/listing-flyer.jpg" alt="" width="900" height="1165"></div>
         <div class="pg p3"><img src="img/just-listed-flyer.jpg" alt="" width="900" height="1165"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" id="try" hidden aria-labelledby="try-h">
+    <div class="in">
+      <div class="shead">
+        <h2 id="try-h">See your listing in our designs</h2>
+        <p>Add your photos and a few details and we'll lay out the whole set right here. It's free and you don't need an account. The faint lines are where we write the copy for your house once you sign up.</p>
+        <p class="trynote" id="try-link" hidden>We can't read listing links yet, so for now add the photos yourself. They stay on your computer.</p>
+      </div>
+      <form class="tryform" id="try-form" novalidate>
+        <div>
+          <h3>Photos</h3>
+          <label class="drop" id="try-drop" tabindex="0"><span><b>Click to add photos</b> or drag them here</span><small>Up to 16. The first one goes on the cover. Your photos stay on your computer.</small>
+            <input type="file" id="try-files" accept="image/*" multiple hidden></label>
+          <div class="small" id="try-photo-note" role="status"></div>
+          <div class="thumbs" id="try-photos"></div>
+          <div class="small" id="try-count"></div>
+        </div>
+        <div>
+          <h3>The house</h3>
+          <div class="fields">
+            <label class="full">Street address<input name="address" autocomplete="off" placeholder="2417 Linden Hollow Lane"></label>
+            <label class="half">City<input name="city" autocomplete="off" placeholder="Houston"></label>
+            <label class="half">ZIP<input name="zip" inputmode="numeric" autocomplete="off"></label>
+            <label class="full">Neighborhood<input name="neighborhood" autocomplete="off"></label>
+            <label>Bedrooms<input name="beds" inputmode="numeric"></label>
+            <label>Full baths<input name="baths" inputmode="numeric"></label>
+            <label>Half baths<input name="half" inputmode="numeric"></label>
+            <label class="half">Square feet<input name="sqft" inputmode="numeric"></label>
+            <label class="half">Year built<input name="year" inputmode="numeric"></label>
+          </div>
+          <h3 style="margin-top:24px">Design</h3>
+          <div class="dpick" id="try-designs" role="radiogroup" aria-label="Design"></div>
+          <div class="small">More designs are on the way.</div>
+          <button class="btn trybtn" type="submit">Show my preview</button>
+          <div class="small" id="try-note" role="status"></div>
+        </div>
+      </form>
+
+      <div class="tryout" id="try-out" hidden>
+        <div class="tryhead">
+          <div><h3 id="try-title"></h3><p class="small">The agent name, phone number and logo are samples. Yours replace them after you sign up.</p></div>
+          <div>
+            <h4 style="font-size:15px;margin:0 0 8px">Your logo</h4>
+            <label class="drop" id="try-logo-drop" tabindex="0"><span><b>Add your logo</b> to see it in place</span><small>PNG, JPG or SVG</small>
+              <input type="file" id="try-logo-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden></label>
+            <div class="logo-ok" id="try-logo-ok" hidden><img id="try-logo-thumb" alt="Your logo"><button type="button" class="linkbtn" id="try-logo-remove">Remove</button></div>
+          </div>
+        </div>
+        <div class="tryset"><h4>11 x 17 fold-over brochure</h4>
+          <div class="two">
+            <figure><div class="sheet" data-piece="foldover" data-panel="front" data-label="Fold-over, front"></div><figcaption>Front</figcaption></figure>
+            <figure><div class="sheet" data-piece="foldover" data-panel="back" data-label="Fold-over, back"></div><figcaption>Back</figcaption></figure>
+            <figure><div class="sheet" data-piece="foldover" data-panel="top" data-label="Fold-over, inside top"></div><figcaption>Inside, top</figcaption></figure>
+            <figure><div class="sheet" data-piece="foldover" data-panel="bottom" data-label="Fold-over, inside bottom"></div><figcaption>Inside, bottom</figcaption></figure>
+          </div></div>
+        <div class="tryset"><h4>Flyers, 8.5 x 11</h4>
+          <div class="three">
+            <figure><div class="sheet" data-piece="listing-flyer" data-label="Listing flyer"></div><figcaption>Listing</figcaption></figure>
+            <figure><div class="sheet" data-piece="just-listed-flyer" data-label="Just Listed flyer"></div><figcaption>Just Listed</figcaption></figure>
+            <figure><div class="sheet" data-piece="open-house-flyer" data-label="Open House flyer"></div><figcaption>Open House. You set the date and time after you sign up.</figcaption></figure>
+          </div></div>
+        <div class="tryset"><h4>Just Listed postcard</h4>
+          <div class="two">
+            <figure><div class="sheet" data-piece="postcard-6x11-front" data-label="Postcard 6 x 11, front"></div><figcaption>6 x 11, front</figcaption></figure>
+            <figure><div class="sheet" data-piece="postcard-6x11-back" data-label="Postcard 6 x 11, back"></div><figcaption>6 x 11, back. The right side is left clear for your mail vendor.</figcaption></figure>
+            <figure><div class="sheet" data-piece="postcard-6x9-front" data-label="Postcard 6 x 9, front"></div><figcaption>6 x 9, front</figcaption></figure>
+            <figure><div class="sheet" data-piece="postcard-6x9-back" data-label="Postcard 6 x 9, back"></div><figcaption>6 x 9, back</figcaption></figure>
+          </div></div>
+        <div class="trygo"><strong>Like what you see?</strong><p class="small" style="margin:0">After you sign up we write the copy for this house, and you can swap photos and change any line.</p><button class="btn" type="button" id="try-go">Get started</button><div class="small" id="try-go-note" role="status"></div></div>
       </div>
     </div>
   </section>
@@ -289,7 +409,7 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
     <div class="in">
       <h2>Paste a listing link and see your brochure</h2>
       <form class="start" data-start novalidate>
-        <div class="linkbox"><input id="final-link" type="url" inputmode="url" aria-label="Listing link" placeholder="Paste a HAR.com listing link"><button class="btn" type="submit">Start</button></div>
+        <div class="linkbox"><input id="final-link" type="url" inputmode="url" aria-label="Listing link" placeholder="Paste your listing link"><button class="btn" type="submit">Start</button></div>
         <p class="startnote" role="status" aria-live="polite"></p>
       </form>
     </div>
@@ -320,13 +440,7 @@ document.querySelectorAll('.vtabs button').forEach(b => b.addEventListener('clic
   vtext.textContent = styles[+b.dataset.v][1];
 }));
 
-// Ordering isn't open yet: say so plainly, nothing is sent anywhere.
-document.querySelectorAll('[data-start]').forEach(f => f.addEventListener('submit', e => {
-  e.preventDefault();
-  const note = f.querySelector('.startnote');
-  note.textContent = "BrochureDesk opens soon in Houston. Ordering isn't available yet.";
-  note.classList.add('on');
-}));
 </script>
+<script src="try.js?v=3"></script>
 </body>
 </html>
