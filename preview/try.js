@@ -13,15 +13,127 @@
   const sec = $('#try'), form = $('#try-form'), grid = $('#try-photos'), out = $('#try-out');
   let photos = [], designs = [], design = null, logo = null, tplCache = {}, drawn = false;
 
-  // ---------- opening the section from either Start box ----------
+  // ---------- Matrix link: the automatic path ----------
+  // A small server reader (Supabase Edge Function) fetches the one Matrix page and the listing photos for us, because
+  // browsers can't read Matrix pages directly. It only ever talks to HAR's Matrix servers, never har.com.
+  const FN = 'https://depwvwewbmxspoxidxrx.supabase.co/functions/v1/matrix-listing';
+  const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mxIn = $('#mx-link'), mxStatus = $('#mx-status'), mxErr = $('#mx-err'), mxGo = $('#mx-go');
+  let designsReady = Promise.resolve(), busy = false;
+
+  const MSG = {
+    har: "That's a har.com link. HAR's site blocks automatic reading, and we don't work around that, so we need the Matrix link instead. It takes about a minute.",
+    'other-site': "We can only read Matrix links right now, not Zillow or Realtor.com. Your Matrix link is quick to make, and you can also add photos yourself.",
+    'not-matrix': "That doesn't look like a Matrix listing link. It should start with https://matrix.harmls.com/. Paste the link from the Matrix email, or see how to make one.",
+    'not-a-link': "That doesn't look like a link yet. Paste the whole Matrix link, starting with https://.",
+    blocked: "HAR's site asked us to prove we're a person, and we won't try to get past that. Give it a few minutes and try again, or add your photos instead.",
+    unreadable: "We opened the link but couldn't find the listing on it. Check that it's a link to one listing, or add your photos instead.",
+    'not-found': "That link didn't open a listing. It may have expired. Make a fresh one, or add your photos instead.",
+    unreachable: "We couldn't reach Matrix just now. Try again in a moment, or add your photos instead.",
+    'slow-down': "That's a lot of tries in a row. Wait a few minutes and try again, or add your photos instead.",
+    network: "Something went wrong on our end while reading the link. Try again, or add your photos instead."
+  };
+  const say = t => { mxStatus.innerHTML = t ? '<i aria-hidden="true"></i><span></span>' : ''; if(t) mxStatus.lastChild.textContent = t; };
+  const fail = code => {
+    say(''); $('#mx-err-text').textContent = MSG[code] || MSG.network;
+    mxErr.hidden = false; $('#mx-links').hidden = true;
+    $('#mx-retry').hidden = !['blocked','unreachable','network','slow-down','not-found'].includes(code);
+    $('#mx-retry').focus({preventScroll:true});
+  };
+  // checked in the browser first, so a har.com link is never sent anywhere
+  function localCheck(v){
+    let u; try { u = new URL(v); } catch(e) { return 'not-a-link'; }
+    if(!/^https?:$/.test(u.protocol)) return 'not-a-link';
+    const h = u.hostname.toLowerCase();
+    if(h === 'har.com' || h.endsWith('.har.com')) return 'har';
+    if(/(^|\.)(zillow|realtor|redfin|trulia|homes|movoto)\.com$/.test(h)) return 'other-site';
+    if(h !== 'matrix.harmls.com') return 'not-matrix';
+    return '';
+  }
+  function openSection(){
+    sec.hidden = false;
+    sec.scrollIntoView({behavior: reduce() ? 'auto' : 'smooth'});
+  }
+  function showForm(){ form.hidden = false; $('#mx-links').hidden = false; }
+  function manual(){ openSection(); mxErr.hidden = true; say(''); showForm(); setTimeout(() => $('#try-drop').focus({preventScroll:true}), 300); }
+
   document.querySelectorAll('[data-start]').forEach(f => f.addEventListener('submit', e => {
     e.preventDefault();
     const link = f.querySelector('input').value.trim();
-    sec.hidden = false;
-    $('#try-link').hidden = !link;
-    sec.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
-    setTimeout(() => $('#try-drop').focus({preventScroll:true}), 400);
+    openSection();
+    if(link){ mxIn.value = link; runMatrix(); } else setTimeout(() => mxIn.focus({preventScroll:true}), 400);
   }));
+  $('#mx-form').addEventListener('submit', e => { e.preventDefault(); runMatrix(); });
+  $('#mx-retry').onclick = runMatrix;
+  $('#mx-manual').onclick = manual; $('#mx-err-manual').onclick = manual;
+
+  const setField = (n, v) => { form.elements[n].value = v == null ? '' : v; };
+  // A listing collage (one big photo plus small ones, thin light gutters) is kept out of the photo slots.
+  function isCollage(bmp){
+    const k = Math.min(1, 300 / Math.max(bmp.width, bmp.height)), w = Math.max(8, Math.round(bmp.width * k)), h = Math.max(8, Math.round(bmp.height * k));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d', {willReadFrequently: true}); g.drawImage(bmp, 0, 0, w, h);
+    const d = g.getImageData(0, 0, w, h).data, L = (x, y) => { const i = (y * w + x) * 4; return .299 * d[i] + .587 * d[i+1] + .114 * d[i+2]; };
+    const stat = vals => { const m = vals.reduce((a, b) => a + b, 0) / vals.length; return [m, Math.sqrt(vals.reduce((a, b) => a + (b - m) ** 2, 0) / vals.length)]; };
+    const gut = (n, at, lo, hi) => {
+      const S = []; for(let i = 0; i < n; i++){ const v = []; for(let j = lo; j < hi; j++) v.push(at(i, j)); S.push(stat(v)); }
+      const out = []; for(let i = Math.max(3, Math.floor(n * .08)); i < Math.min(n - 3, Math.floor(n * .92)); i++)
+        if(S[i][0] > 195 && S[i][1] < 14 && [i - 3, i + 3].every(k => S[k][1] > 15 || S[i][0] - S[k][0] > 20)) out.push(i);
+      return out;
+    };
+    const col = (i, j) => L(i, j), row = (i, j) => L(j, i);
+    for(const x of gut(w, col, 0, h)) if(gut(h, row, x + 2, w).length || gut(h, row, 0, Math.max(0, x - 1)).length) return true;
+    for(const y of gut(h, row, 0, w)) if(gut(w, col, y + 2, h).length || gut(w, col, 0, Math.max(0, y - 1)).length) return true;
+    return false;
+  }
+  async function getPhoto(url){
+    const r = await fetch(`${FN}?photo=${encodeURIComponent(url)}`);
+    if(!r.ok) throw new Error('photo');
+    const blob = await r.blob(), bmp = await createImageBitmap(blob);
+    if(isCollage(bmp)) return null;
+    return shrink(blob);
+  }
+
+  async function runMatrix(){
+    if(busy) return;
+    const link = mxIn.value.trim();
+    mxErr.hidden = true;
+    const bad = localCheck(link);
+    if(bad){ fail(bad); return; }
+    busy = true; mxGo.disabled = true; $('#mx-retry').disabled = true;
+    try {
+      say('Reading your listing…');
+      let j;
+      try {
+        const r = await fetch(`${FN}?link=${encodeURIComponent(link)}`);
+        j = await r.json();
+      } catch(e) { throw {code: 'network'}; }
+      if(!j.ok) throw {code: j.error};
+      const want = Math.min(MAX_PHOTOS, j.photos.length);
+      say(`Found ${j.totalPhotos} photo${j.totalPhotos === 1 ? '' : 's'}, picking the best ${want}…`);
+      const got = []; let next = 0, done = 0;
+      const worker = async () => {
+        while(next < j.photos.length && got.filter(Boolean).length < MAX_PHOTOS){
+          const i = next++;
+          try { got[i] = await getPhoto(j.photos[i].url); } catch(e) { got[i] = null; }
+          done++; if(done <= want) say(`Getting photo ${Math.min(done, want)} of ${want}…`);
+        }
+      };
+      await Promise.all([worker(), worker(), worker(), worker()]);
+      const urls = got.filter(Boolean).slice(0, MAX_PHOTOS);
+      if(!urls.length) throw {code: 'unreadable'};
+      photos.forEach(u => URL.revokeObjectURL(u)); photos = urls;
+      const l = j.listing;
+      ['address','city','zip','neighborhood'].forEach(n => setField(n, l[n === 'zip' ? 'zip' : n]));
+      setField('beds', l.beds); setField('baths', l.baths); setField('half', l.halfBaths); setField('sqft', l.sqft); setField('year', l.year);
+      say('Laying out your brochure…');
+      showPhotos(); showForm();
+      await designsReady; await draw();
+      say(`Done. ${urls.length} photo${urls.length === 1 ? '' : 's'} from your listing. Change anything below and press Show my preview.` + (j.listingCount > 1 ? ' That link had more than one listing, so we used the first.' : ''));
+      out.scrollIntoView({behavior: reduce() ? 'auto' : 'smooth'});
+    } catch(e) { fail(e && e.code); }
+    finally { busy = false; mxGo.disabled = false; $('#mx-retry').disabled = false; }
+  }
 
   // ---------- photos ----------
   async function shrink(file){
@@ -71,7 +183,7 @@
   }
 
   // ---------- designs ----------
-  fetch('/designs/designs.json').then(r => r.json()).then(list => {
+  designsReady = fetch('/designs/designs.json').then(r => r.json()).then(list => {
     designs = list; design = list[0];
     $('#try-designs').innerHTML = list.map((d, i) => `<label class="dcard"><input type="radio" name="design" value="${d.id}"${i ? '' : ' checked'}><img src="${d.thumb}" alt="" width="900" height="1165" loading="lazy"><span>${d.name}</span></label>`).join('');
     $('#try-designs').addEventListener('change', e => { design = designs.find(d => d.id === e.target.value); if(drawn) draw(); });
