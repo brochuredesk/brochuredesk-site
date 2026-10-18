@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Ivory postcard</title>
+<link rel="stylesheet" href="ivory.css">
+<script src="ivory.js"></script>
+<!--
+  Ivory design · Just Listed postcards. data.piece.size = "6x11" (trim 792 x 432 pt) or "6x9" (648 x 432 pt),
+  data.piece.side = "front" | "back". The 6x9 reflows the 6x11: narrower photos and fewer where needed,
+  never smaller type. Print mode adds 0.125 in bleed on every edge (TrimBox set by the renderer).
+  The back's right half is the mail vendor's address and postage zone, drawn from data.mailVendor;
+  until a vendor is chosen it is a provisional box.
+-->
+<style>
+  .eyebrow{left:27pt;top:22pt;font-size:8pt}
+  .address{left:26pt;top:33pt;font-size:24pt;line-height:29pt;height:29pt}
+  .hdr-logo{right:27pt;top:23pt;height:28pt;width:160pt}
+  .placeline{left:27pt;height:9pt}
+  .factline{left:27pt;font:700 10pt/12pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;height:12pt}
+  .notes-lbl{font-size:8pt;letter-spacing:1.2pt}
+  .vendor{position:absolute;border:.6pt dashed rgba(0,0,0,.28)}
+  .vendor .vlbl{position:absolute;left:12pt;top:12pt;font:600 6.5pt/1 var(--font-body);letter-spacing:1.3pt;text-transform:uppercase;color:var(--accent)}
+  .vendor .vnote{position:absolute;left:12pt;top:24pt;font-size:7pt;line-height:9pt;color:var(--muted)}
+  .vendor .stamp{position:absolute;border:.6pt solid rgba(0,0,0,.28);font:600 5.5pt/1 var(--font-body);letter-spacing:1pt;color:var(--muted);display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+  .vendor .aline{position:absolute;height:.5pt;background:rgba(0,0,0,.2)}
+  .vendor .vfoot{position:absolute;left:12pt;bottom:10pt;font-size:6pt;line-height:7.5pt;color:var(--muted)}
+  .fine{font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
+</style>
+</head>
+<body data-mode="email">
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+(function(){
+  const D = Ivory.data();
+  if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{}, PC = C.postcard||{};
+  document.body.dataset.mode = D.mode||'email';
+  Ivory.applyBrand(b);
+  const big = D.piece.size === '6x11';
+  const W = big ? 792 : 648, H = 432;
+  const ids = Ivory.photoOrder(D);
+  const pick = (PC.photos && PC.photos.length>=5) ? PC.photos : [ids[0], ids[1], ids[2], ids[5]||ids[3], ids[6]||ids[4]];
+  let h = '';
+
+  if(D.piece.side === 'front'){
+    const heroW = big ? 480 : 392, colX = 27 + heroW + 12, colW = W - 27 - colX;
+    h += `<div class="abs label eyebrow" style="width:${W-260}pt" data-slot="eyebrow" data-lines="1">${esc(PC.eyebrow || 'Just listed')}</div>`;
+    h += `<div class="abs display address" style="width:${W-27-27-180}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+    h += Ivory.logo(b, 'hdr-logo');
+    h += Ivory.fullRule(D, W, 70);
+    h += Ivory.photo(D, '', pick[0], `left:27pt;top:82pt;width:${heroW}pt;height:272pt`);
+    h += Ivory.photo(D, '', pick[1], `left:${colX}pt;top:82pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[1], colX, 190, colW, 'stack0');
+    h += Ivory.photo(D, '', pick[2], `left:${colX}pt;top:218pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[2], colX, 326, colW, 'stack1');
+    h += `<div class="abs place placeline" style="top:370pt;width:${W-54}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+    h += `<div class="abs factline" style="top:386pt;width:${W-54}pt" data-slot="facts" data-lines="1">${esc(Ivory.facts(L).join('  /  '))}</div>`;
+  } else {
+    // left half: logo + address line, two captioned photos, property notes, rule, contact card + QR
+    const half = W/2, LW = half - 27 - 18;            // left content width
+    const pw = (LW - 12)/2;
+    h += Ivory.logo(b, '', `left:27pt;top:22pt;height:24pt;width:150pt;justify-content:flex-start`);
+    h += `<div class="abs place" style="left:27pt;top:52pt;width:${LW}pt;height:9pt" data-slot="place" data-lines="1" data-fine="1">${esc([L.address, L.neighborhood].filter(Boolean).join('  /  '))}</div>`;
+    [[pick[3],27],[pick[4],27+pw+12]].forEach(([id,x],i)=>{
+      h += Ivory.photo(D, '', id, `left:${x}pt;top:68pt;width:${pw}pt;height:${big?100:84}pt`) + Ivory.captionHTML(D, id, x, (big?172:156), pw, 'back'+i);
+    });
+    const nt = big ? 204 : 188;
+    h += `<div class="abs label notes-lbl" style="left:27pt;top:${nt}pt;width:${LW}pt" data-slot="notes.label" data-lines="1">Property notes</div>`;
+    h += Ivory.text(D, PC.notes, 27, nt+13, LW, big?3:4, 11, 8.5, 'notes');
+    h += `<div class="hair" style="left:27pt;top:${big?262:268}pt;width:${LW}pt"></div>`;
+    h += Ivory.card(D, {x:27, y:big?274:280, w:LW, h:big?118:112, nameSize:24, phoneSize:16, lineSize:8.5, qr:58, gap:14, brokerage:false,
+                        top:{name:8, title:38, callLbl:51, phone:59}});
+    h += `<div class="abs fine" style="left:27pt;top:410pt;width:${LW}pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+
+    // right half: the mail vendor's address and postage zone
+    const V = D.mailVendor || {};
+    const vx = half + 9, vy = 18, vw = W - vx - 18, vh = H - 36;
+    const stampW = 54, stampH = 62;
+    h += `<div class="vendor" style="left:${vx}pt;top:${vy}pt;width:${vw}pt;height:${vh}pt">
+        <div class="vlbl">Address and postage area</div>
+        <div class="vnote">${esc(V.name ? 'Laid out to ' + V.name + "'s template" : 'Reserved for the mail vendor')}</div>
+        <div class="stamp" style="right:12pt;top:12pt;width:${stampW}pt;height:${stampH}pt">Postage</div>
+        ${[0,1,2,3].map(i=>`<div class="aline" style="left:${vw*0.18}pt;width:${vw*0.64}pt;top:${vh*0.52+i*18}pt"></div>`).join('')}
+        <div class="vfoot">${esc(V.name ? '' : 'Provisional. Final address, postage and clear zones follow the chosen vendor’s template.')}</div>
+      </div>`;
+  }
+
+  const f = Ivory.frame(D, W, H, h);
+  document.getElementById('pages').innerHTML = f.html;
+  window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+  const cardIssues = Ivory.layoutCards();
+  window.brochureCheck = () => Ivory.check(cardIssues);
+})();
+</script>
+</body>
+</html>
