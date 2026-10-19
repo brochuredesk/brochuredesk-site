@@ -11,7 +11,8 @@
     phone:'713.555.0100', web:'yourbrokerage.com', officeLabel:'Office', logo:'/designs/sample-logo.svg'};
 
   const sec = $('#try'), form = $('#try-form'), grid = $('#try-photos'), out = $('#try-out');
-  let photos = [], designs = [], design = null, logo = null, tplCache = {}, drawn = false;
+  let photos = [], designs = [], design = null, logo = null, tplCache = {}, drawn = false, fonts = {}, fontKey = '';
+  const IVORY_FOLD = $('#try-fold').innerHTML;
 
   // ---------- Matrix link: the automatic path ----------
   // A small server reader (Supabase Edge Function) fetches the one Matrix page and the listing photos for us, because
@@ -187,16 +188,16 @@
   designsReady = fetch('/designs/designs.json').then(r => r.json()).then(list => {
     designs = list; design = list[0];
     $('#try-designs').innerHTML = list.map((d, i) => `<label class="dcard"><input type="radio" name="design" value="${d.id}"${i ? '' : ' checked'}><img src="${d.thumb}" alt="" width="900" height="1165" loading="lazy"><span>${d.name}</span></label>`).join('');
-    $('#try-designs').addEventListener('change', e => { design = designs.find(d => d.id === e.target.value); if(drawn) draw(); });
+    $('#try-designs').addEventListener('change', e => { design = designs.find(d => d.id === e.target.value); fonts = {}; if(drawn) draw(); });
   });
 
   // ---------- facts -> data for the templates ----------
   const num = v => { const n = parseInt(String(v || '').replace(/[^\d]/g, ''), 10); return isNaN(n) ? null : n; };
   function buildData(){
     const v = id => form.elements[id].value.trim();
-    const L = {address: v('address'), neighborhood: v('neighborhood'), city: v('city'), state: 'Texas', zip: v('zip'),
-               beds: num(v('beds')), baths: num(v('baths')), halfBaths: num(v('half')), sqft: num(v('sqft'))};
     const year = num(v('year'));
+    const L = {address: v('address'), neighborhood: v('neighborhood'), city: v('city'), state: 'Texas', zip: v('zip'),
+               beds: num(v('beds')), baths: num(v('baths')), halfBaths: num(v('half')), sqft: num(v('sqft')), yearBuilt: year};
     const ids = photos.map((_, i) => 'p' + String(i).padStart(2, '0'));
     const P = {}; ids.forEach((id, i) => P[id] = {src: photos[i], tags: ''});
     const rest = ids.length > 1 ? ids.slice(1) : ids; let n = 0;
@@ -214,7 +215,12 @@
       insideBottom: {kicker: '', title: '', features: [feat(), feat(), feat()], tiles: [tile(), tile(), tile()]},
       back: {kicker: '', title: '', variant: 'photos', plans: [{photo: slot(), label: ''}, {photo: slot(), label: ''}], planDisclosures: [],
              feature: {photo: ids[ids.length - 1], title: '', body: ''}, locationTitle: '', locationBody: '', footnote: FINE_PRINT}};
-    return {template: design.id, brand: Object.assign({}, SAMPLE_BRAND, logo ? {logo} : {}), agent: SAMPLE_AGENT, listing: L,
+    // a design may set its own sample brokerage and agent lines (sample: true lets sample branding pass the checks)
+    const S = design.sample || {};
+    const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, logo ? {logo} : {},
+                                Object.keys(fonts).some(k => fonts[k]) ? {fonts} : {});
+    const agent = Object.assign({}, SAMPLE_AGENT, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {});
+    return {template: design.id, sample: true, brand, agent, listing: L,
             openHouse: null, mailVendor: null, photos: P, companion: {fineprint: FINE_PRINT}, copy, copyPending: true};
   }
 
@@ -243,20 +249,58 @@
   }
   const ro = new ResizeObserver(es => es.forEach(e => fit(e.target)));
 
+  // fold-over panels come from the design (four landscape panels for Ivory, four upright ones for others)
+  function foldPanels(p){
+    const grid = $('#try-fold');
+    const html = p && p.panels ? p.panels.map(x => `<figure><div class="sheet" data-piece="foldover" data-panel="${x.id}" data-label="Fold-over, ${x.label.toLowerCase()}"></div><figcaption>${x.label}</figcaption></figure>`).join('') : IVORY_FOLD;
+    if(grid.dataset.for !== design.id){ grid.innerHTML = html; grid.dataset.for = design.id; grid.classList.toggle('portrait', !!(p && p.panels)); }
+  }
+
+  // font picker, for designs that have an approved font list
+  async function fontBox(){
+    const box = $('#try-fonts-box');
+    box.hidden = !design.fonts || !window.FontPicker;
+    if(box.hidden || fontKey === design.id) return;
+    fontKey = design.id;
+    const [spec, catalog] = await Promise.all([fetch(`/designs/${design.id}/fonts.json`).then(r => r.json()), fetch('/fonts/pool/catalog.json').then(r => r.json())]);
+    FontPicker.mount($('#try-fonts'), {spec, catalog, fontBase: '/fonts/pool/', value: fonts, onChange: v => { fonts = v; draw(); }});
+  }
+
+  // after a font change, re-run the fit check in the pieces: anything too long would go back to the writer
+  function fitNote(){
+    const fit = $('#try-fit'); if(!fit) return;
+    const frames = [...out.querySelectorAll('iframe')];
+    let long = 0;
+    for(const f of frames){ try { const w = f.contentWindow; if(w.brochureCheck) long += w.brochureCheck().filter(c => c.kind === 'overflow').length; } catch(e) {} }
+    const changed = Object.values(fonts).some(Boolean);
+    fit.textContent = !changed ? 'These are the design\'s original fonts.' : long ? 'With these fonts some lines run long. Before your proof, our writer shortens them so everything fits.' : 'Everything still fits with these fonts.';
+  }
+
   async function draw(){
     if(!design || !photos.length) return;
     const data = buildData();
     const spec = await fetch(`/designs/${design.id}/pieces.json`).then(r => r.json());
     const by = Object.fromEntries(spec.pieces.map(p => [p.id, p]));
     out.hidden = false;   // templates measure their text as they lay out, so they must draw while visible
+    foldPanels(by.foldover);
+    fontBox();
+    out.querySelectorAll('.tryset').forEach(t => { t.hidden = false; const n = t.querySelector('.soon'); if(n) n.remove(); });
+    out.querySelectorAll('figure').forEach(f => f.hidden = false);
     const sheets = out.querySelectorAll('.sheet');
+    let pending = [];
     for(const s of sheets){
-      const p = by[s.dataset.piece]; if(!p){ s.closest('figure').hidden = true; continue; }
+      const p = by[s.dataset.piece];
+      if(!p){ s.closest('figure').hidden = true;
+        const set = s.closest('.tryset');
+        if(![...set.querySelectorAll('figure')].some(f => !f.hidden) && !set.querySelector('.soon')){ set.insertAdjacentHTML('beforeend', '<p class="soon">The rest of this design\'s set is on the way.</p>'); set.querySelector('.two,.three').hidden = true; }
+        continue; }
+      const grid = s.closest('.two,.three'); if(grid) grid.hidden = false;
       const html = await tpl(p.file);
       const d = p.kind === 'foldover' ? Object.assign({}, data, {mode: 'proof'}) : Object.assign({}, data, {mode: 'email', piece: p});
       let fr = s.querySelector('iframe');
       if(!fr){ fr = document.createElement('iframe'); fr.title = s.dataset.label; fr.setAttribute('scrolling', 'no'); fr.tabIndex = -1;
-        fr.addEventListener('load', () => { const doc = fr.contentDocument; (doc.fonts ? doc.fonts.ready : Promise.resolve()).then(() => fit(s)); fit(s); });
+        fr.addEventListener('load', () => { const doc = fr.contentDocument, w = fr.contentWindow;
+          Promise.resolve(w.brochureReady).then(() => doc.fonts ? doc.fonts.ready : 0).then(() => { fit(s); fitNote(); }); fit(s); });
         s.appendChild(fr); ro.observe(s); }
       fr.srcdoc = srcdoc(html, d, s.dataset.panel);
     }

@@ -200,6 +200,9 @@ section.s.alt{background:var(--paper);border-block:1px solid var(--line)}
 .sheet{position:relative;width:100%;min-height:120px;overflow:hidden;background:#E6E4DE;box-shadow:0 1px 2px rgba(30,34,38,.12),0 8px 22px rgba(30,34,38,.13)}
 .sheet iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;pointer-events:none}
 .tryset figcaption{font-size:13px;color:var(--slate);margin-top:7px}
+.tryset .soon{font-size:14px;color:var(--slate);margin:0}
+.two.portrait{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.two.portrait{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .trygo{background:var(--paper);border:1px solid var(--ink);padding:24px;display:grid;gap:8px;justify-items:start}
 
 
@@ -357,10 +360,15 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
             <label class="drop" id="try-logo-drop" tabindex="0"><span><b>Add your logo</b> to see it in place</span><small>PNG, JPG or SVG</small>
               <input type="file" id="try-logo-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden></label>
             <div class="logo-ok" id="try-logo-ok" hidden><img id="try-logo-thumb" alt="Your logo"><button type="button" class="linkbtn" id="try-logo-remove">Remove</button></div>
+            <div id="try-fonts-box" hidden style="margin-top:22px">
+              <h4 style="font-size:15px;margin:0 0 8px">Fonts</h4>
+              <div id="try-fonts"></div>
+              <div class="small" id="try-fit" role="status"></div>
+            </div>
           </div>
         </div>
         <div class="tryset"><h4>11 x 17 fold-over brochure</h4>
-          <div class="two">
+          <div class="two" id="try-fold">
             <figure><div class="sheet" data-piece="foldover" data-panel="front" data-label="Fold-over, front"></div><figcaption>Front</figcaption></figure>
             <figure><div class="sheet" data-piece="foldover" data-panel="back" data-label="Fold-over, back"></div><figcaption>Back</figcaption></figure>
             <figure><div class="sheet" data-piece="foldover" data-panel="top" data-label="Fold-over, inside top"></div><figcaption>Inside, top</figcaption></figure>
@@ -534,6 +542,7 @@ document.querySelectorAll('.vtabs button').forEach(b => b.addEventListener('clic
   </div>
 </dialog>
 <script src="matrix-help.js?v=1"></script>
-<script src="try.js?v=5"></script>
+<script src="/designs/_shared/fontpicker.js?v=2"></script>
+<script src="try.js?v=6"></script>
 </body>
 </html>
