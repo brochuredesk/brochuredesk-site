@@ -143,7 +143,7 @@
     const qr = A.qr ? `<div class="qr" style="left:0;top:12pt;width:${o.qr}pt;height:${o.qr}pt"><img src="${esc(A.qr)}" alt=""></div>
         <div class="line" style="left:-30pt;right:-30pt;top:${o.qr+18}pt;text-align:center;font-weight:400" data-slot="agent.qrLabel" data-lines="1">${esc(A.qrLabel || A.web || '')}</div>` : '';
     const logo = b.logo
-      ? `<div class="logo" style="position:absolute;left:0;right:0;top:12pt;height:30pt;justify-content:center"><img src="${esc(b.logo)}" alt=""></div>
+      ? `<div class="logo" data-area="5000" data-maxh="38" style="position:absolute;left:0;right:0;top:8pt;height:38pt;justify-content:center"><img src="${esc(b.logo)}" alt=""></div>
          <div class="lbl" style="left:0;right:0;top:50pt;text-align:center" data-slot="broker.name" data-fine="1">${esc(b.brokerage||'')}</div>`
       : `<div class="logo" style="position:absolute;left:0;right:0;top:12pt;height:36pt;justify-content:center"><span class="word" style="font-size:15pt" data-slot="broker.name" data-lines="1">${esc(b.brokerage||'')}</span></div>`;
     return `<div class="card" data-card="1" style="left:${o.x}pt;top:${o.y}pt;width:${o.w}pt;height:${o.h}pt">
@@ -165,6 +165,16 @@
       ${qr ? `<div class="vr v2" style="top:12pt;bottom:6pt"></div><div class="col qrcol" style="width:${o.qr}pt">${qr}</div>` : ''}
     </div>`;
   };
+
+  // Logos of any shape get about the same visual weight: each slot gives a logo a set area (pt²), up to the slot's
+  // height and width. A wide lockup ends up wide and short, a square or stacked logo taller.
+  AB.fitLogos = () => document.querySelectorAll('.logo[data-area] img').forEach(img => {
+    const box = img.parentElement, a = img.naturalWidth / img.naturalHeight || 1;
+    const maxW = pt(box.clientWidth) || 170;
+    let h = Math.min(+box.dataset.maxh, Math.sqrt(+box.dataset.area / a));
+    if(h * a > maxW) h = maxW / a;
+    img.style.height = h + 'pt'; img.style.width = (h * a) + 'pt'; img.style.maxWidth = 'none'; img.style.maxHeight = 'none';
+  });
 
   // Lines a block of text actually sets in (line boxes of its text, however it is styled inside).
   AB.lines = el => {
@@ -195,7 +205,7 @@
       const nat = AB.textWidth;
       const agentW = () => Math.max(...[...agent.children].map(nat));
       const img = brk.querySelector('.logo img');
-      const logoW = img ? Math.min(170, img.naturalWidth && img.naturalHeight ? 30*img.naturalWidth/img.naturalHeight : 170) : 0;
+      const logoW = img ? pt(img.getBoundingClientRect().width) : 0;
       const word = brk.querySelector('.logo .word');
       const brkW = Math.max(logoW, ...[...brk.querySelectorAll('[data-slot]')].map(nat), word ? nat(word) : 0);
       const qrW = qr ? pt(qr.offsetWidth) : 0;
