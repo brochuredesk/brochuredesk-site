@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64">
-  <!-- Stand-in for the "Any Brokerage" sample logo (forest colorway, for light areas). Replace with the files from AnyBrokerage_logos.zip. -->
-  <g fill="none" stroke="#2f4a3a" stroke-width="4.5" stroke-linejoin="round">
-    <path d="M6 33 L30 12 L54 33"/><path d="M14 27 V54 H46 V27"/>
-  </g>
-  <rect x="25" y="38" width="10" height="16" fill="#2f4a3a"/>
-  <text x="66" y="31" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="1.5" fill="#2f4a3a">ANY</text>
-  <text x="66" y="56" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="19" font-weight="400" letter-spacing="4.2" fill="#2f4a3a">BROKERAGE</text>
-</svg>

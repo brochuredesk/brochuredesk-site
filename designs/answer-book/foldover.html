@@ -19,7 +19,7 @@
   grow into the space. Text never shrinks to fit; an overflow is reported and goes back to the writer.
 -->
 <style>
-  .hdr-logo{position:absolute;right:var(--m);top:13pt;height:21pt;width:170pt}
+  .hdr-logo{position:absolute;right:var(--m);top:9pt;height:28pt;width:170pt}
   .hdr-logo .word{font-size:11pt}
   .kick{position:absolute;left:var(--m);top:51pt;width:380pt}
   .ttl{position:absolute;left:var(--m);top:62pt}
@@ -43,7 +43,7 @@
   .statrow div{font:600 9pt/11pt var(--font-body);color:var(--ink);white-space:nowrap;letter-spacing:.15pt}
   .foot{position:absolute;left:var(--m);right:var(--m);top:752pt;height:20pt;border-top:.6pt solid var(--line);display:flex;align-items:flex-end;justify-content:space-between}
   .foot .who{font:600 8pt/10pt var(--font-body);letter-spacing:1.2pt;text-transform:uppercase;color:var(--kicker);white-space:nowrap;overflow:hidden}
-  .foot .logo{height:16pt;width:150pt}
+  .foot .logo{height:18pt;width:150pt}
   .foot .logo .word{font-size:10pt}
 
   /* floor plan */
@@ -109,7 +109,7 @@ window.brochureReady = (async function(){
   const on = (id, v) => !hidden.has(id) && v != null && !(Array.isArray(v) && !v.length);
 
   const tabs = active => `<div class="tabs">${['Front rooms','Bedrooms and baths','Outside and nearby'].map((t,i)=>`<div class="tab${i===active?' on':''}">${t}</div>`).join('')}</div>`;
-  const logo = (cls) => `<div class="logo ${cls}">${b.logo ? `<img src="${esc(b.logo)}" alt="">` : `<span class="word" data-slot="broker.name" data-lines="1">${esc(b.brokerage||'')}</span>`}</div>`;
+  const logo = (cls) => `<div class="logo ${cls}" data-area="${cls ? 2600 : 1150}" data-maxh="${cls ? 28 : 18}">${b.logo ? `<img src="${esc(b.logo)}" alt="">` : `<span class="word" data-slot="broker.name" data-lines="1">${esc(b.brokerage||'')}</span>`}</div>`;
   const kicker = (t, slot) => AB.pending(D, t) ? `<div class="kick">${AB.ghost(1, 10, 'width:40%')}</div>` : `<div class="abs kicker kick" data-slot="${slot}" data-lines="1">${esc(t)}</div>`;
   const title = (t, slot, w) => AB.pending(D, t) ? `<div class="ttl" style="width:${w}pt">${AB.ghost(1, 30, 'width:80%')}</div>` : `<div class="title ttl" style="width:${w}pt" data-slot="${slot}" data-lines="1">${esc(t)}</div>`;
   const intro = (t, slot, lines, style) => AB.pending(D, t) ? `<div style="flex:none;${style||''}">${AB.ghost(lines, 12)}</div>` : `<div class="intro" style="flex:none;height:${lines*12}pt;${style||''}" data-slot="${slot}" data-lines="${lines}">${esc(t)}</div>`;
@@ -289,6 +289,7 @@ window.brochureReady = (async function(){
   // floor plan labels sit centered on their room, whatever lines they take
   document.querySelectorAll('.plan .rl[data-center]').forEach(el => el.style.top = (parseFloat(el.style.top) - pt(el.offsetHeight)/2) + 'pt');
   AB.equalizeRows();
+  AB.fitLogos();
   issues.push(...AB.layoutCards());
   window.brochureCheck = () => AB.check(D, issues);
   window.photoPlacements = AB.placements;

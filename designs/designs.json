@@ -6,7 +6,7 @@
   "test": true,
   "sample": {
    "brokerage": "Any Brokerage",
-   "logo": "/designs/answer-book/sample-logo.svg",
+   "logo": "/designs/answer-book/sample-logo.png",
    "web": "anybrokerage.com",
    "qrLabel": "your website",
    "agentWeb": "yourwebsite.com"
