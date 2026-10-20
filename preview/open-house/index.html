@@ -20,7 +20,10 @@ h1{font-size:clamp(30px,4vw,42px)}
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:28px}
 .panel>h2{font-size:28px;margin-bottom:6px}
 .panel>p{color:var(--slate);margin:0 0 18px}
-.proof{max-width:340px}
+.proof{max-width:340px;flex:1 1 260px}
+.proofrow{display:flex;flex-wrap:wrap;gap:24px 40px;align-items:flex-start}
+.fonts{flex:1 1 280px;max-width:420px}.fonts h3{font-size:17px;margin:0 0 4px}.fonts .hint{color:var(--slate);font-size:14px;margin:0 0 14px}
+.fonts .linkbtn{font:inherit;font-size:14px;font-weight:700;color:var(--oh-accent);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
 .tools{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;margin-top:14px}
 .tools a,.tools button{font:inherit;font-weight:700;color:var(--oh-accent);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
 #log{font:13px/1.5 ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px;max-height:180px;overflow:auto;white-space:pre-wrap;margin:0}
@@ -36,8 +39,11 @@ h1{font-size:clamp(30px,4vw,42px)}
   <div class="tools"><button type="button" id="reopen">Reopen from past orders</button><button type="button" id="clear">Start over</button>
     <a id="skin" href="?skin=team">See it in a team's colors</a></div>
 
-  <section class="panel"><h2>On the proof</h2><p>The set's own flyer is the recommended one. "See other Open House designs" opens the selection sheet.</p>
-    <div class="proof" id="proof"></div></section>
+  <section class="panel"><h2>On the proof</h2><p>The set's own flyer is the recommended one. "See other Open House designs" opens the selection sheet. Fonts are picked here too, for the whole package.</p>
+    <div class="proofrow"><div class="proof" id="proof"></div>
+      <div class="fonts" id="fonts-box" hidden><h3>Fonts</h3>
+        <p class="hint">Every piece in your package opens in the design's own fonts. You can switch the headings, the body text, or both. The list only has fonts we've checked fit this design.</p>
+        <div id="fonts"></div></div></div></section>
 
   <section class="panel"><h2>Update open house flyer</h2><p>Free every time. Only the flyer is redrawn; your photos and facts stay as they are.</p>
     <div id="upd"></div></section>
@@ -45,6 +51,7 @@ h1{font-size:clamp(30px,4vw,42px)}
   <section class="panel"><h2>Switch log</h2><p>What the system records each time an agent switches or downloads.</p><pre id="log"></pre></section>
 </div>
 <script src="/designs/shared/openhouse.js"></script>
+<script src="/designs/shared/fontpicker.js"></script>
 <script>
 (async function(){
   const team = new URLSearchParams(location.search).get('skin') === 'team';
@@ -62,10 +69,27 @@ h1{font-size:clamp(30px,4vw,42px)}
     printer: () => alert('On the live site this opens the printer upload panel.')
   };
   await OpenHouse.init({base: '/designs/', test: true});
+  // the package's fonts: picked on the proof from the set's approved list, kept with the package (brand.fonts)
+  const designs = await fetch('/designs/designs.json').then(r => r.json());
+  const catalog = fetch('/fonts/pool/catalog.json').then(r => r.json());
+  async function fontPicker(pkg){
+    const box = document.getElementById('fonts-box'), d = designs.find(x => x.id === pkg.design);
+    box.hidden = !(d && d.fonts);
+    if(box.hidden) return;
+    const spec = await fetch(`/designs/${pkg.design}/fonts.json`).then(r => r.json());
+    const value = Object.assign({}, (pkg.data.brand || {}).fonts);
+    FontPicker.mount(document.getElementById('fonts'), {spec, catalog: await catalog, fontBase: '/fonts/pool/', value, onChange: v => {
+      const fonts = Object.fromEntries(Object.entries(v).filter(([, id]) => id));
+      if(Object.keys(fonts).length) pkg.data.brand.fonts = fonts; else delete pkg.data.brand.fonts;
+      hooks.log({event: 'fonts', package: pkg.id, set_design: pkg.design, to: fonts});
+      put(KEY, Object.assign(get(KEY, {}), {data: pkg.data})); open();
+    }});
+  }
   function open(){
     const pkg = Object.assign(JSON.parse(JSON.stringify(SAMPLE)), get(KEY, {}));
     OpenHouse.proofCard(document.getElementById('proof'), pkg, Object.assign({}, hooks, {save: p => { put(KEY, p); open(); }}));
     OpenHouse.mountUpdater(document.getElementById('upd'), pkg, hooks);
+    fontPicker(pkg);
   }
   document.getElementById('reopen').onclick = open;
   document.getElementById('clear').onclick = () => { try { localStorage.removeItem(KEY); localStorage.removeItem(LOGK); } catch(e) {} showLog(); open(); };
