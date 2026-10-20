@@ -1,0 +1,75 @@
+/* Ivory design: shared style file.
+   Every Ivory piece (fold-over, flyers, postcards) loads this file, so fonts, the ivory field,
+   the accent color, rules, labels, captions and the contact card look the same everywhere.
+   Geometry stays in each piece. All lengths are pt (1/72 in). */
+
+:root{
+  --accent:#b8322c;        /* agent brand color token: rules, labels, stripe */
+  --paper:#f3f0ea;         /* the ivory field */
+  --ink:#262626;           /* titles, names, facts */
+  --muted:#5c5c5c;         /* body copy, captions */
+  --line:rgba(0,0,0,.12);  /* hairlines */
+  --ghost:rgba(0,0,0,.09); /* faint text lines shown before copy is written */
+  --font-display:'Playfair Display',Georgia,serif;
+  --font-body:'Figtree',Helvetica,Arial,sans-serif;
+}
+@font-face{font-family:'Playfair Display';font-weight:400;src:url(../../fonts/playfair-display-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Figtree';font-weight:400;src:url(../../fonts/figtree-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Figtree';font-weight:600;src:url(../../fonts/figtree-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Figtree';font-weight:700;src:url(../../fonts/figtree-latin-700-normal.woff2) format('woff2')}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#888}
+body{font-family:var(--font-body);color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-font-smoothing:antialiased}
+img{display:block}
+@page{margin:0}
+
+/* ---------- shared type ---------- */
+.abs{position:absolute}
+.label{font:600 8.5pt/1 var(--font-body);letter-spacing:1.4pt;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden}
+.display{font-family:var(--font-display);font-weight:400;color:var(--ink);white-space:nowrap;overflow:hidden}
+.body{color:var(--muted);overflow:hidden}
+.stat{font:700 11pt/1 var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+.place{font:600 7.5pt/1 var(--font-body);letter-spacing:1.6pt;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden}
+
+/* captions: a bold room name over one short detail line */
+.cap-name{font:700 8.5pt/10.5pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+.cap-detail{font:400 8pt/10pt var(--font-body);color:var(--muted);white-space:nowrap;overflow:hidden}
+
+/* faint text lines that stand in for copy until the package is created */
+.ghost{position:absolute;overflow:hidden}
+.ghost i{display:block;height:3.2pt;border-radius:2pt;background:var(--ghost)}
+
+/* ---------- photos and logos ---------- */
+.photo{position:absolute;overflow:hidden;background:#ddd}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo.fit img{object-fit:contain;background:var(--paper)}
+.logo{position:absolute;display:flex;align-items:center;justify-content:flex-end}
+.logo img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.logo .text{font:700 14pt/1.1 var(--font-body);color:var(--ink);letter-spacing:.5pt;text-transform:uppercase;white-space:nowrap}
+
+/* ---------- contact card look (geometry lives in each piece) ---------- */
+.card{position:absolute;border:.45pt solid var(--line);background:var(--paper)}
+.card .stripe{position:absolute;left:0;top:0;width:3pt;height:100%;background:var(--accent)}
+.card .portrait{position:absolute;left:3pt;top:0;overflow:hidden}
+.card .portrait img{width:100%;height:100%;object-fit:cover}
+.card .divider{position:absolute;width:.45pt;background:var(--line)}
+.card .lbl{position:absolute;font:600 6pt/1 var(--font-body);letter-spacing:1.5pt;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+.card .foot-rule{position:absolute;height:.6pt;background:var(--line)}
+.card .footnote{position:absolute;font-size:6pt;line-height:7pt;color:var(--muted);overflow:hidden}
+
+/* ---------- single-page pieces (flyers, postcards) ---------- */
+.page{position:relative;background:#fff;overflow:hidden;margin:0 auto;break-after:page;page-break-after:always}
+@media screen{.page{margin:12pt auto;box-shadow:0 2pt 12pt rgba(0,0,0,.35)}}
+.field{position:absolute;background:var(--paper)}
+.sheet{position:absolute}
+.rule{position:absolute;height:.8pt;background:var(--accent)}
+.hair{position:absolute;height:.8pt;background:var(--accent)}
+
+/* ---------- floor plans (plan.js) ---------- */
+.plan-svg{position:absolute;overflow:visible}
+.plan-room{position:absolute;text-align:center;font:400 8pt/9.5pt var(--font-body);color:var(--ink);white-space:nowrap}
+.plan-room b{display:block;font-weight:600;font-size:8pt;line-height:9.5pt}
+.plan-room span{display:block;color:var(--muted);font-size:8pt;line-height:9.5pt}
+.plan-level{text-align:center;font:600 8pt/10pt var(--font-body);letter-spacing:1.3pt;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden}
+.plan-note{text-align:center;font:400 6.5pt/8pt var(--font-body);color:var(--muted);white-space:nowrap;overflow:hidden}
