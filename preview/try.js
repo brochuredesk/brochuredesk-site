@@ -65,6 +65,14 @@
     if(link){ mxIn.value = link; runMatrix(); } else setTimeout(() => mxIn.focus({preventScroll:true}), 400);
   }));
   $('#mx-form').addEventListener('submit', e => { e.preventDefault(); runMatrix(); });
+  // A link handed over from a team home page (?link=...) starts the preview right away.
+  try {
+    const handed = new URLSearchParams(location.search).get('link');
+    if (handed && /^https:\/\/matrix\.harmls\.com\//i.test(handed)) {
+      history.replaceState(null, '', location.pathname);
+      openSection(); mxIn.value = handed; setTimeout(runMatrix, 0);
+    }
+  } catch (_) {}
   $('#mx-retry').onclick = runMatrix;
   $('#mx-manual').onclick = manual; $('#mx-err-manual').onclick = manual;
 
