@@ -1,0 +1,1540 @@
+{
+ "note": "Originals open every render; the agent can pick from the approved lists only. Rebuild with scripts/approve_fonts.py.",
+ "widthTolerance": {
+  "display": 0.05,
+  "body": 0.04
+ },
+ "originals": {
+  "display": {
+   "id": "playfair-display",
+   "name": "Playfair Display",
+   "weight": 400,
+   "label": "Headings",
+   "approved": [
+    "playfair-display",
+    "overpass",
+    "ibm-plex-sans",
+    "heebo",
+    "figtree",
+    "roboto",
+    "pt-serif",
+    "commissioner",
+    "instrument-sans",
+    "oxygen",
+    "quicksand",
+    "hanken-grotesk",
+    "asap",
+    "red-hat-display",
+    "raleway",
+    "lato",
+    "red-hat-text",
+    "ubuntu",
+    "fira-sans",
+    "nunito",
+    "sarabun",
+    "archivo",
+    "nunito-sans",
+    "bitter",
+    "dm-sans",
+    "albert-sans",
+    "spline-sans",
+    "mona-sans",
+    "public-sans",
+    "mulish",
+    "manrope",
+    "schibsted-grotesk",
+    "pt-sans",
+    "exo-2",
+    "rubik",
+    "urbanist",
+    "barlow",
+    "onest",
+    "atkinson-hyperlegible",
+    "roboto-slab",
+    "lora",
+    "encode-sans",
+    "gudea",
+    "outfit",
+    "open-sans",
+    "maven-pro",
+    "signika",
+    "kumbh-sans",
+    "libre-franklin",
+    "dm-serif-display",
+    "plus-jakarta-sans"
+   ],
+   "measured": {
+    "playfair-display": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "overpass": [
+     -0.001,
+     -0.008,
+     -0.011
+    ],
+    "ibm-plex-sans": [
+     0.012,
+     0.002,
+     -0.014
+    ],
+    "heebo": [
+     -0.006,
+     0.026,
+     0.004
+    ],
+    "figtree": [
+     0.001,
+     -0.029,
+     -0.011
+    ],
+    "roboto": [
+     -0.007,
+     0.026,
+     0.004
+    ],
+    "pt-serif": [
+     0.003,
+     -0.029,
+     -0.011
+    ],
+    "commissioner": [
+     0.006,
+     -0.03,
+     0.007
+    ],
+    "instrument-sans": [
+     0.014,
+     -0.01,
+     0.017
+    ],
+    "oxygen": [
+     -0.0,
+     0.04,
+     0.02
+    ],
+    "quicksand": [
+     0.025,
+     0.002,
+     -0.011
+    ],
+    "hanken-grotesk": [
+     0.004,
+     -0.043,
+     -0.016
+    ],
+    "asap": [
+     -0.019,
+     0.019,
+     -0.008
+    ],
+    "red-hat-display": [
+     -0.016,
+     -0.027,
+     -0.011
+    ],
+    "raleway": [
+     0.029,
+     0.012,
+     0.003
+    ],
+    "lato": [
+     -0.023,
+     -0.017,
+     0.012
+    ],
+    "red-hat-text": [
+     -0.005,
+     -0.052,
+     -0.011
+    ],
+    "ubuntu": [
+     0.022,
+     0.01,
+     -0.021
+    ],
+    "fira-sans": [
+     0.013,
+     0.023,
+     -0.027
+    ],
+    "nunito": [
+     0.017,
+     -0.043,
+     0.006
+    ],
+    "sarabun": [
+     -0.021,
+     -0.029,
+     -0.011
+    ],
+    "archivo": [
+     -0.019,
+     0.021,
+     -0.031
+    ],
+    "nunito-sans": [
+     0.016,
+     -0.056,
+     -0.004
+    ],
+    "bitter": [
+     0.023,
+     0.033,
+     -0.014
+    ],
+    "dm-sans": [
+     0.031,
+     -0.021,
+     -0.011
+    ],
+    "saira": [
+     0.029,
+     -0.01,
+     -0.028
+    ],
+    "albert-sans": [
+     0.029,
+     -0.029,
+     -0.011
+    ],
+    "spline-sans": [
+     -0.006,
+     0.059,
+     0.027
+    ],
+    "mona-sans": [
+     0.025,
+     0.019,
+     0.03
+    ],
+    "public-sans": [
+     0.038,
+     0.004,
+     0.021
+    ],
+    "mulish": [
+     0.036,
+     -0.025,
+     -0.004
+    ],
+    "manrope": [
+     0.018,
+     0.049,
+     0.017
+    ],
+    "schibsted-grotesk": [
+     0.036,
+     0.024,
+     -0.007
+    ],
+    "pt-sans": [
+     -0.031,
+     -0.029,
+     -0.011
+    ],
+    "exo-2": [
+     0.012,
+     -0.054,
+     -0.025
+    ],
+    "rubik": [
+     0.042,
+     0.01,
+     -0.011
+    ],
+    "urbanist": [
+     -0.038,
+     -0.026,
+     -0.011
+    ],
+    "barlow": [
+     -0.043,
+     -0.017,
+     -0.011
+    ],
+    "khula": [
+     -0.013,
+     -0.032,
+     -0.06
+    ],
+    "onest": [
+     0.047,
+     0.023,
+     -0.001
+    ],
+    "atkinson-hyperlegible": [
+     -0.013,
+     -0.037,
+     -0.056
+    ],
+    "roboto-slab": [
+     0.047,
+     0.026,
+     0.004
+    ],
+    "lora": [
+     0.042,
+     -0.029,
+     -0.011
+    ],
+    "encode-sans": [
+     -0.014,
+     0.053,
+     0.045
+    ],
+    "gudea": [
+     -0.044,
+     -0.027,
+     -0.011
+    ],
+    "ibm-plex-serif": [
+     0.057,
+     0.002,
+     -0.014
+    ],
+    "andika": [
+     0.046,
+     -0.033,
+     0.007
+    ],
+    "literata": [
+     0.053,
+     -0.016,
+     -0.01
+    ],
+    "outfit": [
+     -0.019,
+     -0.078,
+     -0.02
+    ],
+    "open-sans": [
+     0.05,
+     0.039,
+     0.008
+    ],
+    "maven-pro": [
+     0.029,
+     -0.031,
+     -0.058
+    ],
+    "varela-round": [
+     0.071,
+     0.0,
+     -0.007
+    ],
+    "signika": [
+     -0.047,
+     -0.025,
+     -0.03
+    ],
+    "kumbh-sans": [
+     0.033,
+     -0.052,
+     0.034
+    ],
+    "hind": [
+     -0.046,
+     -0.014,
+     -0.048
+    ],
+    "libre-franklin": [
+     0.039,
+     0.029,
+     0.048
+    ],
+    "titillium-web": [
+     -0.052,
+     -0.029,
+     -0.023
+    ],
+    "pontano-sans": [
+     -0.059,
+     -0.03,
+     0.01
+    ],
+    "dm-serif-display": [
+     -0.012,
+     -0.066,
+     -0.068
+    ],
+    "noto-sans": [
+     0.057,
+     0.041,
+     0.008
+    ],
+    "plus-jakarta-sans": [
+     0.039,
+     0.041,
+     0.052
+    ],
+    "chivo": [
+     0.067,
+     -0.008,
+     -0.031
+    ],
+    "cabin": [
+     -0.058,
+     -0.049,
+     -0.011
+    ],
+    "proza-libre": [
+     0.081,
+     0.005,
+     0.01
+    ],
+    "readex-pro": [
+     0.075,
+     0.019,
+     -0.011
+    ],
+    "palanquin": [
+     -0.047,
+     -0.058,
+     -0.032
+    ],
+    "gantari": [
+     0.021,
+     -0.087,
+     -0.056
+    ],
+    "noto-serif": [
+     0.069,
+     0.041,
+     0.008
+    ],
+    "ibm-plex-sans-condensed": [
+     -0.086,
+     0.002,
+     -0.014
+    ],
+    "fraunces": [
+     0.046,
+     -0.088,
+     -0.011
+    ],
+    "lexend-deca": [
+     0.08,
+     0.019,
+     -0.011
+    ],
+    "lexend": [
+     0.08,
+     0.019,
+     -0.011
+    ],
+    "golos-text": [
+     0.077,
+     0.029,
+     -0.011
+    ],
+    "karla": [
+     0.007,
+     -0.07,
+     -0.113
+    ],
+    "geologica": [
+     0.074,
+     -0.039,
+     -0.011
+    ],
+    "magra": [
+     -0.079,
+     0.029,
+     -0.011
+    ],
+    "rosario": [
+     -0.07,
+     -0.035,
+     0.028
+    ],
+    "spectral": [
+     -0.005,
+     -0.126,
+     -0.068
+    ],
+    "cantarell": [
+     0.061,
+     -0.063,
+     -0.02
+    ],
+    "inter": [
+     0.061,
+     0.06,
+     0.028
+    ],
+    "jost": [
+     -0.046,
+     -0.107,
+     -0.011
+    ],
+    "tenor-sans": [
+     0.085,
+     -0.029,
+     -0.011
+    ],
+    "martel-sans": [
+     0.068,
+     0.037,
+     -0.04
+    ],
+    "source-serif-4": [
+     0.06,
+     -0.045,
+     -0.054
+    ],
+    "josefin-sans": [
+     0.003,
+     -0.196,
+     0.021
+    ],
+    "space-grotesk": [
+     0.084,
+     -0.05,
+     -0.011
+    ],
+    "catamaran": [
+     -0.084,
+     -0.033,
+     -0.032
+    ],
+    "be-vietnam-pro": [
+     0.085,
+     0.029,
+     0.045
+    ],
+    "montserrat": [
+     0.112,
+     0.019,
+     -0.011
+    ],
+    "epilogue": [
+     0.094,
+     0.031,
+     0.042
+    ],
+    "newsreader": [
+     -0.037,
+     -0.145,
+     -0.045
+    ],
+    "source-sans-3": [
+     -0.068,
+     -0.056,
+     -0.073
+    ],
+    "poppins": [
+     0.094,
+     0.064,
+     -0.016
+    ],
+    "merriweather": [
+     0.072,
+     0.079,
+     0.049
+    ],
+    "assistant": [
+     -0.077,
+     -0.058,
+     -0.072
+    ],
+    "zilla-slab": [
+     -0.04,
+     -0.136,
+     -0.082
+    ],
+    "tauri": [
+     0.072,
+     0.076,
+     0.083
+    ],
+    "news-cycle": [
+     -0.133,
+     0.0,
+     0.045
+    ],
+    "sora": [
+     0.123,
+     0.037,
+     0.031
+    ],
+    "work-sans": [
+     0.114,
+     -0.029,
+     -0.068
+    ],
+    "mukta": [
+     -0.067,
+     -0.087,
+     -0.11
+    ],
+    "sintony": [
+     0.097,
+     0.111,
+     0.031
+    ],
+    "yantramanav": [
+     -0.082,
+     -0.077,
+     -0.097
+    ],
+    "asap-condensed": [
+     -0.195,
+     0.019,
+     -0.008
+    ],
+    "libre-baskerville": [
+     0.152,
+     0.029,
+     0.088
+    ],
+    "alegreya-sans": [
+     -0.147,
+     -0.105,
+     -0.095
+    ],
+    "eb-garamond": [
+     -0.133,
+     -0.214,
+     -0.078
+    ],
+    "crimson-pro": [
+     -0.114,
+     -0.185,
+     -0.19
+    ]
+   },
+   "weightsNeeded": [
+    400
+   ],
+   "printFailed": {
+    "saira": [
+     "open-house-flyer: overflow oh.date"
+    ],
+    "khula": [
+     "open-house-flyer: overflow oh.date"
+    ],
+    "andika": [
+     "open-house-flyer: overflow oh.date"
+    ],
+    "hind": [
+     "open-house-flyer: overflow oh.date"
+    ],
+    "palanquin": [
+     "open-house-flyer: overflow oh.date"
+    ]
+   }
+  },
+  "body": {
+   "id": "figtree",
+   "name": "Figtree",
+   "weight": 400,
+   "label": "Body text",
+   "approved": [
+    "figtree",
+    "pt-serif",
+    "hanken-grotesk",
+    "overpass",
+    "commissioner",
+    "red-hat-text",
+    "red-hat-display",
+    "playfair-display",
+    "sarabun",
+    "albert-sans",
+    "ibm-plex-sans",
+    "exo-2",
+    "nunito",
+    "nunito-sans",
+    "pt-sans",
+    "dm-sans",
+    "instrument-sans",
+    "quicksand",
+    "mulish",
+    "urbanist",
+    "atkinson-hyperlegible",
+    "lato",
+    "heebo",
+    "roboto",
+    "ubuntu",
+    "fira-sans",
+    "asap",
+    "outfit",
+    "maven-pro",
+    "oxygen",
+    "bitter",
+    "raleway",
+    "archivo",
+    "schibsted-grotesk",
+    "kumbh-sans",
+    "mona-sans",
+    "public-sans",
+    "gantari",
+    "libre-franklin",
+    "plus-jakarta-sans"
+   ],
+   "measured": {
+    "figtree": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "pt-serif": [
+     0.001,
+     0.0,
+     0.0
+    ],
+    "hanken-grotesk": [
+     0.002,
+     -0.014,
+     -0.004
+    ],
+    "overpass": [
+     -0.003,
+     0.022,
+     0.0
+    ],
+    "commissioner": [
+     0.005,
+     -0.001,
+     0.019
+    ],
+    "red-hat-text": [
+     -0.007,
+     -0.024,
+     0.0
+    ],
+    "red-hat-display": [
+     -0.018,
+     0.002,
+     0.0
+    ],
+    "playfair-display": [
+     -0.001,
+     0.03,
+     0.011
+    ],
+    "sarabun": [
+     -0.023,
+     0.0,
+     0.0
+    ],
+    "albert-sans": [
+     0.027,
+     0.0,
+     0.0
+    ],
+    "ibm-plex-sans": [
+     0.01,
+     0.032,
+     -0.003
+    ],
+    "exo-2": [
+     0.01,
+     -0.026,
+     -0.014
+    ],
+    "nunito": [
+     0.016,
+     -0.014,
+     0.017
+    ],
+    "nunito-sans": [
+     0.014,
+     -0.028,
+     0.007
+    ],
+    "pt-sans": [
+     -0.032,
+     0.0,
+     0.0
+    ],
+    "dm-sans": [
+     0.029,
+     0.008,
+     0.0
+    ],
+    "instrument-sans": [
+     0.013,
+     0.02,
+     0.029
+    ],
+    "quicksand": [
+     0.023,
+     0.032,
+     0.0
+    ],
+    "mulish": [
+     0.034,
+     0.004,
+     0.007
+    ],
+    "khula": [
+     -0.014,
+     -0.003,
+     -0.05
+    ],
+    "lora": [
+     0.041,
+     0.0,
+     0.0
+    ],
+    "urbanist": [
+     -0.039,
+     0.003,
+     0.0
+    ],
+    "atkinson-hyperlegible": [
+     -0.015,
+     -0.008,
+     -0.046
+    ],
+    "lato": [
+     -0.024,
+     0.013,
+     0.024
+    ],
+    "heebo": [
+     -0.007,
+     0.057,
+     0.016
+    ],
+    "roboto": [
+     -0.008,
+     0.057,
+     0.016
+    ],
+    "ubuntu": [
+     0.021,
+     0.04,
+     -0.01
+    ],
+    "saira": [
+     0.028,
+     0.02,
+     -0.017
+    ],
+    "fira-sans": [
+     0.012,
+     0.054,
+     -0.016
+    ],
+    "asap": [
+     -0.02,
+     0.05,
+     0.003
+    ],
+    "gudea": [
+     -0.046,
+     0.002,
+     0.0
+    ],
+    "outfit": [
+     -0.02,
+     -0.05,
+     -0.009
+    ],
+    "barlow": [
+     -0.044,
+     0.012,
+     0.0
+    ],
+    "maven-pro": [
+     0.028,
+     -0.002,
+     -0.047
+    ],
+    "oxygen": [
+     -0.002,
+     0.071,
+     0.032
+    ],
+    "bitter": [
+     0.021,
+     0.064,
+     -0.003
+    ],
+    "raleway": [
+     0.027,
+     0.042,
+     0.014
+    ],
+    "andika": [
+     0.044,
+     -0.004,
+     0.018
+    ],
+    "archivo": [
+     -0.02,
+     0.052,
+     -0.02
+    ],
+    "titillium-web": [
+     -0.053,
+     0.0,
+     -0.011
+    ],
+    "literata": [
+     0.052,
+     0.014,
+     0.001
+    ],
+    "signika": [
+     -0.049,
+     0.004,
+     -0.019
+    ],
+    "rubik": [
+     0.04,
+     0.04,
+     0.0
+    ],
+    "dm-serif-display": [
+     -0.014,
+     -0.038,
+     -0.057
+    ],
+    "schibsted-grotesk": [
+     0.034,
+     0.055,
+     0.004
+    ],
+    "kumbh-sans": [
+     0.031,
+     -0.023,
+     0.046
+    ],
+    "cabin": [
+     -0.059,
+     -0.02,
+     0.0
+    ],
+    "mona-sans": [
+     0.024,
+     0.05,
+     0.041
+    ],
+    "public-sans": [
+     0.036,
+     0.034,
+     0.033
+    ],
+    "manrope": [
+     0.017,
+     0.08,
+     0.029
+    ],
+    "pontano-sans": [
+     -0.06,
+     -0.001,
+     0.021
+    ],
+    "spline-sans": [
+     -0.008,
+     0.091,
+     0.039
+    ],
+    "gantari": [
+     0.02,
+     -0.06,
+     -0.046
+    ],
+    "ibm-plex-serif": [
+     0.055,
+     0.032,
+     -0.003
+    ],
+    "hind": [
+     -0.048,
+     0.016,
+     -0.037
+    ],
+    "palanquin": [
+     -0.049,
+     -0.03,
+     -0.021
+    ],
+    "fraunces": [
+     0.044,
+     -0.061,
+     0.0
+    ],
+    "onest": [
+     0.045,
+     0.054,
+     0.01
+    ],
+    "karla": [
+     0.005,
+     -0.042,
+     -0.103
+    ],
+    "geologica": [
+     0.073,
+     -0.01,
+     0.0
+    ],
+    "cantarell": [
+     0.059,
+     -0.035,
+     -0.009
+    ],
+    "roboto-slab": [
+     0.046,
+     0.057,
+     0.016
+    ],
+    "tenor-sans": [
+     0.084,
+     0.0,
+     0.0
+    ],
+    "spectral": [
+     -0.006,
+     -0.1,
+     -0.057
+    ],
+    "chivo": [
+     0.065,
+     0.022,
+     -0.02
+    ],
+    "encode-sans": [
+     -0.015,
+     0.085,
+     0.057
+    ],
+    "varela-round": [
+     0.07,
+     0.03,
+     0.004
+    ],
+    "jost": [
+     -0.047,
+     -0.08,
+     0.0
+    ],
+    "source-serif-4": [
+     0.058,
+     -0.016,
+     -0.043
+    ],
+    "space-grotesk": [
+     0.082,
+     -0.022,
+     0.0
+    ],
+    "open-sans": [
+     0.048,
+     0.07,
+     0.02
+    ],
+    "rosario": [
+     -0.071,
+     -0.006,
+     0.04
+    ],
+    "libre-franklin": [
+     0.037,
+     0.06,
+     0.06
+    ],
+    "catamaran": [
+     -0.085,
+     -0.004,
+     -0.021
+    ],
+    "readex-pro": [
+     0.073,
+     0.05,
+     0.0
+    ],
+    "noto-sans": [
+     0.055,
+     0.072,
+     0.02
+    ],
+    "josefin-sans": [
+     0.001,
+     -0.172,
+     0.033
+    ],
+    "lexend-deca": [
+     0.079,
+     0.05,
+     0.0
+    ],
+    "lexend": [
+     0.079,
+     0.05,
+     0.0
+    ],
+    "ibm-plex-sans-condensed": [
+     -0.088,
+     0.032,
+     -0.003
+    ],
+    "golos-text": [
+     0.076,
+     0.06,
+     0.0
+    ],
+    "plus-jakarta-sans": [
+     0.038,
+     0.072,
+     0.064
+    ],
+    "proza-libre": [
+     0.08,
+     0.035,
+     0.022
+    ],
+    "magra": [
+     -0.081,
+     0.06,
+     0.0
+    ],
+    "noto-serif": [
+     0.067,
+     0.072,
+     0.02
+    ],
+    "source-sans-3": [
+     -0.069,
+     -0.028,
+     -0.063
+    ],
+    "martel-sans": [
+     0.066,
+     0.068,
+     -0.029
+    ],
+    "newsreader": [
+     -0.039,
+     -0.119,
+     -0.034
+    ],
+    "assistant": [
+     -0.079,
+     -0.03,
+     -0.061
+    ],
+    "inter": [
+     0.059,
+     0.092,
+     0.039
+    ],
+    "zilla-slab": [
+     -0.042,
+     -0.11,
+     -0.071
+    ],
+    "montserrat": [
+     0.11,
+     0.05,
+     0.0
+    ],
+    "work-sans": [
+     0.112,
+     0.0,
+     -0.057
+    ],
+    "be-vietnam-pro": [
+     0.084,
+     0.06,
+     0.057
+    ],
+    "poppins": [
+     0.092,
+     0.096,
+     -0.004
+    ],
+    "mukta": [
+     -0.069,
+     -0.06,
+     -0.1
+    ],
+    "epilogue": [
+     0.093,
+     0.062,
+     0.054
+    ],
+    "yantramanav": [
+     -0.084,
+     -0.049,
+     -0.086
+    ],
+    "merriweather": [
+     0.07,
+     0.111,
+     0.061
+    ],
+    "tauri": [
+     0.07,
+     0.108,
+     0.096
+    ],
+    "sora": [
+     0.121,
+     0.068,
+     0.043
+    ],
+    "news-cycle": [
+     -0.134,
+     0.03,
+     0.057
+    ],
+    "sintony": [
+     0.095,
+     0.144,
+     0.043
+    ],
+    "asap-condensed": [
+     -0.196,
+     0.05,
+     0.003
+    ],
+    "alegreya-sans": [
+     -0.148,
+     -0.078,
+     -0.084
+    ],
+    "libre-baskerville": [
+     0.15,
+     0.06,
+     0.1
+    ],
+    "eb-garamond": [
+     -0.134,
+     -0.19,
+     -0.067
+    ],
+    "crimson-pro": [
+     -0.115,
+     -0.16,
+     -0.181
+    ]
+   },
+   "weightsNeeded": [
+    400,
+    600,
+    700
+   ],
+   "printFailed": {
+    "khula": [
+     "foldover: overflow top.intro",
+     "foldover: overflow top.tile0.body",
+     "foldover: overflow top.tile1.body",
+     "foldover: overflow top.tile2.body",
+     "foldover: overflow top.tile3.body"
+    ],
+    "saira": [
+     "foldover: overflow top.feature0.body",
+     "foldover: overflow top.intro",
+     "foldover: overflow top.tile0.body",
+     "foldover: overflow top.tile1.body",
+     "foldover: overflow top.tile2.body",
+     "foldover: overflow top.tile3.body"
+    ]
+   }
+  }
+ },
+ "weights": {
+  "playfair-display": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "overpass": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "ibm-plex-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "heebo": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "figtree": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "roboto": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "pt-serif": [
+   400,
+   700
+  ],
+  "commissioner": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "instrument-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "oxygen": [
+   400,
+   700
+  ],
+  "quicksand": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "hanken-grotesk": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "asap": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "red-hat-display": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "raleway": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "lato": [
+   400,
+   700
+  ],
+  "red-hat-text": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "ubuntu": [
+   400,
+   500,
+   700
+  ],
+  "fira-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "nunito": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "sarabun": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "archivo": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "nunito-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "bitter": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "dm-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "albert-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "spline-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "mona-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "public-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "mulish": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "manrope": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "schibsted-grotesk": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "pt-sans": [
+   400,
+   700
+  ],
+  "exo-2": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "rubik": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "urbanist": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "barlow": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "onest": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "atkinson-hyperlegible": [
+   400,
+   700
+  ],
+  "roboto-slab": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "lora": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "encode-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "gudea": [
+   400,
+   700
+  ],
+  "outfit": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "open-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "maven-pro": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "signika": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "kumbh-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "libre-franklin": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "dm-serif-display": [
+   400
+  ],
+  "plus-jakarta-sans": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "gantari": [
+   400,
+   500,
+   600,
+   700
+  ]
+ }
+}

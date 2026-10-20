@@ -2,7 +2,8 @@
  {
   "id": "ivory",
   "name": "Ivory",
-  "thumb": "/preview/img/listing-flyer.jpg"
+  "thumb": "/preview/img/listing-flyer.jpg",
+  "fonts": true
  },
  {
   "id": "answer-book",

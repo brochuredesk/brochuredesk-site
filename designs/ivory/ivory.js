@@ -266,7 +266,7 @@
   // Print checks, read by the renderer: overflow per slot, type under 8 pt (6 pt for fine print),
   // photos under 300 ppi at print size, empty or missing photos.
   Ivory.check = function(extra){
-    const issues = [...(extra||[])];
+    const issues = [...(extra||[]), ...Ivory.fontIssues];
     document.querySelectorAll('[data-slot]').forEach(el=>{
       const name = el.dataset.slot, cs = getComputedStyle(el);
       const size = parseFloat(cs.fontSize)*72/96;
@@ -328,9 +328,37 @@
 
   // Build the page only after the design's fonts are loaded, so every measurement (contact card columns,
   // long addresses, plan labels) uses the real type. The renderer waits for window.brochureCheck.
+  // An agent's font picks (brand.fonts: {display, body}, pool ids) are applied first, but only fonts on Ivory's approved
+  // list (fonts.json, built by scripts/approve_fonts.py); anything else keeps the original and is listed in the checks.
+  Ivory.fontBase = '../../fonts/pool/';
+  Ivory.fontIssues = [];
+  Ivory.applyFonts = async function(D, spec){
+    const want = (D.brand && D.brand.fonts) || {}, issues = [];
+    const roles = {display: ['--font-display', 'Georgia,serif'], body: ['--font-body', 'Helvetica,Arial,sans-serif']};
+    for(const role of Object.keys(roles)){
+      const o = spec && spec.originals && spec.originals[role], id = want[role];
+      if(!id || (o && id === o.id)) continue;
+      if(!o || !(o.approved || []).includes(id)){ issues.push({slot:'fonts.'+role, kind:'font-not-approved', detail:id}); continue; }
+      const fam = 'iv-' + id, have = (spec.weights && spec.weights[id]) || [400,500,600,700];
+      const faces = (o.weightsNeeded || [o.weight]).map(w => {
+        const near = have.reduce((a,b) => Math.abs(b-w) < Math.abs(a-w) ? b : a);
+        const f = new FontFace(fam, `url(${Ivory.fontBase}${id}-latin-${near}-normal.woff2)`, {weight:String(w)});
+        document.fonts.add(f); return f.load();
+      });
+      try { await Promise.all(faces); document.documentElement.style.setProperty(roles[role][0], `'${fam}',${roles[role][1]}`); }
+      catch(e){ issues.push({slot:'fonts.'+role, kind:'font-load-failed', detail:id}); }
+    }
+    return issues;
+  };
+
   Ivory.whenFonts = fn => {
-    const faces = ['400 10pt "Playfair Display"', '400 10pt Figtree', '600 10pt Figtree', '700 10pt Figtree'];
-    window.brochureReady = Promise.all(faces.map(f => document.fonts.load(f))).then(fn, fn);
+    const D = Ivory.data();
+    const spec = D.fontSpec ? Promise.resolve(D.fontSpec) : fetch('fonts.json').then(r => r.json()).catch(() => null);
+    window.brochureReady = spec.then(s => Ivory.applyFonts(D, s)).then(issues => {
+      Ivory.fontIssues = issues;
+      const cs = getComputedStyle(document.documentElement), d = cs.getPropertyValue('--font-display'), b = cs.getPropertyValue('--font-body');
+      return Promise.all([`400 10pt ${d}`, `400 10pt ${b}`, `600 10pt ${b}`, `700 10pt ${b}`].map(f => document.fonts.load(f)));
+    }).then(fn, fn);
   };
 
   // Logo shape: square and tall logos get a taller box than wide lockups so all shapes read at a similar size.

@@ -15,7 +15,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   },
   {
    "design": "ivory",
@@ -31,7 +31,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   },
   {
    "design": "ivory",
@@ -47,7 +47,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   },
   {
    "design": "ivory",
@@ -63,7 +63,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   },
   {
    "design": "ivory",
@@ -79,7 +79,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   },
   {
    "design": "ivory",
@@ -95,7 +95,7 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": false
+   "fonts": true
   }
  ]
 }
