@@ -278,10 +278,10 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     <div class="top">
       <div class="lockup">
         <h1 class="lk-title"><span class="lk-logo" data-slot="logoLight"></span><span class="lk-word">Print Marketing</span></h1>
-        <a class="lk-powered" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk">
+        <span class="lk-powered">
           <span class="lk-by">powered by</span>
           <span class="lk-bd"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#E9D7B3" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#ffffff"/></svg>BrochureDesk</span>
-        </a>
+        </span>
       </div>
     </div>
     <div class="gap" aria-hidden="true"></div>
@@ -319,9 +319,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   <div class="test">Test page with sample listings. Nothing here is a real order yet.</div>
   <header>
     <div class="wrap bar">
-      <span class="team-lock"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word">Print Marketing</span></span>
+      <a class="team-lock" href="#" id="lockHome" aria-label="Go to your home page"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word">Print Marketing</span></a>
       <div class="right">
-        <a class="bd" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk"><span class="by">powered by</span>
+        <a class="bd" href="#" id="bdHome" aria-label="Powered by BrochureDesk, go to your home page"><span class="by">powered by</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#9C7B45" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#1F4D3F"/></svg>
           <span class="bdw">BrochureDesk</span></a>
         <button class="acct" type="button" id="acctBtn"><span class="ini" id="ini"></span><span class="nm" id="firstName"></span></button>
@@ -772,6 +772,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     $('profileMain').hidden = true; $('homeMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
   }
+  ['bdHome','lockHome'].forEach(id => $(id).addEventListener('click', e => { e.preventDefault(); if (me) enterHome(false); }));
   $('acctBtn').addEventListener('click', () => openProfile('edit'));
   $('editCard').addEventListener('click', () => openProfile('edit'));
   $('openProfile').addEventListener('click', () => openProfile('edit'));
