@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Ivory fold-over</title>
+<link rel="stylesheet" href="ivory.css">
+<script src="ivory.js"></script>
+<script src="plan.js"></script>
+<!--
+  BrochureDesk · Ivory design · 11 x 17 fold-over
+  11 x 17 half-fold, four upright 11 x 8.5 landscape panels, 0.125" (9 pt) bleed on every edge.
+  Geometry follows the approved reference renderer (contact card v12). All lengths are in pt (1/72 in).
+
+  Modes (set on <body data-mode>):
+    proof  - four panel pages, 11.25 x 8.75 in each (trim + bleed)
+    print  - two spreads, 11.25 x 17.25 in: outside = back (rotated 180) over front; inside = top over bottom
+
+  Brand is injected through CSS variables and the data object (see render.py and sample/data.json).
+  No brokerage is baked in. The template never invents text; empty slots stay empty.
+-->
+<style>
+  /* tokens, fonts, base rules, shared type, photo, logo and card look: ivory.css */
+
+  /* ---------- pages ---------- */
+  .page{position:relative;background:var(--paper);overflow:hidden;margin:0 auto;break-after:page;page-break-after:always}
+  body[data-mode=proof] .page{width:810pt;height:630pt}
+  body[data-mode=print] .page{width:810pt;height:1242pt}
+  @media screen{.page{margin:12pt auto;box-shadow:0 2pt 12pt rgba(0,0,0,.35)}}
+  @page{margin:0}
+  body[data-mode=proof]{--pw:810pt;--ph:630pt}
+  @media print{
+    body[data-mode=proof] .page{page:proof}
+    body[data-mode=print] .page{page:spread}
+  }
+  @page proof{size:810pt 630pt}
+  @page spread{size:810pt 1242pt}
+
+  /* A panel is the 792 x 612 trim area; it sits 9 pt inside its bleed box. Elements that bleed use negative offsets. */
+  .panel{position:absolute;width:792pt;height:612pt;left:9pt;top:9pt}
+  /* print spreads: each half clips at the fold so one panel's bleed never prints on the other */
+  .half{position:absolute;left:0;width:810pt;height:621pt;overflow:hidden}
+  .half.top{top:0}.half.bottom{top:621pt}
+  .half.top .panel{top:9pt}.half.bottom .panel{top:0}
+  .half .panel.flip{transform:rotate(180deg);transform-origin:396pt 306pt}
+
+  /* ---------- shared type ---------- */
+  .abs{position:absolute}
+  .label{font:600 8.5pt/1 var(--font-body);letter-spacing:1.4pt;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden}
+  .display{font-family:var(--font-display);font-weight:400;color:var(--ink);white-space:nowrap;overflow:hidden}
+  .body{color:var(--muted);overflow:hidden}
+  .stat{font:700 11pt/1 var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+  .rule{position:absolute;left:-9pt;width:810pt;height:.8pt;background:var(--accent)}
+  .photo{position:absolute;overflow:hidden;background:#ddd}
+  .photo img{width:100%;height:100%;object-fit:cover}
+  .photo.fit img{object-fit:contain;background:var(--paper)}
+  .logo{position:absolute;display:flex;align-items:center;justify-content:flex-end}
+  .logo img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+  .logo .text{font:700 14pt/1.1 var(--font-body);color:var(--ink);letter-spacing:.5pt;text-transform:uppercase;white-space:nowrap}
+
+  /* header shared by inside panels and back */
+  .hdr-kicker{left:24pt;top:23.5pt;width:560pt}
+  .hdr-logo{right:24pt;top:19pt;height:22pt;width:180pt}
+  .hdr-title{left:23pt;top:46pt;width:745pt;font-size:30pt;line-height:36pt;height:36pt}
+  .hdr-rule{top:82.2pt}
+
+  /* ---------- FRONT ---------- */
+  .front-photo{left:-9pt;top:-9pt;width:810pt;height:540pt}
+  .front-location{left:24pt;top:548pt;width:744pt}
+  .front-address{left:23pt;top:561pt;width:521pt;font-size:35pt;line-height:40pt;height:40pt}
+  .front-logo{right:24pt;top:556pt;height:38pt;width:220pt}
+  .front-logo[data-shape=square]{top:548pt;height:54pt}
+  .front-logo[data-shape=tall]{top:545pt;height:60pt}
+  .hdr-logo[data-shape=square]{top:15pt;height:28pt}
+  .hdr-logo[data-shape=tall]{top:13pt;height:32pt}
+  .card .brk .logo[data-shape=square],.card .brk .logo[data-shape=tall]{top:6pt;height:38pt}
+
+  /* ---------- INSIDE TOP (kitchen, living) ---------- */
+  .stats{top:95pt;height:12pt}
+  .top-intro{left:24pt;top:114pt;width:744pt;font-size:10.5pt;line-height:14pt;height:28pt}
+  .top-feature-photo{top:154pt;width:366pt;height:184pt}
+  .top-feature-caption{top:342pt;width:366pt;font-size:8.2pt;line-height:10.5pt;height:10.5pt;white-space:nowrap}
+  .top-feature-title{top:353pt;width:366pt;font-size:16pt;line-height:20pt;height:20pt}
+  .top-feature-body{top:374pt;width:366pt;font-size:10.5pt;line-height:13pt;height:39pt}
+  .top-tile-photo{top:424pt;width:177pt;height:125pt}
+  .top-tile-title{top:555pt;width:177pt;font:600 10.5pt/13pt var(--font-body);height:13pt;white-space:nowrap;overflow:hidden}
+  .top-tile-body{top:570pt;width:177pt;font-size:8.5pt;line-height:10.5pt;height:21pt}
+
+  /* ---------- INSIDE BOTTOM (bedrooms, upstairs) ---------- */
+  .bot-feature-photo{top:95pt;width:240pt;height:144pt}
+  .bot-feature-caption{top:245pt;width:240pt;font-size:8.2pt;line-height:10.5pt;height:10.5pt;white-space:nowrap}
+  .bot-feature-title{top:262pt;width:240pt;font-size:15.5pt;line-height:19pt;height:19pt}
+  .bot-feature-body{top:288pt;width:240pt;font-size:10.5pt;line-height:14pt;height:70pt}
+  .bot-tile-photo{top:374pt;width:240pt;height:144pt}
+  .bot-tile-title{top:522pt;width:240pt;font-size:14.5pt;line-height:18pt;height:18pt}
+  .bot-tile-body{top:544pt;width:240pt;font-size:9.8pt;line-height:12.5pt;height:37.5pt}
+
+  /* tall cover */
+  .front-tall-hero{left:-9pt;top:-9pt;width:445pt;height:540pt}
+  .front-tall-a{left:448pt;top:-9pt;width:353pt;height:266pt}
+  .front-tall-b{left:448pt;top:261pt;width:353pt;height:270pt}
+
+  /* ---------- BACK ---------- */
+  .nearby{font:400 9.5pt/13pt var(--font-body);color:var(--muted);white-space:nowrap;overflow:hidden;height:13pt}
+  .nearby b,.nearby-stack b{font-weight:600;color:var(--ink)}
+  .nearby-stack{font:400 9pt/12pt var(--font-body);color:var(--muted);overflow:hidden;height:24pt}
+  .hair-ink{position:absolute;height:.8pt;background:var(--accent)}
+  .room-row{display:flex;justify-content:space-between;align-items:baseline;gap:8pt;font:400 10pt/18pt var(--font-body);height:19pt;border-bottom:.45pt solid var(--line);white-space:nowrap;overflow:hidden}
+  .room-row span{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:clip}
+  .room-row em{font-style:normal;color:var(--muted)}
+  .plan-photo{top:97pt;height:299pt}
+  .plan-label{top:404pt;font:600 7.5pt/9pt var(--font-body);letter-spacing:1pt;text-transform:uppercase;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden}
+  .plan-disclosure{left:24pt;width:474pt;font-size:6.5pt;line-height:9pt;height:9pt;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden}
+  .back-feature-photo{left:516pt;top:98pt;width:252pt;height:168pt}
+  .back-feature-title{left:516pt;top:271pt;width:252pt;font-size:17pt;line-height:21pt;height:21pt}
+  .back-feature-body{left:516pt;top:296pt;width:252pt;font-size:10.5pt;line-height:14pt;height:70pt}
+  .back-location-label{left:516pt;top:375pt;width:252pt}
+  .back-location-body{left:516pt;top:390pt;width:252pt;font-size:10pt;line-height:13pt;height:52pt}
+
+  /* contact card v12: one baseline grid across agent | brokerage | QR */
+  .card{position:absolute;left:24pt;top:454pt;width:744pt;height:150pt;border:.45pt solid var(--line);background:var(--paper)}
+  .card .stripe{position:absolute;left:0;top:0;width:3pt;height:100%;background:var(--accent)}
+  .card .portrait{position:absolute;left:3pt;top:0;width:120pt;height:150pt;overflow:hidden}
+  .card .portrait img{width:100%;height:100%;object-fit:cover}
+  .card .cols{position:absolute;top:0;bottom:0;right:0;display:grid;grid-template-rows:1fr;align-items:stretch}
+  .card .col{position:relative;height:100%}
+  .card .divider{position:absolute;top:10pt;bottom:28pt;width:.45pt;background:var(--line)}
+  .card .lbl{position:absolute;font:600 6pt/1 var(--font-body);letter-spacing:1.5pt;text-transform:uppercase;color:var(--accent);white-space:nowrap}
+  .card .agent-name{position:absolute;left:0;top:10pt;font-family:var(--font-display);font-size:30pt;line-height:34pt;color:var(--ink);white-space:nowrap}
+  .card .agent-phone{position:absolute;left:0;font:700 24pt/26pt var(--font-body);color:var(--ink);white-space:nowrap}
+  .card .agent-line{position:absolute;left:0;font-size:10.5pt;line-height:12pt;color:var(--ink);white-space:nowrap}
+  .card.portrait-on .agent-name{font-size:25pt;line-height:28pt}
+  .card.portrait-on .agent-phone{font-size:20pt;line-height:22pt}
+  .card.portrait-on .agent-line{font-size:9.5pt}
+  .card .brk{text-align:center}
+  .card .brk .logo{left:0;right:0;top:10pt;height:30pt;justify-content:center}
+  .card .brk .brk-phone{position:absolute;left:0;right:0;font:700 20pt/22pt var(--font-body);color:var(--ink);white-space:nowrap}
+  .card .brk .brk-web{position:absolute;left:0;right:0;font-size:12.5pt;line-height:14pt;color:var(--ink);white-space:nowrap}
+  .card .qr{position:absolute;top:10pt;width:84pt;height:84pt}
+  .card .qr img{width:100%;height:100%}
+  .card .foot-rule{position:absolute;height:.6pt;background:var(--line);bottom:23pt}
+  .card .footnote{position:absolute;bottom:9pt;font-size:6pt;line-height:7pt;height:14pt;color:var(--muted);overflow:hidden}
+  /* rows measured from the card bottom, as in the reference: labels 84, phones 61, email/office web/QR label 44, agent web 31 */
+  .r-lab{bottom:84pt}.r-phone{bottom:61pt}.r-2{bottom:44pt}.r-3{bottom:31pt}
+</style>
+</head>
+<body data-mode="proof">
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+
+<script>
+Ivory.whenFonts(function(){
+  const D = JSON.parse(document.getElementById('brochure-data').textContent || '{}');
+  if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
+  const mode = D.mode || 'proof';
+  document.body.dataset.mode = mode;
+
+  // ---- brand ----
+  const b = D.brand || {};
+  Ivory.applyBrand(b);
+
+  const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const P = D.photos || {};
+  const src = id => (P[id] && P[id].src) || '';
+  // every photo goes through Ivory.photo so full-house shots keep their roofline (pinned to the top)
+  const photo = (cls, id, extra='') => { const m = /style="([^"]*)"/.exec(extra||''); return Ivory.photo(D, cls, id, m ? m[1] : ''); };
+  const V = Ivory.version(D);
+  document.body.dataset.version = V.id;
+  const logo = (cls, h) => `<div class="logo ${cls}">${b.logo? `<img src="${esc(b.logo)}" alt="">` : `<span class="text">${esc(b.brokerage||'')}</span>`}</div>`;
+  const slot = (cls, text, name, lines) => `<div class="abs body ${cls}" data-slot="${esc(name)}" data-lines="${lines||''}">${esc(text)}</div>`;
+  const title = (cls, text, name) => `<div class="abs display ${cls}" data-slot="${esc(name)}" data-lines="1">${esc(text)}</div>`;
+
+  const header = (k, t, name) => `
+    <div class="abs label hdr-kicker" data-slot="${name}.kicker" data-lines="1">${esc(k)}</div>
+    ${logo('hdr-logo')}
+    ${title('hdr-title', t, name+'.title')}
+    <div class="rule hdr-rule"></div>`;
+
+  const L = D.listing, C = D.copy, A = D.agent;
+
+  // ---- FRONT ----
+  // Wide cover: one hero across the panel. Tall cover (tall, narrow homes or a vertical best shot):
+  // a tall hero beside two smaller photos. The lookup sets copy.front.layout; photo sizes decide when it doesn't.
+  const fp = P[C.front.photo] || {};
+  const tallCover = C.front.layout ? C.front.layout === 'tall' : (fp.w && fp.h && fp.h >= fp.w * 0.95);
+  const side = C.front.side || [];
+  const front = (tallCover
+      ? photo('front-tall-hero', C.front.photo) + photo('front-tall-a', side[0]) + photo('front-tall-b', side[1])
+      : photo('front-photo', C.front.photo)) + `
+    <div class="abs label front-location" data-slot="front.location" data-lines="1">${esc(C.front.location)}</div>
+    ${title('front-address', L.address, 'front.address')}
+    ${logo('front-logo')}`;
+
+  // ---- INSIDE TOP ----
+  const T = C.insideTop;
+  // fact bar: 3 to 5 items spread across the panel; story count is the fifth item for 3- and 4-story homes
+  const stats = (T.stats||[]).slice(0,5);
+  if(V.stories >= 3 && stats.length < 5 && !stats.some(s=>/stor/i.test(s))) stats.push(`${V.stories} Stories`);
+  let top = header(T.kicker, T.title, 'top');
+  const sw = 744/stats.length;
+  stats.forEach((s,i)=> top += `<div class="abs stat stats" style="left:${24+i*sw}pt;width:${sw-12}pt" data-slot="top.stat${i}" data-lines="1">${esc(s)}</div>`);
+  top += slot('top-intro', T.intro, 'top.intro', 2);
+  [24,402].forEach((x,i)=>{ const f=T.features[i]||{}; const st=`style="left:${x}pt"`;
+    top += photo('top-feature-photo', f.photo, st)
+        + `<div class="abs body top-feature-caption" ${st} data-slot="top.feature${i}.caption" data-lines="1">${esc(f.caption)}</div>`
+        + `<div class="abs display top-feature-title" ${st} data-slot="top.feature${i}.title" data-lines="1">${esc(f.title)}</div>`
+        + `<div class="abs body top-feature-body" ${st} data-slot="top.feature${i}.body" data-lines="3">${esc(f.body)}</div>`; });
+  // 2 to 4 tiles; with fewer photos the tiles grow instead of filling with weak shots
+  const tiles = (T.tiles||[]).slice(0,4), tw = (744 - 12*(tiles.length-1))/tiles.length;
+  tiles.forEach((f,i)=>{ const x = 24 + i*(tw+12); const st=`style="left:${x}pt;width:${tw}pt"`;
+    top += photo('top-tile-photo', f.photo, st)
+        + `<div class="abs top-tile-title" ${st} data-slot="top.tile${i}.title" data-lines="1">${esc(f.title)}</div>`
+        + `<div class="abs body top-tile-body" ${st} data-slot="top.tile${i}.body" data-lines="2">${esc(f.body)}</div>`; });
+
+  // ---- INSIDE BOTTOM ----
+  const B = C.insideBottom;
+  let bot = header(B.kicker, B.title, 'bottom');
+  // bottom row: 3 tiles, 2 wide tiles, or none (thin listings: the three features grow taller instead)
+  const btiles = (B.tiles||[]).length >= 3 ? B.tiles.slice(0,3) : (B.tiles||[]).length === 2 ? B.tiles : [];
+  const tall = btiles.length === 0;
+  [24,276,528].forEach((x,i)=>{ const f=B.features[i]||{};
+    const st=`style="left:${x}pt"`;
+    const ph = tall ? `style="left:${x}pt;height:262pt"` : st;
+    const dy = tall ? 118 : 0, lines = tall ? 8 : 5;
+    bot += photo('bot-feature-photo', f.photo, ph)
+        + `<div class="abs body bot-feature-caption" style="left:${x}pt;top:${245+dy}pt" data-slot="bottom.feature${i}.caption" data-lines="1">${esc(f.caption)}</div>`
+        + `<div class="abs display bot-feature-title" style="left:${x}pt;top:${262+dy}pt" data-slot="bottom.feature${i}.title" data-lines="1">${esc(f.title)}</div>`
+        + `<div class="abs body bot-feature-body" style="left:${x}pt;top:${288+dy}pt;height:${lines*14}pt" data-slot="bottom.feature${i}.body" data-lines="${lines}">${esc(f.body)}</div>`; });
+  const bw = btiles.length === 2 ? 366 : 240;
+  btiles.forEach((f,i)=>{ const x = 24 + i*(bw+12); const st=`style="left:${x}pt;width:${bw}pt"`;
+    bot += photo('bot-tile-photo', f.photo, st)
+        + `<div class="abs display bot-tile-title" ${st} data-slot="bottom.tile${i}.title" data-lines="1">${esc(f.title)}</div>`
+        + `<div class="abs body bot-tile-body" ${st} data-slot="bottom.tile${i}.body" data-lines="3">${esc(f.body)}</div>`; });
+
+  // ---- BACK ----
+  // The back changes with the property type version (template readiness standard, section 8):
+  //   plan    - the plan redrawn in Ivory's style, every level at one scale; the feature photo drops to a text column,
+  //             then drops entirely, before the plan is ever drawn smaller
+  //   no plan - 2+ floors with MLS room levels: a floor-by-floor room list; otherwise two captioned photos
+  const K = C.back;
+  let back = header(K.kicker, K.title, 'back');
+  window.planIssues = [];
+  // proof notes: things the agent is asked about on the proof (not print errors)
+  window.proofNotes = (D.proofNotes||[]).slice();
+  if(!/condo|apartment/i.test(L.propertyType||'') && !Object.keys(P).some(id=>Ivory.fullHouse(D,id))) window.proofNotes.push('No photo shows the whole house. Ask the agent for a full exterior shot for the cover.');
+  const district = Ivory.district(L);
+  const nearby = (K.nearby||[]).slice(0,4);
+
+  const featureCol = () => { const F = K.feature||{};
+    const nb = nearby.length, locLines = nb ? Math.max(1, 5 - nb) : 4;
+    let h = photo('back-feature-photo', F.photo)
+       + title('back-feature-title', F.title, 'back.feature.title')
+       + slot('back-feature-body', F.body, 'back.feature.body', nb ? 4 : 5)
+       + `<div class="abs label back-location-label" style="top:${nb?362:375}pt" data-slot="back.location.title" data-lines="1">${esc(K.locationTitle)}</div>`
+       + `<div class="abs body back-location-body" style="top:${nb?376:390}pt;height:${locLines*13}pt" data-slot="back.location.body" data-lines="${locLines}">${esc(K.locationBody)}</div>`;
+    nearby.forEach((n,i)=> h += `<div class="abs nearby" style="left:516pt;top:${376+locLines*13+i*13}pt;width:252pt" data-slot="back.nearby${i}" data-lines="1"><b>${esc(n.name)}</b>${n.note ? '  ' + esc(n.note) : ''}</div>`);
+    return h; };
+
+  const textCol = x => { const w = 768 - x;
+    let h = `<div class="abs label" style="left:${x}pt;top:100pt;width:${w}pt" data-slot="back.location.title" data-lines="1">${esc(K.locationTitle)}</div>`
+          + `<div class="abs body" style="left:${x}pt;top:116pt;width:${w}pt;height:${12*14}pt;font-size:10pt;line-height:14pt" data-slot="back.location.body" data-lines="12">${esc(K.locationBody)}</div>`;
+    if(nearby.length){
+      const est = Math.ceil(String(K.locationBody||'').length * 5.1 / w) + 1;
+      const ny = 116 + Math.min(12, est)*14 + 14;
+      h += `<div class="abs label" style="left:${x}pt;top:${ny}pt;width:${w}pt" data-slot="back.nearby.title" data-lines="1">${esc(K.nearbyTitle||'Nearby')}</div>`;
+      nearby.forEach((n,i)=> h += `<div class="abs nearby-stack" style="left:${x}pt;top:${ny+16+i*26}pt;width:${w}pt" data-slot="back.nearby${i}" data-lines="2"><b>${esc(n.name)}</b><br>${esc(n.note||'')}</div>`);
+    }
+    return h; };
+
+  if(V.plan){
+    const box = {x:24, y:96, h:322};
+    const tiers = [{w:474, right:'feature'}, {w:576, right:'text'}, {w:744, right:'none'}];
+    const runs = tiers.map(t => Object.assign({t}, IvoryPlan.draw(D.plan, Object.assign({w:t.w}, box), {allowRotate:true})));
+    const best = Math.max(...runs.map(r=>r.issues.length ? 0 : r.scale));
+    // keep the photo column when the plan is already drawn large enough (5.5 pt per foot or near its best);
+    // otherwise the photo drops to a text column, then drops entirely, before the plan gets smaller
+    const pick = runs.find(r => !r.issues.length && r.scale >= Math.min(best*0.92, 5.5)) || runs.find(r=>!r.issues.length) || runs[runs.length-1];
+    back += pick.html;
+    window.planIssues = pick.issues;
+    document.body.dataset.planTier = pick.t.right;
+    const note = (D.plan.source || 'Floor plan redrawn for this brochure.') + ' Room sizes are approximate.'
+               + (pick.rotated ? ' Plans are turned on their side to fit; the front of the home is on the left.' : '');
+    back += `<div class="abs plan-disclosure" style="top:428pt;width:${pick.t.w}pt" data-slot="back.disclosure0" data-lines="1" data-fine="1">${esc(note)}</div>`;
+    if(pick.t.right==='feature') back += featureCol();
+    if(pick.t.right==='text') back += textCol(24 + 576 + 18);
+  } else {
+    const rooms = (L.rooms||[]).filter(r=>r.level);
+    if(V.stories >= 2 && rooms.length){
+      // floor by floor, from the MLS room list; two captioned photos fill the space under the list
+      const lvls = [...new Set(rooms.map(r=>+r.level))].sort((a,b)=>a-b);
+      const names = K.levelNames || {};
+      const ord = n => names[n] || ({1:'First floor', 2:'Second floor', 3:'Third floor', 4:'Fourth floor'}[n] || `Level ${n}`);
+      const grid = lvls.length === 4, cols = grid ? 2 : lvls.length;
+      const cw = (474 - 18*(cols-1))/cols, RH = 19;
+      const per = lvls.map(lv => rooms.filter(r=>+r.level===lv));
+      const maxRows = grid ? 5 : 9;
+      const rowsIn = (i0) => Math.max(...per.slice(i0, i0+cols).map(l=>Math.min(l.length, maxRows)));
+      const blockH = i0 => 22 + rowsIn(i0)*RH;
+      let y = 98;
+      for(let r0 = 0; r0 < lvls.length; r0 += cols){
+        lvls.slice(r0, r0+cols).forEach((lv, k)=>{
+          const i = r0 + k, x = 24 + k*(cw+18);
+          back += `<div class="abs label" style="left:${x}pt;top:${y}pt;width:${cw}pt" data-slot="back.level${i}" data-lines="1">${esc(ord(lv))}</div>`
+                + `<div class="hair-ink" style="left:${x}pt;top:${y+14}pt;width:${cw}pt"></div>`;
+          per[i].slice(0, maxRows).forEach((rm,j)=>{
+            back += `<div class="abs room-row" style="left:${x}pt;top:${y+20+j*RH}pt;width:${cw}pt" data-slot="back.room${i}.${j}" data-lines="1"><span>${esc(rm.name)}</span><em>${esc(rm.size||'')}</em></div>`;
+          });
+          if(per[i].length > maxRows) window.planIssues.push({slot:`back.level${i}`, kind:'overflow', detail:`${per[i].length-maxRows} more rooms than fit; the writer picks the main rooms`});
+        });
+        y += blockH(r0) + 14;
+      }
+      back += `<div class="abs plan-note" style="left:24pt;top:${y-8}pt;width:474pt;text-align:left" data-slot="back.disclosure0" data-lines="1" data-fine="1">${esc(K.roomNote || 'Room sizes from the MLS listing; approximate.')}</div>`;
+      // photos under the list grow to fill what's left above the contact card
+      const lp = (K.listPhotos||[]).slice(0,2), ph = 446 - (y + 8) - 34;
+      if(lp.length && ph >= 80){
+        lp.forEach((f,i)=>{ const x = 24 + i*245;
+          back += photo('', f.photo, `style="left:${x}pt;top:${y+8}pt;width:229pt;height:${ph}pt"`)
+                + `<div class="abs cap-name" style="left:${x}pt;top:${y+8+ph+5}pt;width:229pt;height:10.5pt" data-slot="back.listphoto${i}.name" data-lines="1">${esc(f.title)}</div>`
+                + `<div class="abs cap-detail" style="left:${x}pt;top:${y+8+ph+16}pt;width:229pt;height:10pt" data-slot="back.listphoto${i}.detail" data-lines="1">${esc(f.body)}</div>`;
+        });
+      } else if(lp.length) window.planIssues.push({slot:'back.listPhotos', kind:'no-room', detail:'room list fills the panel; drop the list photos'});
+    } else {
+      // a closer look: two captioned photos with a little description in place of room sizes
+      const tallF = V.stories >= 3, ph = tallF ? 214 : 186;
+      // older data (the site preview) sends back.plans as two photos: treat them as the closer look
+      const closer = K.closer || (K.plans||[]).map(p=>({photo:p.photo, title:p.label, body:''}));
+      closer.slice(0,2).forEach((f,i)=>{ const x = 24 + i*245;
+        back += photo('', f.photo, `style="left:${x}pt;top:98pt;width:229pt;height:${ph}pt"`)
+              + `<div class="abs display" style="left:${x}pt;top:${98+ph+8}pt;width:229pt;font-size:15pt;line-height:19pt;height:19pt" data-slot="back.closer${i}.title" data-lines="1">${esc(f.title)}</div>`
+              + `<div class="abs body" style="left:${x}pt;top:${98+ph+31}pt;width:229pt;font-size:10pt;line-height:13.5pt;height:${(tallF?6:8)*13.5}pt" data-slot="back.closer${i}.body" data-lines="${tallF?6:8}">${esc(f.body)}</div>`;
+      });
+    }
+    back += featureCol();
+  }
+
+  // contact card
+  const portrait = !!(A.headshot && src(A.headshot));
+  const left = portrait ? 147 : 24;             // content start inside the card (pt from card left)
+  const agentW = 330;
+  back += `<div class="card ${portrait?'portrait-on':''}">
+      <div class="stripe"></div>
+      ${portrait? `<div class="portrait"><img src="${esc(src(A.headshot))}" alt=""></div>`:''}
+      <div class="agent" style="position:absolute;left:${left}pt;top:0;bottom:0;width:${agentW}pt">
+        <div class="agent-name" data-slot="agent.name" data-lines="1">${esc(A.name)}</div>
+        <div class="lbl" style="left:1pt;bottom:97pt" data-slot="agent.designation" data-fine="1">${esc(A.designation||'')}</div>
+        <div class="lbl r-lab" style="left:1pt">${esc(A.phoneLabel||'Call / Text')}</div>
+        <div class="agent-phone r-phone" data-slot="agent.phone" data-lines="1">${esc(A.phone)}</div>
+        <div class="agent-line r-2" data-slot="agent.email" data-lines="1">${esc(A.email)}</div>
+        <div class="agent-line r-3" data-slot="agent.web" data-lines="1">${esc(A.web)}</div>
+      </div>
+      <div class="divider" id="div1"></div>
+      <div class="col brk" id="brk" style="position:absolute;top:0;bottom:0">
+        ${logo('')}
+        <div class="lbl r-lab" style="left:0;right:0;text-align:center">${esc(b.officeLabel||'Office')}</div>
+        <div class="brk-phone r-phone" data-slot="broker.phone" data-lines="1">${esc(b.phone||'')}</div>
+        <div class="brk-web r-2" data-slot="broker.web" data-lines="1">${esc(b.web||'')}</div>
+      </div>
+      <div class="divider" id="div2"></div>
+      <div class="col qrcol" id="qrcol" style="position:absolute;top:0;bottom:0;width:100pt;right:0">
+        <div class="qr" style="left:8pt">${A.qr? `<img src="${esc(A.qr)}" alt="">`:''}</div>
+        <div class="lbl r-2" style="left:0;right:0;text-align:center">${esc(A.qrLabel||'Scan for details')}</div>
+      </div>
+      <div class="foot-rule" style="left:${left}pt;right:0"></div>
+      <div class="footnote" style="left:${left}pt;right:0" data-slot="back.footnote" data-lines="2" data-fine="1">${esc((K.footnote||'') + (district ? ` Square footage from ${district} living area.` : ''))}</div>
+    </div>`;
+
+  // ---- assemble pages ----
+  const panel = (cls, html) => `<div class="panel ${cls}">${html}</div>`;
+  let pages = '';
+  if(mode==='print'){
+    pages += `<div class="page" data-page="outside"><div class="half top">${panel('flip', back)}</div><div class="half bottom">${panel('', front)}</div></div>`;
+    pages += `<div class="page" data-page="inside"><div class="half top">${panel('', top)}</div><div class="half bottom">${panel('', bot)}</div></div>`;
+  } else {
+    [['front',front],['top',top],['bottom',bot],['back',back]].forEach(([n,h])=> pages += `<div class="page" data-page="${n}">${panel('',h)}</div>`);
+  }
+  document.getElementById('pages').innerHTML = pages;
+  Ivory.shapeLogos();
+
+  // ---- copy pending: written slots become faint lines; address, facts and the contact card stay ----
+  if(D.copyPending){
+    const keep = /^(front\.|top\.stat|back\.footnote|back\.disclosure|back\.room|back\.level|plan\.|agent\.|broker\.)/;
+    const widths = [100, 96, 99, 92, 97, 88, 95, 100, 90, 62];
+    document.querySelectorAll('[data-slot]').forEach(el=>{
+      if(keep.test(el.dataset.slot)) return;
+      const lines = +el.dataset.lines || 1;
+      const lh = (el.clientHeight*72/96 || 9) / lines;
+      const bar = Math.min(6, Math.max(3.2, lh*0.22));
+      el.textContent = '';
+      el.style.height = (lines*lh)+'pt';
+      el.classList.add('ghost');
+      for(let i=0;i<lines;i++){
+        const g = document.createElement('i');
+        g.style.cssText = `width:${i===lines-1 && lines>1 ? 58 : widths[i%widths.length]}%;height:${bar}pt;margin-top:${i ? lh-bar : (lh-bar)/2}pt`;
+        el.appendChild(g);
+      }
+      el.removeAttribute('data-slot');
+    });
+  }
+
+  // ---- contact card column layout: equal gutters, hairlines centred in them ----
+  window.cardIssues = [];
+  document.querySelectorAll('.card').forEach(card=>{
+    const R = card.clientWidth*72/96 - 24;                                // right content edge (24 pt inset, as the reference)
+    const agent = card.querySelector('.agent'); const brk = card.querySelector('#brk'); const qr = card.querySelector('#qrcol');
+    const name = agent.querySelector('.agent-name'); const AW = 330;
+    const nat = e => { const sp=document.createElement('span'); sp.style.cssText='position:absolute;white-space:nowrap;visibility:hidden'; sp.style.font=getComputedStyle(e).font; sp.style.letterSpacing=getComputedStyle(e).letterSpacing; sp.style.textTransform=getComputedStyle(e).textTransform; sp.textContent=e.textContent; card.appendChild(sp); const w=sp.offsetWidth*72/96; sp.remove(); return w; };
+    const wm = brk.querySelector('.logo .text'); const wmW = wm ? nat(wm) : 0;
+    const brkNat = Math.min(220, Math.max(170, wmW, ...[...brk.querySelectorAll('.brk-phone,.brk-web')].map(nat)));
+    if(wm && wmW > brkNat){ wm.style.fontSize = (14*brkNat/wmW)+'pt'; }
+    const qw = 100; const L0 = parseFloat(agent.style.left);
+    const colW = () => Math.min(AW, Math.max(...[...agent.children].map(e=>e.scrollWidth))*72/96);
+    // the name steps down (floor 18 pt) until the whole card fits with 24 pt gutters; other sizes stay fixed
+    let fs = parseFloat(getComputedStyle(name).fontSize)*72/96;
+    let aw = colW(), free = R - L0 - aw - brkNat - qw;
+    while((free < 48 || name.scrollWidth > AW*96/72) && fs > 18){ fs -= 1; name.style.fontSize = fs+'pt'; aw = colW(); free = R - L0 - aw - brkNat - qw; }
+    if(name.scrollWidth > AW*96/72) window.cardIssues.push({slot:'agent.name', kind:'overflow', text:name.textContent});
+    if(free < 48) window.cardIssues.push({slot:'contact-card', kind:'overflow', detail:'columns need '+Math.round(48-free)+'pt more; shorten the email or web address, or drop the headshot'});
+    const g = Math.max(24, free/2);
+    const rx = L0 + aw + g;
+    brk.style.left = rx+'pt'; brk.style.width = brkNat+'pt';
+    qr.style.right = '24pt';
+    card.querySelector('#div1').style.left = (L0 + aw + g/2)+'pt';
+    card.querySelector('#div2').style.left = (rx + brkNat + g/2)+'pt';
+    card.querySelector('.foot-rule').style.right='24pt'; card.querySelector('.footnote').style.right='24pt';
+  });
+
+  // ---- print checks (read by render.py) ----
+  window.brochureCheck = () => Ivory.check(window.cardIssues.concat(window.planIssues||[], IvoryPlan.check()));
+});
+</script>
+</body>
+</html>
