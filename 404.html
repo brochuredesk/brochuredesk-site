@@ -9,17 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400&display=swap" rel="stylesheet">
 <link id="teamFonts" rel="stylesheet" href="data:text/css,">
+<link rel="stylesheet" href="/team/flow.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <!--
   Team pages and the site's 404.
-  GitHub Pages serves this file for any address that isn't a real file. If the address is a team code
-  (e.g. /<team>-<code>), the team's own record is loaded from the database and the page draws in that
-  team's brand. Nothing about any team lives in this public repo: no names, logos, colors or list.
+  GitHub Pages serves this file for any address that isn't a real file. If the address starts with a team code
+  (e.g. /<team>-<code>, /<team>-<code>/new, /<team>-<code>/package/<id>), the team's own record is loaded from the
+  database and every screen draws in that team's brand (theme tokens: colors, fonts, logos, lockup) until sign-out.
+  Nothing about any team lives in this public repo: no names, logos, colors, fonts or list.
   Any other address shows the plain BrochureDesk 404.
 -->
 <style>
-@font-face{font-family:"aileron";font-weight:400;font-display:swap;src:url(/fonts/aileron-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:"aileron";font-weight:700;font-display:swap;src:url(/fonts/aileron-latin-700-normal.woff2) format("woff2")}
 :root{
   /* team tokens: filled from the team record */
   --team-primary:#1F4D3F; --team-deep:#163a2f; --team-ink:#1E2226;
@@ -134,7 +134,7 @@ dialog{margin:auto}
 .vh .btn.line{background:transparent;color:var(--team-ink);border:1px solid var(--team-ink)}
 .vh .btn.line:hover{background:var(--mist)}
 .vh .quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
-.vh .q{display:block;text-align:left;font:inherit;color:var(--team-ink);background:var(--mist);border:0;border-left:4px solid var(--team-deep);padding:16px 18px;cursor:pointer;border-radius:0 6px 6px 0}
+.vh .q{display:block;text-decoration:none;text-align:left;font:inherit;color:var(--team-ink);background:var(--mist);border:0;border-left:4px solid var(--team-deep);padding:16px 18px;cursor:pointer;border-radius:0 6px 6px 0}
 .vh .q:hover{background:#ece8e6}
 .vh .q b{display:block;font-size:16px}
 .vh .q span{display:block;font-size:13.5px;color:var(--muted);margin-top:3px}
@@ -277,7 +277,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   <section class="brand" aria-label="Team brand">
     <div class="top">
       <div class="lockup">
-        <h1 class="lk-title"><span class="lk-logo" data-slot="logoLight"></span><span class="lk-word">Print Marketing</span></h1>
+        <h1 class="lk-title"><span class="lk-logo" data-slot="logoLight"></span><span class="lk-word" data-slot="lockup">Print Marketing</span></h1>
         <a class="lk-powered" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk">
           <span class="lk-by">powered by</span>
           <span class="lk-bd"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#E9D7B3" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#ffffff"/></svg>BrochureDesk</span>
@@ -316,10 +316,10 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
 
 <!-- Agent home (after sign-in) -->
 <div class="vh" id="vHome" hidden>
-  <div class="test">Test page with sample listings. Nothing here is a real order yet.</div>
+  <div class="test">Test page. Nothing here is a real order yet.</div>
   <header>
     <div class="wrap bar">
-      <span class="team-lock"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word">Print Marketing</span></span>
+      <a class="team-lock" href="#" data-nav data-home aria-label="Home"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word" data-slot="lockup">Print Marketing</span></a>
       <div class="right">
         <a class="bd" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk"><span class="by">powered by</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#9C7B45" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#1F4D3F"/></svg>
@@ -332,7 +332,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   <main class="wrap" id="homeMain">
     <section class="hello">
       <h1 id="welcome">Welcome back.</h1>
-      <p id="helloLede">Your proof for 2908 Alder Street is ready to look over.</p>
+      <p id="helloLede">Paste a listing link below to start a package.</p>
     </section>
     <section class="start" aria-labelledby="startH">
       <div>
@@ -345,36 +345,31 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <button type="submit">Go</button>
       </form>
       <p class="small"><button type="button" class="hlp" data-mx-help>How do I create a Matrix link?</button></p>
-      <p class="small draft">Listing not live yet? <a href="/preview/">Upload your photos and a draft printout of the listing</a>, with your notes and descriptions, so our writers can get to know the house and go to work.</p>
+      <p class="small draft">Listing not live yet? <a href="#" data-nav data-to="new?manual=1">Upload your photos and a draft printout of the listing</a>, with your notes and descriptions, so our writers can get to know the house and go to work.</p>
       <p class="msg" id="startMsg" role="status" aria-live="polite" hidden></p>
     </section>
     <div class="main">
       <div>
-        <h2 class="sec">Pick up where you left off</h2>
-        <article class="resume">
-          <img src="/team/img/front.jpg" alt="Front of 2908 Alder Street">
-          <div class="body">
-            <div class="addr">2908 Alder Street</div>
-            <div class="sub">Ivory design, Classic copy style. Sample package.</div>
-            <ol class="steps" aria-label="Package progress"><li class="done">Listing</li><li class="done">Design</li><li class="now" aria-current="step">Proof</li><li>Printer</li><li>Pay</li></ol>
-            <div class="row"><a class="btn" href="/preview/">Open proof</a><a class="btn line" href="/preview/">Change design</a></div>
-          </div>
-        </article>
+        <section id="resumeBox" hidden>
+          <h2 class="sec">Pick up where you left off</h2>
+          <article class="resume">
+            <img id="resumeImg" alt="" hidden>
+            <div class="body">
+              <div class="addr" id="resumeAddr"></div>
+              <div class="sub" id="resumeSub"></div>
+              <ol class="steps" aria-label="Package progress" id="resumeSteps"></ol>
+              <div class="row"><a class="btn" id="resumeOpen" href="#" data-nav>Open package</a></div>
+            </div>
+          </article>
+        </section>
         <div class="quick">
-          <button class="q" type="button"><b>Update an open house flyer</b><span>Change the date, time or label. Free every time.</span></button>
-          <button class="q" type="button"><b>Reuse a past order</b><span>More pieces or another design for the same listing.</span></button>
-          <button class="q" type="button"><b>Printer uploads</b><span>One package is waiting in your printer's cart.</span></button>
+          <a class="q" href="#" data-nav data-to="orders"><b>Update an open house flyer</b><span>Change the date, time or label. Free every time.</span></a>
+          <a class="q" href="#" data-nav data-to="orders"><b>Reuse a past order</b><span>More pieces or another design for the same listing.</span></a>
+          <a class="q" href="#" data-nav data-to="orders"><b>Printer uploads</b><span>See what's waiting in your printer's cart.</span></a>
         </div>
         <section class="orders" aria-labelledby="ordersH">
           <h2 class="sec" id="ordersH">Past orders</h2>
-          <table>
-            <thead><tr><th>Listing</th><th>Design</th><th>Status</th><th></th></tr></thead>
-            <tbody>
-              <tr><td><div class="t"><img src="/team/img/kitchen.jpg" alt=""><div><div class="a">1715 Wren Hollow Drive</div><div class="s2">Sample order</div></div></div></td><td>Ivory</td><td><span class="pill cart">In your printer's cart</span></td><td><a class="lnk" href="#">Open cart</a></td></tr>
-              <tr><td><div class="t"><img src="/team/img/living.jpg" alt=""><div><div class="a">604 Saddle Creek Court</div><div class="s2">Sample order</div></div></div></td><td>Ivory</td><td><span class="pill ok">Printed</span></td><td><a class="lnk" href="#">Re-download</a></td></tr>
-              <tr><td><div class="t"><img src="/team/img/lawn.jpg" alt=""><div><div class="a">88 Marlowe Place</div><div class="s2">Sample order</div></div></div></td><td>Ivory</td><td><span class="pill">Downloads open 60 days</span></td><td><a class="lnk" href="#">Re-download</a></td></tr>
-            </tbody>
-          </table>
+          <div id="homeOrders"><p class="sub">No orders yet. Your packages show up here for 60 days.</p></div>
         </section>
       </div>
       <aside>
@@ -389,9 +384,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
           <h3>Account</h3>
           <ul>
             <li><button type="button" id="openProfile">Profile and headshot</button></li>
-            <li><a href="#">Receipts</a></li>
-            <li><a href="#">Printer and mail vendor</a></li>
-            <li><a href="#">Help</a></li>
+            <li><a href="#" data-nav data-to="receipts">Receipts</a></li>
+            <li><a href="#" data-nav data-to="orders">Past orders</a></li>
+            <li><a href="#" data-nav data-to="help">Help</a></li>
             <li><a href="#">Suggest an improvement</a></li>
             <li><button type="button" id="signOut">Sign out</button></li>
           </ul>
@@ -399,6 +394,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       </aside>
     </div>
   </main>
+
+  <!-- Everything else under the team address: new package, a package, past orders, receipts, help (team/flow.js) -->
+  <main class="wrap" id="flowMain" hidden></main>
 
   <!-- First-sign-in intake and the profile page share one form -->
   <main class="wrap" id="profileMain" hidden>
@@ -482,6 +480,8 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   </div>
 </dialog>
 <script src="/preview/matrix-help.js?v=2"></script>
+<script src="/designs/shared/engine.js?v=1"></script>
+<script src="/team/flow.js?v=1"></script>
 <script>
 (() => {
   const SUPABASE_URL = 'https://depwvwewbmxspoxidxrx.supabase.co';
@@ -490,12 +490,15 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   const show = id => ['vLoad','v404','vSignin','vHome'].forEach(v => $(v).hidden = v !== id);
   const notFound = () => { document.title = 'Page not found | BrochureDesk'; show('v404'); };
 
-  // a team address is one path segment: letters, digits and dashes, at least 8 long
-  const code = decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g,'')).toLowerCase();
+  // a team address is the first path segment: letters, digits and dashes, at least 8 long; the rest is the screen
+  const parts = location.pathname.split('/').filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch (_) { return x; } });
+  const code = (parts[0] || '').toLowerCase();
   if (!/^[a-z0-9-]{8,64}$/.test(code) || !window.supabase) return notFound();
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   let team = null;
 
+  // The skin: theme tokens from the team's own record, applied as CSS variables. Fonts are either Google Fonts
+  // (brand.googleFonts) or files we host (brand.fontFaces: [{family, url, weight, style}]).
   function applyBrand(t){
     const b = t.brand || {};
     const r = document.documentElement.style;
@@ -505,6 +508,12 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (b.display) r.setProperty('--team-display', b.display);
     if (b.body) r.setProperty('--team-body', b.body);
     if (b.googleFonts) $('teamFonts').href = 'https://fonts.googleapis.com/css2?' + b.googleFonts + '&display=swap';
+    (b.fontFaces || []).forEach(f => {
+      if (!f.family || !/^\/fonts\/[\w.-]+\.woff2$/.test(f.url || '')) return;    // only fonts we host
+      try { const ff = new FontFace(f.family, `url(${f.url}) format("woff2")`, {weight: String(f.weight || 400), style: f.style || 'normal', display: 'swap'});
+        document.fonts.add(ff); ff.load().catch(() => {}); } catch (_) {}
+    });
+    document.querySelectorAll('[data-slot="lockup"]').forEach(e => e.textContent = b.lockup || 'Print Marketing');
     document.querySelectorAll('[data-slot="name"]').forEach(e => e.textContent = t.name);
     document.querySelectorAll('[data-slot="logoLight"]').forEach(e => e.innerHTML = b.logoLight || '');
     document.querySelectorAll('[data-slot="logoColor"]').forEach(e => e.innerHTML = b.logoColor || '');
@@ -567,8 +576,8 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       $('pfLede').textContent = 'This is what goes on the back of every piece. Change it any time.';
       $('pfSave').textContent = 'Save changes'; $('pfCancel').hidden = false;
     }
-    preview();
-    $('homeMain').hidden = true; $('profileMain').hidden = false;
+    preview(); fillHeader();
+    $('homeMain').hidden = true; $('flowMain').hidden = true; $('profileMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
   }
 
@@ -698,7 +707,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   ['pfDisplay','pfEmail','pfCell'].forEach(id => $(id).addEventListener('input', preview));
   $('pfCell').addEventListener('input', e => { const f = fmtCell(e.target.value); if (f !== e.target.value) e.target.value = f; preview(); });
   $('pfDisplay').addEventListener('blur', () => { if (!$('pfGreet').value.trim()) $('pfGreet').value = $('pfDisplay').value.trim().split(/\s+/)[0] || ''; });
-  $('pfCancel').addEventListener('click', () => enterHome(false));
+  $('pfCancel').addEventListener('click', () => nav(home()));
 
   $('pfForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -740,7 +749,8 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       await loadProfile();
       setPending(null);
       st.className = 'pf-status ok'; st.textContent = 'Saved.';
-      enterHome(profileMode === 'intake');
+      if (profileMode === 'intake' && route().length) render();
+      else { if (route().length) history.pushState(null, '', home()); enterHome(profileMode === 'intake'); }
     } catch (err) {
       st.className = 'pf-status err';
       st.textContent = /fetch|network/i.test(err?.message || '') ? 'Couldn’t reach the server. Check your connection and press Save again.' : 'That didn’t save. Press Save again, and if it keeps happening email support@brochuredesk.com.';
@@ -748,6 +758,13 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   });
 
   // ---------- home ----------
+  // the account button in the header, on every screen
+  function fillHeader(){
+    const p = profile || {};
+    $('firstName').textContent = p.greeting_name || me.team.first_name || '';
+    $('ini').textContent = initials(p.display_name || [me.team.first_name, me.team.last_name].join(' '));
+  }
+
   function enterHome(firstTime){
     const p = profile || {};
     const greet = p.greeting_name || me.team.first_name || '';
@@ -756,10 +773,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       $('helloLede').textContent = 'Your contact card is saved. Paste your first listing link below to start a package.';
     } else {
       $('welcome').textContent = greet ? `Welcome back, ${greet}.` : 'Welcome back.';
-      $('helloLede').textContent = 'Your proof for 2908 Alder Street is ready to look over.';
+      $('helloLede').textContent = 'Paste a listing link below to start a package.';
     }
-    $('firstName').textContent = greet;
-    $('ini').textContent = initials(p.display_name || [me.team.first_name, me.team.last_name].join(' '));
+    fillHeader();
     const c = $('contactCard'); c.textContent = '';
     if (p._photo){ const im = document.createElement('img'); im.src = p._photo; im.alt = ''; c.append(im); }
     const tx = document.createElement('div');
@@ -769,12 +785,70 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     tx.append(document.createElement('br'), p.preferred_email || me.email);
     c.append(tx);
     document.title = `${team.name} Print Marketing`;
-    $('profileMain').hidden = true; $('homeMain').hidden = false;
+    $('profileMain').hidden = true; $('flowMain').hidden = true; $('homeMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
+    homePackages();
   }
-  $('acctBtn').addEventListener('click', () => openProfile('edit'));
-  $('editCard').addEventListener('click', () => openProfile('edit'));
-  $('openProfile').addEventListener('click', () => openProfile('edit'));
+
+  // the agent's own packages made under this team (never another team's)
+  async function homePackages(){
+    let list = [];
+    try { list = await TeamFlow.myPackages(ctx()); } catch (_) {}
+    const latest = list[0];
+    $('resumeBox').hidden = !latest;
+    if (latest) {
+      const L = latest.listing || {}, S = TeamFlow.STATUS[latest.status] || TeamFlow.STATUS.draft;
+      $('resumeAddr').textContent = L.address || 'Your listing';
+      $('resumeSub').textContent = `${TeamFlow.designName(latest.design)} design. ${S.label}.`;
+      $('resumeSteps').innerHTML = ['Listing','Design','Proof','Printer','Pay'].map((t, i) => { const n = i < 2 ? i + 1 : i + 2;
+        return `<li class="${n < S.step ? 'done' : n === S.step ? 'now' : ''}">${t}</li>`; }).join('');
+      $('resumeOpen').setAttribute('href', `/${code}/package/${latest.id}`);
+    }
+    const box = $('homeOrders'); box.textContent = '';
+    if (!list.length) { box.innerHTML = '<p class="sub">No orders yet. Your packages show up here for 60 days.</p>'; return; }
+    const tb = document.createElement('table');
+    tb.innerHTML = '<thead><tr><th>Listing</th><th>Design</th><th>Status</th><th></th></tr></thead><tbody></tbody>';
+    list.slice(0, 5).forEach(p => {
+      const tr = document.createElement('tr'), L = p.listing || {};
+      const cell = (txt, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = txt; tr.append(td); return td; };
+      cell(L.address || 'Listing', 'a'); cell(TeamFlow.designName(p.design));
+      const st = cell(''); const pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = (TeamFlow.STATUS[p.status] || TeamFlow.STATUS.draft).label; st.append(pill);
+      const op = cell(''); const a = document.createElement('a'); a.className = 'lnk'; a.href = `/${code}/package/${p.id}`; a.dataset.nav = ''; a.textContent = 'Open'; op.append(a);
+      tb.tBodies[0].append(tr);
+    });
+    box.append(tb);
+  }
+  $('acctBtn').addEventListener('click', () => nav(`/${code}/profile`));
+  $('editCard').addEventListener('click', () => nav(`/${code}/profile`));
+  $('openProfile').addEventListener('click', () => nav(`/${code}/profile`));
+
+  // ---------- screens under the team address ----------
+  const home = () => `/${code}`;
+  const route = () => location.pathname.split('/').filter(Boolean).slice(1);
+  const ctx = () => ({ sb, code, team, me, profile, main: $('flowMain'), nav });
+  function nav(path){ if (path !== location.pathname + location.search) history.pushState(null, '', path); render(); }
+  function render(){
+    if (!me) return;
+    if (!complete(profile)) return openProfile('intake');      // first sign-in: the contact card comes first
+    const r = route();
+    if (!r.length) return enterHome();
+    if (r[0] === 'profile' && r.length === 1) return openProfile('edit');
+    fillHeader();
+    $('homeMain').hidden = true; $('profileMain').hidden = true; $('flowMain').hidden = false;
+    document.title = `${team.name} Print Marketing`;
+    show('vHome');
+    TeamFlow.mount(ctx(), r);
+  }
+  window.addEventListener('popstate', render);
+  // links inside the team pages stay under the team address and keep the skin
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[data-nav]');
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+    e.preventDefault();
+    nav(a.dataset.home !== undefined ? home() : a.dataset.to ? `${home()}/${a.dataset.to}` : a.getAttribute('href'));
+  });
+  document.querySelectorAll('a[data-nav][data-to]').forEach(a => a.setAttribute('href', `/${code}/${a.dataset.to}`));
+  document.querySelectorAll('a[data-nav][data-home]').forEach(a => a.setAttribute('href', `/${code}`));
 
   async function tryEnter(){
     const { data, error } = await sb.rpc('my_team', { p_code: code });
@@ -782,7 +856,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     const { data: u } = await sb.auth.getUser();
     me = { id: u.user.id, email: u.user.email || '', team: data };
     await loadProfile();
-    if (complete(profile)) enterHome(); else openProfile('intake');
+    render();
     return true;
   }
 
@@ -813,14 +887,16 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL;
   });
 
-  $('signOut').addEventListener('click', async () => { await sb.auth.signOut(); me = profile = null; $('email').value=''; show('vSignin'); });
+  $('signOut').addEventListener('click', async () => { await sb.auth.signOut(); me = profile = null; $('email').value=''; history.pushState(null, '', home()); show('vSignin'); });
 
+  // the Go box starts a package on this team's own page, never the public preview
   $('startForm').addEventListener('submit', e => {
     e.preventDefault();
     const v = $('link').value.trim(), m = $('startMsg'); m.hidden = false;
     if (!v) { m.textContent = 'Paste the link from Matrix first. It starts with https://matrix.harmls.com.'; return; }
     if (!/matrix\.harmls\.com/i.test(v)) { m.textContent = "That link isn't from Matrix. In Matrix, tick your listing, click Email, then Preview, and copy the address of the tab that opens."; return; }
-    location.href = '/preview/?link=' + encodeURIComponent(v);
+    m.hidden = true; $('link').value = '';
+    nav(`${home()}/new?link=${encodeURIComponent(v)}`);
   });
 
   boot().catch(notFound);

@@ -1,0 +1,93 @@
+/* Team pages after sign-in (team/flow.js). Every color and font comes from the team tokens set on :root. */
+.vh .fl-steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 26px}
+.vh .fl-steps li{flex:1;font-size:12.5px;color:var(--muted);padding-top:8px;border-top:3px solid var(--line)}
+.vh .fl-steps li.done{border-color:var(--team-deep);color:var(--team-ink)}
+.vh .fl-steps li.now{border-color:var(--team-primary);color:var(--team-ink);font-weight:700}
+.vh .fl-card{border:1px solid var(--line);border-top:6px solid var(--team-primary);border-radius:0 0 8px 8px;padding:26px 28px 30px;margin-bottom:26px;background:var(--paper)}
+.vh .fl-card h2{font-family:var(--team-display);font-weight:400;font-size:30px;line-height:1.1;margin-bottom:14px}
+.vh .fl-card h3{font-size:14px;font-weight:700;margin:22px 0 10px}
+.vh .fl-hint{font-size:14px;color:var(--muted);margin-top:6px}
+.vh .fl-a{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--team-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin-right:14px}
+.vh .fl-link label,.vh .fl-lbl{display:block;font-size:14px;font-weight:700;margin:16px 0 8px}
+.vh .fl-link .linkbox{display:flex;border:1px solid var(--team-ink);border-radius:6px;overflow:hidden;background:#fff;max-width:640px}
+.vh .fl-link .linkbox input{flex:1;min-width:0;border:0;font:inherit;font-size:16px;padding:14px 16px;color:var(--team-ink)}
+.vh .fl-link .linkbox input:focus{outline:none}
+.vh .fl-link .linkbox:focus-within{box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--team-primary)}
+.vh .fl-link .linkbox button{border:0;font:inherit;font-weight:700;font-size:16px;padding:0 26px;background:var(--team-primary);color:#fff;cursor:pointer}
+.vh .fl-link .linkbox button:hover{background:var(--team-deep)}
+.vh .fl-status{min-height:1.6em;margin-top:12px;font-size:15px;display:flex;gap:10px;align-items:center}
+.vh .fl-status i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--team-primary);animation:flspin .9s linear infinite;flex:none}
+@keyframes flspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.vh .fl-status i{animation:none;border-color:var(--team-primary)}}
+.vh .fl-err{margin-top:12px;padding:14px 16px;background:var(--mist);border-left:4px solid var(--team-primary)}
+.vh .fl-err .row{margin-top:10px}
+.vh .fl-drop{display:block;margin-top:16px;border:2px dashed var(--line);border-radius:8px;padding:22px;text-align:center;cursor:pointer;font-size:15px}
+.vh .fl-drop small{display:block;color:var(--muted);margin-top:4px;font-size:13px}
+.vh .fl-drop.over,.vh .fl-drop:focus-visible{border-color:var(--team-primary)}
+.vh .fl-cover{margin:18px 0 0}
+.vh .fl-cover img{width:100%;max-height:420px;object-fit:cover;object-position:center top;border-radius:4px;display:block}
+.vh .fl-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.vh .fl-thumbs .thumb{position:relative;margin:0;aspect-ratio:4/3;background:var(--mist)}
+.vh .fl-thumbs .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.vh .fl-thumbs .thumb button,.vh .fl-thumbs .thumb .cv{position:absolute;left:4px;bottom:4px;font:inherit;font-size:11px;font-weight:700;border:0;border-radius:3px;padding:2px 6px;background:rgba(255,255,255,.92);color:var(--team-ink);cursor:pointer}
+.vh .fl-thumbs .thumb .cv{background:var(--team-primary);color:#fff;cursor:default}
+.vh .fl-thumbs .thumb .x{left:auto;right:4px;top:4px;bottom:auto;width:22px;height:22px;padding:0;font-size:15px;line-height:1}
+.vh .fl-facts{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px 14px;margin-top:20px}
+.vh .fl-facts label{grid-column:span 2;font-size:13.5px;font-weight:700;display:flex;flex-direction:column;gap:6px}
+.vh .fl-facts label.half{grid-column:span 3}
+.vh .fl-facts label.full{grid-column:1 / -1}
+.vh .fl-facts input,.vh .fl-facts textarea{font:inherit;font-size:16px;font-weight:400;padding:11px 13px;border:1px solid var(--line);border-radius:6px;color:var(--team-ink);background:var(--paper);width:100%;min-width:0}
+.vh .fl-facts input:focus,.vh .fl-facts textarea:focus{outline:none;border-color:var(--team-ink)}
+.vh .fl-note{margin:14px 0 4px;font-size:15px;min-height:1.4em}
+.vh .fl-note.err{color:#a1161b}
+.vh .fl-card .row{margin-top:16px}
+.vh .fl-designs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,170px));gap:14px}
+.vh .dcard{display:grid;gap:6px;cursor:pointer;font-size:14px;font-weight:700}
+.vh .dcard input{position:absolute;opacity:0}
+.vh .dcard img{width:100%;height:auto;aspect-ratio:900/1165;object-fit:cover;object-position:top;outline:1px solid var(--line);display:block}
+.vh .dcard input:checked + img,.vh .dcard input:focus-visible + img{outline:3px solid var(--team-primary);outline-offset:3px}
+.vh .fl-colors{display:flex;gap:14px;flex-wrap:wrap}
+.vh .swatch{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;padding:6px 12px 6px 6px;border:1px solid var(--line);border-radius:999px}
+.vh .swatch input{position:absolute;opacity:0}
+.vh .swatch span{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.vh .swatch:has(input:checked){border-color:var(--team-ink);box-shadow:0 0 0 1px var(--team-ink);font-weight:700}
+.vh .swatch:has(input:focus-visible){outline:3px solid var(--focus)}
+.vh .fl-setbox{margin-top:24px}
+.vh .fl-set h3{font-size:13px;color:var(--muted);margin:22px 0 10px}
+.vh .fl-grid{display:grid;gap:16px}
+.vh .fl-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.vh .fl-grid.two.portrait{grid-template-columns:repeat(4,minmax(0,1fr))}
+.vh .fl-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.vh .fl-grid figure{margin:0}
+.vh .fl-grid figcaption{font-size:12.5px;color:var(--muted);margin-top:6px}
+.vh .sheet{position:relative;overflow:hidden;background:#f3f0ea;box-shadow:0 1px 3px rgba(0,0,0,.12),0 6px 18px rgba(0,0,0,.06);min-height:60px}
+.vh .sheet iframe{border:0;position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none}
+.vh .fl-styles{display:grid;gap:10px;margin-top:14px;max-width:720px}
+.vh .fl-style{display:grid;gap:3px;padding:14px 16px;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:0 6px 6px 0;cursor:pointer}
+.vh .fl-style input{position:absolute;opacity:0}
+.vh .fl-style b{font-size:16px}
+.vh .fl-style b small{font-size:12px;font-weight:700;color:var(--team-primary);margin-left:8px}
+.vh .fl-style span{font-size:14px;color:var(--muted)}
+.vh .fl-style:has(input:checked){border-left-color:var(--team-primary);background:var(--mist)}
+.vh .fl-style:has(input:focus-visible){outline:3px solid var(--focus)}
+.vh .fl-kit{padding:18px 20px;background:var(--mist);border-left:4px solid var(--team-primary)}
+.vh .fl-kit p{margin-top:6px;font-size:15px;color:var(--muted)}
+.vh .fl-sum{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.vh .fl-line{font-size:17px;margin-top:10px}
+.vh .fl-progress{list-style:none;padding:0;margin:18px 0 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.vh .fl-progress li{font-size:13px;color:var(--muted);padding:10px 12px;background:var(--mist);border-top:3px solid var(--line)}
+.vh .fl-empty{font-size:16px;color:var(--muted)}
+.vh .fl-empty a{color:var(--team-ink);font-weight:700}
+.vh .fl-help h2{font-size:24px;margin:18px 0 6px}
+.vh .fl-help h2:first-child{margin-top:0}
+.vh .fl-help a{font-weight:700}
+#flowMain{padding-bottom:64px}
+@media (max-width:760px){
+  .vh .fl-card{padding:20px 16px 24px}
+  .vh .fl-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vh .fl-facts label,.vh .fl-facts label.half{grid-column:span 1}
+  .vh .fl-grid.two,.vh .fl-grid.three,.vh .fl-grid.two.portrait{grid-template-columns:minmax(0,1fr)}
+  .vh .fl-progress{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .vh .fl-steps li{font-size:11px}
+  .vh .fl-link .linkbox button{padding:0 18px}
+}
