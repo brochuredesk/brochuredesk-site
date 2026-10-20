@@ -1,0 +1,101 @@
+{
+ "approved": [],
+ "candidates": [
+  {
+   "design": "ivory",
+   "piece": "open-house-flyer",
+   "file": "flyer.html",
+   "name": "Ivory",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v1",
+   "file": "openhouse-v1.html",
+   "name": "Ivory Invitation",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v2",
+   "file": "openhouse-v2.html",
+   "name": "Ivory Date Band",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v3",
+   "file": "openhouse-v3.html",
+   "name": "Ivory Hero Panel",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v4",
+   "file": "openhouse-v4.html",
+   "name": "Ivory Calendar",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v5",
+   "file": "openhouse-v5.html",
+   "name": "Ivory Editorial",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": false
+  }
+ ]
+}
