@@ -219,53 +219,7 @@ section.s.alt{background:var(--paper);border-block:1px solid var(--line)}
 .mxerr{border-left:3px solid var(--brass);background:var(--paper);padding:12px 16px;font-size:15.5px;display:grid;gap:10px}
 .mxerr .acts{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
 .mxerr .btn{padding:10px 16px}
-dialog.mxdlg{border:0;padding:0;max-width:min(680px,calc(100vw - 24px));width:100%;background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(30,34,38,.35)}
-dialog.mxdlg::backdrop{background:rgba(30,34,38,.55)}
-.mxin{padding:clamp(16px,3vw,28px);display:grid;gap:14px}
-.mxhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.mxhead h3{font-size:clamp(22px,3vw,28px)}
-.mx-close{border:1px solid var(--line);background:#fff;border-radius:2px;font:600 14px var(--body);padding:8px 12px;cursor:pointer}
-.mx-stage{position:relative;aspect-ratio:16/10;background:var(--marble);border:1px solid var(--line);overflow:hidden;container-type:inline-size}
-.mx-win{position:absolute;inset:6% 5%;background:#fff;border:1px solid #C9CBC6;box-shadow:0 6px 18px rgba(30,34,38,.12);display:flex;flex-direction:column;font-size:clamp(9px,2.7cqw,14px)}
-.mx-bar{display:flex;gap:.5em;align-items:center;padding:.55em .8em;border-bottom:1px solid var(--line);background:#F4F4F1}
-.mx-bar b{width:.7em;height:.7em;border-radius:50%;background:#CFCFCA}
-.mx-bar span{flex:1;margin-left:.6em;background:#fff;border:1px solid var(--line);border-radius:1em;padding:.15em .8em;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mx-scr{position:absolute;left:0;right:0;top:2.6em;bottom:0;padding:1em;opacity:0;transition:opacity .45s;display:flex;flex-direction:column;gap:.7em}
-.mx-stage[data-step="0"] .mx-scr.list,.mx-stage[data-step="1"] .mx-scr.email,.mx-stage[data-step="2"] .mx-scr.inbox,.mx-stage[data-step="3"] .mx-scr.paste{opacity:1}
-.mx-row{display:flex;gap:.8em;align-items:center;border:1px solid var(--line);padding:.6em;background:#fff}
-.mx-ph{width:5.5em;height:4em;background:linear-gradient(135deg,#cfd8d3,#9fb3a9);flex:none}
-.mx-ln{height:.7em;background:#E4E4E0;border-radius:.4em;margin:.35em 0}
-.mx-ln.s{width:45%}.mx-ln.m{width:70%}
-.mx-act{margin-top:auto;display:flex;gap:.6em;border-top:1px solid var(--line);padding-top:.7em;align-items:center;color:var(--slate)}
-.mx-btn{border:1px solid #B9BBB5;background:#fff;padding:.45em 1em;border-radius:2px;font-weight:600;color:var(--ink);transition:background .3s,color .3s,transform .3s}
-.mx-hot{border-color:var(--emerald)}
-.mx-field{border:1px solid #B9BBB5;padding:.55em .8em;color:var(--slate);background:#fff}
-.mx-link{color:var(--emerald);text-decoration:underline;word-break:break-all}
-.mx-tick{width:1em;height:1em;border:1.5px solid #9AA0A5;flex:none;position:relative}
-.mx-cursor{position:absolute;width:1.6em;height:1.6em;z-index:3;left:0;top:0;pointer-events:none;transition:transform 1.1s cubic-bezier(.5,0,.2,1);filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
-.mx-stage[data-step="0"] .mx-cursor{transform:translate(10cqw,26cqw)}
-.mx-stage[data-step="1"] .mx-cursor{transform:translate(70cqw,50cqw)}
-.mx-stage[data-step="2"] .mx-cursor{transform:translate(30cqw,34cqw)}
-.mx-stage[data-step="3"] .mx-cursor{transform:translate(75cqw,24cqw)}
-.mx-stage[data-step="0"] .list .mx-tick::after{content:"";position:absolute;inset:2px;background:var(--emerald);animation:mxtick 5s 1s both}
-@keyframes mxtick{from{opacity:0}to{opacity:1}}
-.mx-stage[data-step="0"] .list [data-btn="0"],.mx-stage[data-step="1"] .email [data-btn="1"],.mx-stage[data-step="2"] .inbox [data-btn="2"],.mx-stage[data-step="3"] .paste [data-btn="3"]{animation:mxhit 1.6s 1.7s both}
-@keyframes mxhit{to{background:var(--emerald);color:#fff;transform:scale(1.06)}}
-.mx-stage[data-step="2"] .inbox .mx-link{animation:mxsel 1s .6s both}
-@keyframes mxsel{to{background:#cfe3d9}}
-.mx-stage[data-step="3"] .paste .mx-typed{animation:mxtype 1.3s .5s steps(24) both}
-.mx-typed{display:inline-block;overflow:hidden;white-space:nowrap;max-width:0;vertical-align:bottom;color:var(--ink)}
-@keyframes mxtype{to{max-width:100%}}
-.mx-cap{font-size:17px;min-height:3.2em}
-.mx-dots{display:flex;gap:7px}
-.mx-dots span{width:26px;height:4px;background:var(--line)}
-.mx-dots span.on{background:var(--emerald)}
-.mxfoot{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between}
-.mx-list{margin:0;padding-left:1.3em;display:none;gap:8px;font-size:16px}
-.mx-list li{margin-bottom:8px}
-dialog.still .mx-stage,dialog.still .mx-cap,dialog.still .mx-dots,dialog.still .mx-replay{display:none}
-dialog.still .mx-list{display:block}
-@media (prefers-reduced-motion:reduce){.mx-cursor,.mx-scr{transition:none}.mxstatus i{animation:none}}
+@media (prefers-reduced-motion:reduce){.mxstatus i{animation:none}}
 
 footer{border-top:1px solid var(--line);padding-block:34px 44px;font-size:14px;color:var(--slate)}
 footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
@@ -522,26 +476,7 @@ document.querySelectorAll('.vtabs button').forEach(b => b.addEventListener('clic
 
 </script>
 
-<dialog class="mxdlg" id="mx-help" aria-labelledby="mx-help-h">
-  <div class="mxin">
-    <div class="mxhead"><h3 id="mx-help-h">How to get your Matrix link</h3><button type="button" class="mx-close">Close</button></div>
-    <div class="mx-stage" aria-hidden="true">
-      <div class="mx-cursor"><svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M4 2l15 9-6.5 1.5L9 19z" fill="#1E2226" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
-      <div class="mx-win">
-        <div class="mx-bar"><b></b><b></b><b></b><span>your-mls.example/listings</span></div>
-        <div class="mx-scr list"><div class="mx-row"><i class="mx-tick"></i><div class="mx-ph"></div><div style="flex:1"><div class="mx-ln m"></div><div class="mx-ln s"></div><div class="mx-ln s"></div></div></div><div class="mx-row"><i class="mx-tick"></i><div class="mx-ph"></div><div style="flex:1"><div class="mx-ln m"></div><div class="mx-ln s"></div></div></div><div class="mx-act"><span>Actions</span><span class="mx-btn">Print</span><span class="mx-btn mx-hot" data-btn="0"></span><span class="mx-btn">Map</span></div></div>
-        <div class="mx-scr email"><div class="mx-field">To: you@yourbrokerage.com</div><div class="mx-field">Subject: A listing for you</div><div class="mx-ln m"></div><div class="mx-ln s"></div><div class="mx-act"><span class="mx-btn mx-hot" data-btn="1"></span></div></div>
-        <div class="mx-scr inbox"><div class="mx-field">From: your MLS</div><div class="mx-ln m"></div><div class="mx-link">your-mls.example/portal/listing?ID=48213</div><div class="mx-ln s"></div><div class="mx-act"><span class="mx-btn mx-hot" data-btn="2"></span></div></div>
-        <div class="mx-scr paste"><b style="font-size:1.1em">BrochureDesk</b><div class="mx-row" style="gap:.6em"><div class="mx-field" style="flex:1"><span class="mx-typed">your-mls.example/portal/listing?ID=48213</span></div><span class="mx-btn mx-hot" data-btn="3"></span></div><div class="mx-ln m"></div><div class="mx-ln s"></div></div>
-      </div>
-    </div>
-    <p class="mx-cap" aria-live="polite"></p>
-    <ol class="mx-list"></ol>
-    <div class="mx-dots" aria-hidden="true"></div>
-    <div class="mxfoot"><button type="button" class="btn mx-replay">Play again</button><span class="small" style="margin:0">Your MLS may word a button a little differently.</span></div>
-  </div>
-</dialog>
-<script src="matrix-help.js?v=1"></script>
+<script src="matrix-help.js?v=2"></script>
 <script src="/designs/shared/fontpicker.js?v=3"></script>
 <script src="try.js?v=7"></script>
 </body>
