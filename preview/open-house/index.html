@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Open House flyer picker · test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+:root{--marble:#ECECE9;--paper:#FBFBF9;--ink:#1E2226;--slate:#4A5157;--emerald:#1F4D3F;--line:#D5D6D1;
+  --oh-accent:var(--emerald);--oh-ink:var(--ink);--oh-paper:var(--paper);--oh-line:var(--line);--oh-font:"Figtree",system-ui,sans-serif}
+:root.team{--oh-accent:#7a2e3a;--oh-ink:#24201f;--oh-line:#d9d2cf;--marble:#f4efed}
+*{box-sizing:border-box}
+body{margin:0;background:var(--marble);color:var(--ink);font-family:"Figtree",system-ui,sans-serif;font-size:17px;line-height:1.55}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 16px 60px}
+h1,h2{font-family:"Bodoni Moda",Georgia,serif;font-weight:400;margin:0}
+h1{font-size:clamp(30px,4vw,42px)}
+.lede{color:var(--slate);max-width:62ch}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:24px;margin-top:28px}
+.panel>h2{font-size:28px;margin-bottom:6px}
+.panel>p{color:var(--slate);margin:0 0 18px}
+.proof{max-width:340px}
+.tools{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;margin-top:14px}
+.tools a,.tools button{font:inherit;font-weight:700;color:var(--oh-accent);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+#log{font:13px/1.5 ui-monospace,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:6px;padding:10px;max-height:180px;overflow:auto;white-space:pre-wrap;margin:0}
+.teambar{display:none;background:var(--oh-accent);color:#fff;padding:12px 16px;font-weight:700}
+:root.team .teambar{display:block}
+</style>
+</head>
+<body>
+<div class="teambar">Sample Team | Print Marketing, powered by BrochureDesk</div>
+<div class="wrap">
+  <h1>Open House flyer: pick any design</h1>
+  <p class="lede">Test page, not linked from the site. A sample listing (made-up address, sample branding) shows the two screens: the Open House flyer on the proof, and the Update open house flyer page. Designs marked <b>test</b> are waiting for approval and never show to agents. Your picks are kept in this browser the way the database will keep them with the order.</p>
+  <div class="tools"><button type="button" id="reopen">Reopen from past orders</button><button type="button" id="clear">Start over</button>
+    <a id="skin" href="?skin=team">See it in a team's colors</a></div>
+
+  <section class="panel"><h2>On the proof</h2><p>The set's own flyer is the recommended one. "See other Open House designs" opens the selection sheet.</p>
+    <div class="proof" id="proof"></div></section>
+
+  <section class="panel"><h2>Update open house flyer</h2><p>Free every time. Only the flyer is redrawn; your photos and facts stay as they are.</p>
+    <div id="upd"></div></section>
+
+  <section class="panel"><h2>Switch log</h2><p>What the system records each time an agent switches or downloads.</p><pre id="log"></pre></section>
+</div>
+<script src="/designs/shared/openhouse.js"></script>
+<script>
+(async function(){
+  const team = new URLSearchParams(location.search).get('skin') === 'team';
+  if(team){ document.documentElement.classList.add('team'); const s = document.getElementById('skin'); s.href = '?'; s.textContent = 'Back to the standard look'; }
+  const SAMPLE = {"id": "sample-larkspur", "design": "ivory", "data": {"brand": {"brokerage": "Any Brokerage", "logo": "/designs/samples/larkspur/AnyBrokerage_gold.png", "accent": "#1f4e5f", "paper": "#f3f0ea", "ink": "#232323", "muted": "#5a5a5a", "phone": "713.555.0100", "web": "yourbrokerage.com", "officeLabel": "Office"}, "agent": {"name": "Avery Morgan", "designation": "REALTOR\u00ae", "nar": true, "phone": "713.555.0123", "phoneLabel": "Call / Text", "email": "avery@yourbrokerage.com", "web": "yourbrokerage.com", "qr": "/designs/qr.png", "qrLabel": "Scan for details", "headshot": null}, "listing": {"address": "4127 Larkspur Bend Street", "neighborhood": "East End", "city": "Houston", "state": "Texas", "zip": "77023", "beds": 3, "baths": 2, "sqft": 1385, "stories": 1}, "photos": {"front": {"src": "/designs/samples/larkspur/front.jpg", "tags": "front exterior, 1940 bungalow, new siding"}, "kitchen": {"src": "/designs/samples/larkspur/kitchen.jpg", "tags": "kitchen, new cabinets"}, "living": {"src": "/designs/samples/larkspur/living.jpg", "tags": "living room, open to dining"}, "dining": {"src": "/designs/samples/larkspur/dining.jpg", "tags": "dining area"}, "nook": {"src": "/designs/samples/larkspur/nook.jpg", "tags": "breakfast nook"}, "primary": {"src": "/designs/samples/larkspur/primary.jpg", "tags": "primary bedroom"}, "study": {"src": "/designs/samples/larkspur/study.jpg", "tags": "bedroom three"}, "kitchen2": {"src": "/designs/samples/larkspur/kitchen2.jpg", "tags": "kitchen bar seating"}, "family": {"src": "/designs/samples/larkspur/family.jpg", "tags": "front exterior, side angle"}, "hall": {"src": "/designs/samples/larkspur/hall.jpg", "tags": "entry"}, "bedroom2": {"src": "/designs/samples/larkspur/bedroom2.jpg", "tags": "bedroom two"}, "office": {"src": "/designs/samples/larkspur/office.jpg", "tags": "primary bath"}, "lawn": {"src": "/designs/samples/larkspur/lawn.jpg", "tags": "backyard"}}, "companion": {"flyerPhotos": ["front", "kitchen", "living", "dining", "nook", "primary", "study"], "fineprint": "Information deemed reliable but not guaranteed. Sample listing for design review."}, "openHouse": {"kind": "public", "date": "2026-11-07", "start": "13:00", "end": "16:00"}}};
+  const KEY = 'bd-oh-test-package', LOGK = 'bd-oh-test-log';
+  const get = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch(e) { return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
+  const logEl = document.getElementById('log');
+  const showLog = () => { logEl.textContent = get(LOGK, []).map(r => JSON.stringify(r)).join('\n') || 'Nothing yet.'; };
+  const hooks = {
+    save: p => put(KEY, p),
+    log: r => { const l = get(LOGK, []); l.push(Object.assign({at: new Date().toLocaleString('en-US', {timeZone: 'America/Chicago'})}, r)); put(LOGK, l.slice(-50)); showLog(); },
+    download: () => new Promise(r => setTimeout(r, 600)),
+    printer: () => alert('On the live site this opens the printer upload panel.')
+  };
+  await OpenHouse.init({base: '/designs/', test: true});
+  function open(){
+    const pkg = Object.assign(JSON.parse(JSON.stringify(SAMPLE)), get(KEY, {}));
+    OpenHouse.proofCard(document.getElementById('proof'), pkg, Object.assign({}, hooks, {save: p => { put(KEY, p); open(); }}));
+    OpenHouse.mountUpdater(document.getElementById('upd'), pkg, hooks);
+  }
+  document.getElementById('reopen').onclick = open;
+  document.getElementById('clear').onclick = () => { try { localStorage.removeItem(KEY); localStorage.removeItem(LOGK); } catch(e) {} showLog(); open(); };
+  showLog(); open();
+})();
+</script>
+</body>
+</html>

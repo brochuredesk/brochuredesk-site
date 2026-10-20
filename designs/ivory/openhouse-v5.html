@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Ivory open house flyer · v5 Editorial split</title>
+<link rel="stylesheet" href="ivory.css">
+<script src="ivory.js"></script>
+<!--
+  Ivory · Open House flyer v5 "Editorial split" (trim 612 x 792 pt).
+  A solid bar in the agent's accent color runs edge to edge across the top of the page with the label knocked out at
+  28 pt tracked caps. Under it a magazine split: a tall portrait hero down the left from the bar, address and facts under
+  it; the right column (272 pt wide) carries the weekday, the month and day at 46 pt in the accent color, the time at
+  24 pt bold, the special-notes and refreshments lines on a tinted strip, a rule, then two captioned photos. One logo, in the contact card.
+-->
+<style>
+  .bar{position:absolute;background:var(--accent)}
+  .ev-label{left:36pt;top:16pt;width:540pt;height:30pt;text-align:center;font-size:28pt;line-height:30pt;letter-spacing:4pt;font-weight:700;color:var(--paper)}
+  .ev-wd{left:304pt;top:78pt;width:272pt;height:32pt;font-size:26pt;line-height:32pt;color:var(--muted)}
+  .ev-date{left:303pt;top:110pt;width:273pt;height:56pt;font-size:42pt;line-height:56pt;color:var(--accent)}
+  .ev-raw{left:303pt;top:80pt;width:273pt;height:88pt;font-size:32pt;line-height:42pt;white-space:normal;color:var(--accent)}
+  .ev-time{left:304pt;top:174pt;width:272pt;height:30pt;font:700 24pt/30pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+  .ev-strip{position:absolute;left:304pt;width:272pt;background:var(--accent);opacity:.1}
+  .ev-note{height:15pt;font:600 11.5pt/15pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .oh-strong{height:15pt;font:700 11.5pt/15pt var(--font-body);color:var(--accent);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .address{left:35pt;top:514pt;width:254pt;height:81pt;font-size:22pt;line-height:27pt;white-space:normal}
+  .placeline{left:36pt;top:600pt;width:252pt;height:20pt;white-space:normal;line-height:10pt}
+  .factline{left:36pt;top:614pt;width:252pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
+</style>
+</head>
+<body data-mode="email">
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+Ivory.whenFonts(function(){
+  const D = Ivory.data();
+  if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{};
+  document.body.dataset.mode = D.mode||'email';
+  Ivory.applyBrand(b);
+  const O = Ivory.openHouse(D);
+  const inset = ((D.mode||'email')==='print' && D.piece.print==='margin') ? (D.piece.margin||18) : 0;
+
+  const ids = Ivory.photoOrder(D);
+  const pick = (C.flyerPhotos && C.flyerPhotos.length>=3) ? C.flyerPhotos : ids;
+  const [hero, s1, s2] = pick;
+
+  let h = '';
+  // the label bar: field edge to field edge, top of the page down to 62 pt
+  h += `<div class="bar" style="left:${inset}pt;top:${inset}pt;width:${612-2*inset}pt;height:${62-inset}pt"></div>`;
+  h += `<div class="abs label ev-label" data-slot="oh.label" data-lines="1">${esc(O.label)}</div>`;
+  // tall hero down the left, from the bar to just above the address
+  h += Ivory.photo(D, '', hero, `left:${inset}pt;top:62pt;width:${288-inset}pt;height:440pt`);
+  // the right column
+  if(O.weekday){
+    h += `<div class="abs display ev-wd" data-slot="oh.weekday" data-lines="1">${esc(O.weekday)}</div>`;
+    h += `<div class="abs display ev-date" data-slot="oh.date" data-lines="1">${esc(O.monthDay)}</div>`;
+  } else if(O.long){
+    h += `<div class="abs display ev-raw" data-slot="oh.date" data-lines="2">${esc(O.long)}</div>`;
+  } else h += Ivory.ghost(304, 90, 200, 2, 40);
+  h += O.time ? `<div class="abs ev-time" data-slot="oh.time" data-lines="1">${esc(O.time)}</div>` : '';
+  const ev = Ivory.eventLines([[O.note,'oh.note','oh-strong'],[O.refreshments,'oh.refreshments','ev-note']], 314, 217, 252, 15, 3);
+  let y = 212;
+  if(ev.h){
+    const sh = 10 + ev.h;
+    h += `<div class="ev-strip" style="top:${y}pt;height:${sh}pt"></div>` + ev.html;
+    y += sh;
+  }
+  h += `<div class="hair" style="left:304pt;top:${y+10}pt;width:272pt"></div>`;
+  // two captioned photos fill the column from the rule to the card
+  const p0 = y + 22, ph = Math.round((616 - p0 - 34)/2);
+  [[s1,p0],[s2,p0+ph+34]].forEach(([id,py],i)=> h += Ivory.photo(D, '', id, `left:304pt;top:${py}pt;width:272pt;height:${ph}pt`) + Ivory.captionHTML(D, id, 304, py+ph+5, 272, 'col'+i));
+
+  h += `<div class="abs display address" data-slot="address" data-lines="3">${esc(L.address)}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="2" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
+
+  h += Ivory.card(D, {x:36, y:650, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:56, logoH:28, gap:18, brkMin:170,
+                      top:{name:8, title:40, callLbl:52, phone:60}});
+  h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+
+  const f = Ivory.frame(D, 612, 792, h);
+  document.getElementById('pages').innerHTML = f.html;
+  Ivory.shapeLogos();
+  { const ad = document.querySelector('.address'); const used = Math.min(3, Math.max(1, Math.round(ad.scrollHeight*72/96/27)));
+    const top = 514 + used*27; document.querySelector('.placeline').style.top = (top+6)+'pt'; document.querySelector('.factline').style.top = (top+6+14)+'pt'; }
+  window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+  const cardIssues = Ivory.layoutCards();
+  window.brochureCheck = () => Ivory.check(cardIssues);
+});
+</script>
+</body>
+</html>

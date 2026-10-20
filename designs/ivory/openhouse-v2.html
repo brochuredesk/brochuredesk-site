@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Ivory open house flyer · v2 Date band</title>
+<link rel="stylesheet" href="ivory.css">
+<script src="ivory.js"></script>
+<!--
+  Ivory · Open House flyer v2 "Date band" (trim 612 x 792 pt).
+  A solid band in the agent's accent color runs edge to edge across the top 208 pt of the page (26% of it) and
+  carries the whole event knocked out in ivory: the label at 26 pt tracked caps, the weekday, the month and day at
+  54 pt, the time at 24 pt bold; the special-notes and refreshments lines sit in a lighter box on the right of the band. Below: a photo
+  grid (two stacked photos at left, the hero at right), the address with the facts on the same baseline, a row of three
+  photos, then the contact card (the one logo on the page).
+-->
+<style>
+  .band{position:absolute;background:var(--accent)}
+  .bd-label{left:36pt;top:26pt;width:540pt;height:30pt;font-size:26pt;line-height:30pt;letter-spacing:4pt;font-weight:700;color:var(--paper)}
+  .bd-wd{left:36pt;top:64pt;width:310pt;height:28pt;font-size:22pt;line-height:28pt;color:var(--paper);opacity:.85}
+  .bd-date{left:35pt;top:92pt;width:322pt;height:64pt;font-size:50pt;line-height:64pt;color:var(--paper)}
+  .bd-raw{left:35pt;top:66pt;width:320pt;height:90pt;font-size:34pt;line-height:42pt;color:var(--paper);white-space:normal}
+  .bd-time{left:36pt;top:164pt;width:320pt;height:30pt;font:700 24pt/30pt var(--font-body);color:var(--paper);white-space:nowrap;overflow:hidden}
+  .bd-box{position:absolute;left:360pt;width:216pt;background:var(--paper);opacity:.14}
+  .bd-note{height:16pt;font:600 11.5pt/16pt var(--font-body);color:var(--paper);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .oh-strong{height:16pt;font:700 11.5pt/16pt var(--font-body);color:var(--paper);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .address{left:35pt;top:470pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt}
+  .placeline{left:36pt;top:504pt;width:300pt;height:9pt}
+  .factline{left:336pt;top:502pt;width:240pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
+</style>
+</head>
+<body data-mode="email">
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+Ivory.whenFonts(function(){
+  const D = Ivory.data();
+  if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{};
+  document.body.dataset.mode = D.mode||'email';
+  Ivory.applyBrand(b);
+  const O = Ivory.openHouse(D);
+  const inset = ((D.mode||'email')==='print' && D.piece.print==='margin') ? (D.piece.margin||18) : 0;
+
+  const ids = Ivory.photoOrder(D);
+  const pick = (C.flyerPhotos && C.flyerPhotos.length>=6) ? C.flyerPhotos : ids;
+  const [hero, s1, s2, s3, s4, s5] = pick;
+
+  let h = '';
+  // the band: field edge to field edge, top of the page down to 208 pt
+  h += `<div class="band" style="left:${inset}pt;top:${inset}pt;width:${612-2*inset}pt;height:${208-inset}pt"></div>`;
+  h += `<div class="abs label bd-label" data-slot="oh.label" data-lines="1">${esc(O.label)}</div>`;
+  if(O.weekday){
+    h += `<div class="abs display bd-wd" data-slot="oh.weekday" data-lines="1">${esc(O.weekday)}</div>`;
+    h += `<div class="abs display bd-date" data-slot="oh.date" data-lines="1">${esc(O.monthDay)}</div>`;
+  } else if(O.long){
+    h += `<div class="abs display bd-raw" data-slot="oh.date" data-lines="2">${esc(O.long)}</div>`;
+  }
+  h += O.time ? `<div class="abs bd-time" data-slot="oh.time" data-lines="1">${esc(O.time)}</div>` : '';
+  // special-notes and refreshments in a lighter box at the right of the band, vertically centered on the date
+  { const ls = [[O.note,'oh.note','oh-strong'],[O.refreshments,'oh.refreshments','bd-note']].filter(l=>l[0]);
+    if(ls.length){
+      const pre = Ivory.eventLines(ls, 372, 0, 196, 16, 4), bh = 16 + pre.h, bt = Math.max(66, 124 - bh/2);
+      h += `<div class="bd-box" style="top:${bt}pt;height:${bh}pt"></div>` + Ivory.eventLines(ls, 372, bt+8, 196, 16, 4).html;
+    } }
+
+  // photo grid: two stacked at left, the hero at right; address with the facts on the right; three photos below
+  h += Ivory.photo(D, '', s1, 'left:36pt;top:222pt;width:172pt;height:116pt');
+  h += Ivory.photo(D, '', s2, 'left:36pt;top:346pt;width:172pt;height:116pt');
+  h += Ivory.photo(D, '', hero, 'left:216pt;top:222pt;width:360pt;height:240pt');
+  h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
+  h += `<div class="hair" style="left:36pt;top:522pt;width:540pt;opacity:.35"></div>`;
+  [[s3,36],[s4,221],[s5,406]].forEach(([id,x])=> h += Ivory.photo(D, '', id, `left:${x}pt;top:534pt;width:170pt;height:106pt`));
+
+  h += Ivory.card(D, {x:36, y:656, w:540, h:100, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:54, logoH:26, gap:18, brkMin:170,
+                      top:{name:8, title:39, callLbl:51, phone:59}});
+  h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+
+  const f = Ivory.frame(D, 612, 792, h);
+  document.getElementById('pages').innerHTML = f.html;
+  Ivory.shapeLogos();
+  window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+  const cardIssues = Ivory.layoutCards();
+  window.brochureCheck = () => Ivory.check(cardIssues);
+});
+</script>
+</body>
+</html>
