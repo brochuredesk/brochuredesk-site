@@ -3,7 +3,7 @@
 
      TeamFlow.mount(ctx, route)   ctx = {sb, code, team, me, profile, main, nav(path)}; route = path parts after the address
 
-   Routes: new, package/<id>, orders, receipts, help. Anything else shows the not-found page in the team's look.
+   Routes: new, package/<id>, orders, receipts, printer, help. Anything else shows the not-found page in the team's look.
    A team agent is never asked for a logo or brand colors: those come from the team's brand kit. */
 (function(){
   const E = window.BDEngine;
@@ -390,6 +390,12 @@
       </div>`;
   }
 
+  function printer(ctx){
+    ctx.main.innerHTML = `<section class="hello"><h1>Printer and mail vendor</h1></section>
+      <div class="fl-card fl-help"><p>You pick your printer and mail vendor when you order a package. The ones you use are saved here, so next time they're already chosen.</p>
+      <p class="fl-hint">Nothing saved yet.</p><div class="row"><a class="btn line" href="/${esc(ctx.code)}" data-nav>Back to home</a></div></div>`;
+  }
+
   function notFound(ctx, why){
     document.title = `Page not found | ${ctx.team.name} Print Marketing`;
     ctx.main.innerHTML = `<section class="hello"><h1>This page isn’t here</h1><p>${esc(why || 'Check the address, or head back to your home page.')}</p></section>
@@ -405,6 +411,7 @@
     if(r === 'orders' && !a) return orders(ctx);
     if(r === 'receipts' && !a) return receipts(ctx);
     if(r === 'help' && !a) return help(ctx);
+    if(r === 'printer' && !a) return printer(ctx);
     return notFound(ctx);
   }
 

@@ -385,7 +385,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
           <ul>
             <li><button type="button" id="openProfile">Profile and headshot</button></li>
             <li><a href="#" data-nav data-to="receipts">Receipts</a></li>
-            <li><a href="#" data-nav data-to="orders">Past orders</a></li>
+            <li><a href="#" data-nav data-to="printer">Printer and mail vendor</a></li>
             <li><a href="#" data-nav data-to="help">Help</a></li>
             <li><a href="#">Suggest an improvement</a></li>
             <li><button type="button" id="signOut">Sign out</button></li>
@@ -481,6 +481,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
 </dialog>
 <script src="/preview/matrix-help.js?v=2"></script>
 <script src="/designs/shared/engine.js?v=1"></script>
+<script src="/designs/shared/account-menu.js?v=1"></script>
 <script src="/team/flow.js?v=1"></script>
 <script>
 (() => {
@@ -818,7 +819,14 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     });
     box.append(tb);
   }
-  $('acctBtn').addEventListener('click', () => nav(`/${code}/profile`));
+  // the account button opens a menu on every team screen (same list as the home page's Account card)
+  AccountMenu.mount($('acctBtn'), [
+    { label: 'Profile and headshot', onSelect: () => nav(`/${code}/profile`) },
+    { label: 'Receipts', onSelect: () => nav(`/${code}/receipts`) },
+    { label: 'Printer and mail vendor', onSelect: () => nav(`/${code}/printer`) },
+    { label: 'Help', onSelect: () => nav(`/${code}/help`) },
+    { label: 'Sign out', onSelect: () => signOut() }
+  ]);
   $('editCard').addEventListener('click', () => nav(`/${code}/profile`));
   $('openProfile').addEventListener('click', () => nav(`/${code}/profile`));
 
@@ -887,7 +895,23 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL;
   });
 
-  $('signOut').addEventListener('click', async () => { await sb.auth.signOut(); me = profile = null; $('email').value=''; history.pushState(null, '', home()); show('vSignin'); });
+  // Sign out: end the Supabase session, forget everything kept in this browser, wipe what the last person saw,
+  // and land on this team's own sign-in page.
+  async function signOut(){
+    try { await sb.auth.signOut(); } catch (_) {}
+    AccountMenu.signOutStorage();
+    me = profile = null;
+    if (pendingPhoto) { URL.revokeObjectURL(pendingPhoto.url); if (pendingPhoto.origUrl) URL.revokeObjectURL(pendingPhoto.origUrl); }
+    pendingPhoto = null; removePhoto = false;
+    ['pfDisplay','pfGreet','pfEmail','pfCell','email','password','link'].forEach(id => $(id).value = '');
+    ['pfPhotoImg','pvImg'].forEach(id => setImg($(id), ''));
+    ['contactCard','firstName','ini','flowMain','pvName','pvCell','pvEmail','pfStatus','signinStatus','pfTitle','pfLede','welcome','helloLede'].forEach(id => $(id).textContent = '');
+    $('homeOrders').innerHTML = ''; $('resumeBox').hidden = true; $('startMsg').hidden = true;
+    history.pushState(null, '', home());
+    document.title = `${team.name} Print Marketing`;
+    show('vSignin'); window.scrollTo(0, 0); $('email').focus();
+  }
+  $('signOut').addEventListener('click', signOut);
 
   // the Go box starts a package on this team's own page, never the public preview
   $('startForm').addEventListener('submit', e => {
