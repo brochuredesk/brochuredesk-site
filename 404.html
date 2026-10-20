@@ -56,6 +56,11 @@ dialog{margin:auto}
 .lockup{display:flex;flex-direction:column;gap:26px}
 .lk-title{display:flex;flex-direction:column;gap:16px;font-weight:400}
 .lk-logo svg{width:min(360px,100%);height:auto;display:block}
+.lk-logo{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.lk-logo img{display:block;max-width:min(340px,100%);max-height:150px;width:auto;height:auto}
+.wm{display:inline-flex;flex-direction:column;gap:6px;font-family:var(--team-display);line-height:1}
+.wm-top{font-size:clamp(34px,3.6vw,52px);font-weight:600;letter-spacing:.01em}
+.wm-sub{font-family:var(--team-body);font-size:13px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;opacity:.9}
 .lk-word{font-family:var(--team-display);font-size:clamp(46px,5.4vw,78px);line-height:.98}
 .lk-powered{display:inline-flex;align-items:center;gap:14px;color:#fff;text-decoration:none;padding-top:18px;border-top:1px solid rgba(255,255,255,.45);align-self:flex-start;min-width:min(360px,100%)}
 .lk-by{font-size:13px;letter-spacing:.06em;opacity:.85}
@@ -90,6 +95,9 @@ dialog{margin:auto}
 .vh header .bar{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px}
 .team-lock{display:inline-flex;align-items:center;gap:16px;text-decoration:none;color:var(--team-ink)}
 .team-lock svg{width:210px;height:auto;display:block}
+.team-lock [data-slot="logoColor"]{display:inline-flex;align-items:center;gap:10px}
+.team-lock img{display:block;max-height:46px;max-width:200px;width:auto;height:auto}
+.team-lock .wm{gap:3px}.team-lock .wm-top{font-size:22px}.team-lock .wm-sub{font-size:9.5px;letter-spacing:.2em}
 .tl-div{width:1px;height:30px;background:var(--team-ink);opacity:.35}
 .tl-word{font-family:var(--team-display);font-size:26px;line-height:1;color:var(--team-primary);white-space:nowrap}
 .vh .right{display:flex;align-items:center;gap:22px}
@@ -274,7 +282,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
 
 <!-- Team sign-in -->
 <div class="vs" id="vSignin" hidden>
-  <section class="brand" aria-label="Team brand">
+  <section class="brand" aria-label="Brand">
     <div class="top">
       <div class="lockup">
         <h1 class="lk-title"><span class="lk-logo" data-slot="logoLight"></span><span class="lk-word">Print Marketing</span></h1>
@@ -286,7 +294,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     </div>
     <div class="gap" aria-hidden="true"></div>
     <div class="bottom">
-      <p class="carries">Every piece carries the <strong>team logo and colors</strong>, with <strong>your own contact card</strong> on the back.</p>
+      <p class="carries">Every piece carries the <strong><span data-k="org">team</span> logo and colors</strong>, with <strong>your own contact card</strong> on the back.</p>
       <p class="carries">Paste a listing link and your brochure, flyers and postcard come back ready to print.</p>
       <p class="printer">We can even upload them to your printer! You just check out.</p>
       <p class="office" data-slot="office"></p>
@@ -294,9 +302,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   </section>
   <main class="signin">
     <div class="inner">
-      <p class="tag">Team sign-in</p>
+      <p class="tag"><span data-k="Org">Team</span> sign-in</p>
       <h2>Sign in</h2>
-      <p class="lede">Use the email and password for your team account.</p>
+      <p class="lede">Use the email and password for your <span data-k="org">team</span> account.</p>
       <form id="signinForm" novalidate>
         <label for="email">Email</label>
         <input id="email" type="email" autocomplete="username" inputmode="email" required>
@@ -306,7 +314,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <p class="status" id="signinStatus" role="status" aria-live="polite"></p>
       </form>
       <div class="help">
-        <p>Joining the team? Ask your team admin to send you an invite.</p>
+        <p>Joining the <span data-k="org">team</span>? Ask your <span data-k="org">team</span> admin to send you an invite.</p>
         <p>Trouble signing in? Email <b>support@brochuredesk.com</b></p>
       </div>
       <p class="about"><span data-slot="name"></span> Print Marketing runs on <b>BrochureDesk</b>. Signing in takes you to your BrochureDesk account, set up in the <span data-slot="name"></span> brand.</p>
@@ -381,7 +389,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <div class="pack"><div class="n">3</div><p>packages left in your 5-pack. Use them on any listing, any time.</p><a class="btn" href="#">Buy another 5-pack</a></div>
         <div class="card">
           <h3>Your contact card</h3>
-          <p>This goes on the back of every piece, under the team brand.</p>
+          <p>This goes on the back of every piece, under the <span data-k="org">team</span> brand.</p>
           <div class="contact" id="contactCard"></div>
           <div class="row" style="margin-top:12px"><button class="btn line" type="button" id="editCard">Edit profile</button></div>
         </div>
@@ -505,6 +513,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (b.display) r.setProperty('--team-display', b.display);
     if (b.body) r.setProperty('--team-body', b.body);
     if (b.googleFonts) $('teamFonts').href = 'https://fonts.googleapis.com/css2?' + b.googleFonts + '&display=swap';
+    const org = b.kind === 'brokerage' ? 'brokerage' : 'team';   // set per company record; prospects are brokerages
+    document.querySelectorAll('[data-k="org"]').forEach(e => e.textContent = org);
+    document.querySelectorAll('[data-k="Org"]').forEach(e => e.textContent = org[0].toUpperCase() + org.slice(1));
     document.querySelectorAll('[data-slot="name"]').forEach(e => e.textContent = t.name);
     document.querySelectorAll('[data-slot="logoLight"]').forEach(e => e.innerHTML = b.logoLight || '');
     document.querySelectorAll('[data-slot="logoColor"]').forEach(e => e.innerHTML = b.logoColor || '');
@@ -799,7 +810,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     show('vSignin');
   }
 
-  const NEUTRAL = "That email and password don't match a team account. Check both and try again.";
+  const NEUTRAL = () => `That email and password don't match a ${team && team.brand && team.brand.kind === 'brokerage' ? 'brokerage' : 'team'} account. Check both and try again.`;
   $('signinForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('email').value.trim(), password = $('password').value;
@@ -811,7 +822,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (!error) await sb.auth.signOut();          // signed in, but not on this team: same message, nothing revealed
     $('goBtn').disabled = false;
     st.className = 'status err';
-    st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL;
+    st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL();
   });
 
   $('signOut').addEventListener('click', async () => { await sb.auth.signOut(); me = profile = null; $('email').value=''; show('vSignin'); });
