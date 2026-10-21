@@ -23,8 +23,8 @@
    - when labels won't fit, levels marked living:false become small insets "drawn smaller" so the living level
      gets the larger spot (raised coastal homes); garage apartments are always insets
    - plans turn on their side when that draws them noticeably larger (tall, narrow townhomes in a 2 x 2 grid)
-   - styled, not bare (the owner, 10/21/2026): rooms tinted by zone (living, bedrooms, baths), door swings, windows,
-     and a legend drawn by the template (IvoryPlan.ZONES); doors show as wall openings, no swings (the owner's second round)
+   - styled, not bare (10/21/2026): rooms tinted by zone (living, bedrooms, baths), door swings, windows,
+     and a legend drawn by the template (IvoryPlan.ZONES); doors show as wall openings, no swings (second review round)
 */
 (function(){
   const PT = 72/96;
@@ -345,7 +345,7 @@
       const ex = h ? hx + L2 : hx, ey = h ? hy : hy + L2;            // far end of the opening
       const lx = h ? hx : hx + sg*L2, ly = h ? hy + sg*L2 : hy;      // open leaf tip
       const sweep = h ? (sg>0 ? 0 : 1) : (sg>0 ? 1 : 0);
-      // an opening in the wall, no door leaf or swing (the owner, 10/21/2026: "just leave openings"); short jambs mark the ends
+      // an opening in the wall, no door leaf or swing (10/21/2026: "just leave openings"); short jambs mark the ends
       const jx = h ? 0 : 1.9, jy = h ? 1.9 : 0;
       extra += `<line x1="${hx}" y1="${hy}" x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}" stroke="var(--paper)" stroke-width="3.6"/>`
              + `<line x1="${(hx-jx).toFixed(2)}" y1="${(hy-jy).toFixed(2)}" x2="${(hx+jx).toFixed(2)}" y2="${(hy+jy).toFixed(2)}" stroke="var(--ink)" stroke-width=".75"/>`

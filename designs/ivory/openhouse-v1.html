@@ -76,7 +76,7 @@ Ivory.whenFonts(function(){
   h += `<div class="abs display address" style="top:${a}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
   h += `<div class="abs place placeline" style="top:${a+34}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
   h += `<div class="abs factline" style="top:${a+47}pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
-  // a short description of the house fills the space above the card (the owner, 10/21/2026)
+  // a short description of the house fills the space above the card (10/21/2026)
   const blurb = (C.openHouse||{}).blurb || (C.listing||{}).body || '';
   const bl = Math.floor((640 - (a+64)) / 13.5);
   if(blurb && bl >= 2) h += `<div class="abs body" style="left:66pt;top:${a+64}pt;width:480pt;height:${bl*13.5}pt;font-size:10pt;line-height:13.5pt;text-align:center" data-slot="oh.blurb" data-lines="${bl}" data-fill="${Math.min(3, bl)}">${esc(blurb)}</div>`;

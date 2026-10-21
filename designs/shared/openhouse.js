@@ -1,4 +1,4 @@
-/* Open House flyer picker and updater (the owner, 10/19/2026). Published as /designs/shared/openhouse.js.
+/* Open House flyer picker and updater (10/19/2026). Published as /designs/shared/openhouse.js.
 
    Every design set has its own Open House flyer, the recommended default. The agent can pick the Open House flyer of
    any other approved design instead, at the proof or on the update page; the rest of the package stays in its design.

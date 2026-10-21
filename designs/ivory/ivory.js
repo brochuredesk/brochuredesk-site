@@ -259,7 +259,7 @@
       } else {
         card.querySelector('.d2').style.left = (L0+aw+g/2)+'pt';
       }
-      // the QR code sits centered between its hairline and the card's right edge (the owner, 10/21/2026)
+      // the QR code sits centered between its hairline and the card's right edge (10/21/2026)
       const d2 = parseFloat(card.querySelector('.d2').style.left), qw = pt(qr.offsetWidth);
       qr.style.right = 'auto'; qr.style.left = ((d2 + W)/2 - qw/2)+'pt';
     });
@@ -278,7 +278,7 @@
         issues.push({slot:name, kind:'overflow', text:el.textContent.slice(0,80)});
       if(size < 8 && !el.dataset.fine) issues.push({slot:name, kind:'type-too-small', size:+size.toFixed(1)});
       if(size < 6) issues.push({slot:name, kind:'fine-print-below-6pt', size:+size.toFixed(1)});
-      // fill target (the owner, 10/21/2026): a text block with data-fill="n" needs at least n lines, and when it stops at
+      // fill target (10/21/2026): a text block with data-fill="n" needs at least n lines, and when it stops at
       // exactly n the last line runs at least 60% of the width. Short copy comes back to the writer to be filled out.
       const need = +el.dataset.fill || 0;
       if(need && el.textContent.trim()){
