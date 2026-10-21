@@ -178,7 +178,7 @@
       <div class="brk" style="position:absolute;top:0;bottom:0;text-align:center">
         ${o.brokerageLogo===false
           ? `<div style="position:absolute;left:0;right:0;top:${rows.name+2}pt;height:${o.logoH||24}pt;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:${o.brkNameSize||13}pt;line-height:1.1;color:var(--ink);white-space:nowrap" data-slot="broker.name" data-lines="1">${esc(b.brokerage||'')}</div>`
-          : Ivory.logo(b, '', `left:0;right:0;top:${rows.name+2}pt;height:${o.logoH||24}pt;justify-content:center`)}
+          : Ivory.logo(b, '', `left:-16pt;right:-16pt;top:${rows.name}pt;height:${Math.round((o.logoH||24)*1.3)}pt;justify-content:center`)}
         <div class="lbl" style="left:0;right:0;top:${rows.callLbl}pt;text-align:center" data-fine="1">${esc(b.officeLabel||'Office')}</div>
         <div style="position:absolute;left:0;right:0;top:${rows.phone+2}pt;font:700 ${o.officeSize||13}pt/${(o.officeSize||13)+2}pt var(--font-body);color:var(--ink);white-space:nowrap" data-slot="broker.phone" data-lines="1">${esc(b.phone||'')}</div>
         <div style="position:absolute;left:0;right:0;top:${lineTop}pt;font-size:${o.lineSize}pt;line-height:${o.lineSize+2}pt;color:var(--ink);white-space:nowrap" data-slot="broker.web" data-lines="1">${esc(b.web||'')}</div>
@@ -186,8 +186,8 @@
     }
     h += `<div class="divider d2" style="top:10pt;bottom:10pt"></div>
       <div class="qrcol" style="position:absolute;top:0;bottom:0;width:${o.qr+12}pt;right:12pt">
-        <div style="position:absolute;left:6pt;top:${rows.name+2}pt;width:${o.qr}pt;height:${o.qr}pt">${A.qr ? `<img src="${esc(A.qr)}" alt="" style="width:100%;height:100%">` : ''}</div>
-        <div class="lbl" style="left:-10pt;right:-10pt;top:${rows.name+o.qr+8}pt;text-align:center;letter-spacing:.6pt;text-transform:none;font-weight:600" data-slot="agent.qrurl" data-fine="1">${esc(A.web||'')}</div>
+        <div style="position:absolute;left:6pt;top:${(o.h - o.qr - 14)/2}pt;width:${o.qr}pt;height:${o.qr}pt">${A.qr ? `<img src="${esc(A.qr)}" alt="" style="width:100%;height:100%">` : ''}</div>
+        <div class="lbl" style="left:-10pt;right:-10pt;top:${(o.h - o.qr - 14)/2 + o.qr + 6}pt;text-align:center;letter-spacing:.6pt;text-transform:none;font-weight:600" data-slot="agent.qrurl" data-fine="1">${esc(A.web||'')}</div>
       </div>
     </div>`;
     return h;
@@ -259,6 +259,9 @@
       } else {
         card.querySelector('.d2').style.left = (L0+aw+g/2)+'pt';
       }
+      // the QR code sits centered between its hairline and the card's right edge (Casey, 10/21/2026)
+      const d2 = parseFloat(card.querySelector('.d2').style.left), qw = pt(qr.offsetWidth);
+      qr.style.right = 'auto'; qr.style.left = ((d2 + W)/2 - qw/2)+'pt';
     });
     return issues;
   };
@@ -275,6 +278,17 @@
         issues.push({slot:name, kind:'overflow', text:el.textContent.slice(0,80)});
       if(size < 8 && !el.dataset.fine) issues.push({slot:name, kind:'type-too-small', size:+size.toFixed(1)});
       if(size < 6) issues.push({slot:name, kind:'fine-print-below-6pt', size:+size.toFixed(1)});
+      // fill target (Casey, 10/21/2026): a text block with data-fill="n" needs at least n lines, and when it stops at
+      // exactly n the last line runs at least 60% of the width. Short copy comes back to the writer to be filled out.
+      const need = +el.dataset.fill || 0;
+      if(need && el.textContent.trim()){
+        const rg = document.createRange(); rg.selectNodeContents(el);
+        const rows = []; [...rg.getClientRects()].forEach(r=>{ const row = rows.find(x=>Math.abs(x.top - r.top) < 2); if(row) row.right = Math.max(row.right, r.right); else rows.push({top:r.top, left:r.left, right:r.right}); });
+        const box = el.getBoundingClientRect(), last = rows[rows.length-1];
+        const lastFill = last ? (last.right - box.left) / box.width : 0;
+        if(rows.length < need || (rows.length === need && lastFill < 0.6))
+          issues.push({slot:name, kind:'underfilled', lines:rows.length, need, lastLine:Math.round(lastFill*100)+'%', detail:`write it out to ${need} full lines`});
+      }
     });
     // no photo twice in one piece unless the listing is short on photos
     const D = Ivory.data(), seen = {};

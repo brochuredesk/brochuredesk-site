@@ -6,10 +6,9 @@
 <link rel="stylesheet" href="ivory.css">
 <script src="ivory.js"></script>
 <!--
-  Ivory design · 8.5 x 11 flyers (trim 612 x 792 pt). One layout, three variants (data.piece.variant):
-    listing    eyebrow "New listing", detail paragraph + facts on the left
-    just       eyebrow "Just listed", announcement copy for neighbors on the left
-    openhouse  the left column becomes the open house: one label, serif date, bold time, one-line facts
+  Ivory design · 8.5 x 11 listing flyer (trim 612 x 792 pt): eyebrow "New listing", detail paragraph + facts on the left.
+  Ivory's Open House flyers are the five openhouse-v1..v5 pieces (Casey, 10/21/2026: the old open house variant of this
+  layout was removed; those five are the ones that fit Ivory best, and agents may also pick any other approved design's).
   Modes: email = ivory edge to edge; print = same page with a white margin around the ivory field.
   No price slot exists. Copy is never shrunk to fit; only the agent's name steps down (start -> 18 pt).
 -->
@@ -22,9 +21,6 @@
   .heading{left:35pt;top:376pt;width:175pt;font-size:19pt;line-height:24pt;height:24pt}
   .col-kicker{left:36pt;top:412pt;width:170pt;font-size:8pt;letter-spacing:1.2pt}
   .facts{left:36pt;width:170pt;font:700 9.5pt/14pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;height:14pt}
-  .oh-date{left:35pt;width:172pt;font-size:24pt;line-height:29pt;height:60pt;white-space:normal}
-  .oh-time{left:36pt;top:462pt;width:170pt;font:700 11.5pt/14pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;height:14pt}
-  .oh-facts{left:36pt;top:500pt;width:172pt;font-size:8.5pt;line-height:11pt;height:11pt;white-space:nowrap}
   .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -36,7 +32,7 @@ Ivory.whenFonts(function(){
   const D = Ivory.data();
   if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
   const esc = Ivory.esc, b = D.brand||{}, L = D.listing, A = D.agent||{};
-  const v = D.piece.variant, C = (D.companion||{}), F = C[v==='just'?'just':'listing'] || {};
+  const v = D.piece.variant, C = (D.companion||{}), F = C.listing || {};
   document.body.dataset.mode = D.mode||'email';
   Ivory.applyBrand(b);
 
@@ -44,7 +40,7 @@ Ivory.whenFonts(function(){
   const pick = (C.flyerPhotos && C.flyerPhotos.length===7) ? C.flyerPhotos : ids.slice(0,7);
   const [hero, s1, s2, g1, g2, g3, g4] = pick;
 
-  const eyebrow = {listing:'New listing', just:'Just listed', openhouse:''}[v];
+  const eyebrow = 'New listing';
   let h = '';
   // header
   if(eyebrow) h += `<div class="abs label eyebrow" data-slot="eyebrow" data-lines="1">${esc(eyebrow)}</div>`;
@@ -59,30 +55,14 @@ Ivory.whenFonts(function(){
   h += Ivory.photo(D, '', s2, 'left:408pt;top:242pt;width:168pt;height:92pt') + Ivory.captionHTML(D, s2, 408, 338, 168, 'stack1');
 
   // left column
-  if(v==='openhouse'){
-    const O = D.openHouse || {};
-    const kinds = {public:'Public Open House', broker:'Broker Open House', realtor:'REALTOR® Open House'};
-    let kind = O.kind in kinds ? O.kind : 'public';
-    if(kind==='realtor' && !A.nar) kind = 'broker';           // REALTOR(R) wording only for NAR members
-    const dt = O.date ? new Date(O.date+'T12:00:00') : null;
-    const dateHTML = dt ? esc(dt.toLocaleDateString('en-US',{weekday:'long'})) + '<br>' + esc(dt.toLocaleDateString('en-US',{month:'long', day:'numeric'})) : '';
-    const t12 = s => { if(!s) return ''; let [H,M]=s.split(':').map(Number); const ap=H>=12?'pm':'am'; H=H%12||12; return {txt:M?`${H}:${String(M).padStart(2,'0')}`:`${H}:00`, ap}; };
-    const a = t12(O.start), z = t12(O.end);
-    const timeTxt = a && z ? (a.ap===z.ap ? `${a.txt} to ${z.txt} ${z.ap}` : `${a.txt} ${a.ap} to ${z.txt} ${z.ap}`) : '';
-    h += `<div class="abs label col-kicker" style="top:384pt" data-slot="oh.label" data-lines="1">${esc(kinds[kind])}</div>`;
-    h += dateHTML ? `<div class="abs display oh-date" style="top:402pt" data-slot="oh.date" data-lines="2">${dateHTML}</div>` : Ivory.ghost(36, 406, 160, 2, 29);
-    h += timeTxt ? `<div class="oh-time abs" style="top:470pt" data-slot="oh.time" data-lines="1">${esc(timeTxt)}</div>` : Ivory.ghost(36, 472, 110, 1, 14);
-    h += `<div class="hair" style="left:36pt;top:556pt;width:170pt"></div>`;
-    h += `<div class="abs body oh-facts" style="top:568pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
-  } else {
-    h += `<div class="abs display heading" data-slot="heading" data-lines="1">${esc(F.heading || (v==='just' ? 'Just listed nearby' : 'The home, in detail'))}</div>`;
-    const kicker = F.kicker || (v==='just' ? 'To our neighbors' : '');
-    h += (D.copyPending && v!=='just') ? Ivory.ghost(36, 410, 110, 1, 10)
-       : `<div class="abs label col-kicker" data-slot="kicker" data-lines="1">${esc(kicker)}</div>`;
-    h += Ivory.text(D, F.body, 36, 428, 170, 9, 12.5, 9, 'detail');
-    h += `<div class="hair" style="left:36pt;top:556pt;width:170pt"></div>`;
-    Ivory.facts(L).slice(0,3).forEach((f,i)=> h += `<div class="abs facts" style="top:${566+i*14}pt" data-slot="fact${i}" data-lines="1">${esc(f)}</div>`);
-  }
+  // left column: heading, detail paragraph and facts
+  h += `<div class="abs display heading" data-slot="heading" data-lines="1">${esc(F.heading || 'The home, in detail')}</div>`;
+  const kicker = F.kicker || '';
+  h += D.copyPending ? Ivory.ghost(36, 410, 110, 1, 10)
+     : `<div class="abs label col-kicker" data-slot="kicker" data-lines="1">${esc(kicker)}</div>`;
+  h += Ivory.text(D, F.body, 36, 428, 170, 9, 12.5, 9, 'detail');
+  h += `<div class="hair" style="left:36pt;top:556pt;width:170pt"></div>`;
+  Ivory.facts(L).slice(0,3).forEach((f,i)=> h += `<div class="abs facts" style="top:${566+i*14}pt" data-slot="fact${i}" data-lines="1">${esc(f)}</div>`);
 
   // 2 x 2 captioned photo grid
   [[g1,222,378],[g2,405,378],[g3,222,506],[g4,405,506]].forEach(([id,x,y],i)=>{
