@@ -1,0 +1,142 @@
+{
+ "copy": {
+  "front": {
+   "photo": "front",
+   "location": "East End / Houston, Texas"
+  },
+  "insideTop": {
+   "kicker": "Living, dining + kitchen",
+   "title": "Rebuilt from the foundation up.",
+   "stats": [
+    "3 Bedrooms",
+    "2 Full Baths",
+    "1,385 Sq Ft",
+    "Built in 1940"
+   ],
+   "intro": "A 1940 East End bungalow, leveled and braced, with new wiring, plumbing, siding and roof. It has never flooded, and Downtown is 3.5 miles away.",
+   "features": [
+    {
+     "photo": "living",
+     "caption": "Living room open to the dining area and kitchen.",
+     "title": "Open from front to back",
+     "body": "A wide cased opening joins the living room to the dining area and kitchen, so the front of the house works as one room. A clerestory window adds light."
+    },
+    {
+     "photo": "kitchen",
+     "caption": "New kitchen with stainless appliances.",
+     "title": "An all new kitchen",
+     "body": "An L-shaped kitchen with a peninsula. The range, sink and dishwasher sit a step apart, and the pantry and breakfast nook are around the corner."
+    }
+   ],
+   "tiles": [
+    {
+     "photo": "kitchen2",
+     "title": "Breakfast bar",
+     "body": "Two pendant lights over the peninsula, with room for stools."
+    },
+    {
+     "photo": "dining",
+     "title": "Dining area",
+     "body": "Between the kitchen and the hall to the bedrooms."
+    },
+    {
+     "photo": "nook",
+     "title": "Breakfast nook",
+     "body": "Windows on two walls and a door to the deck."
+    },
+    {
+     "photo": "hall",
+     "title": "Front entry",
+     "body": "Wood-look floors from the front door to the kitchen."
+    }
+   ]
+  },
+  "insideBottom": {
+   "kicker": "Bedrooms + baths",
+   "title": "A private primary at the back.",
+   "features": [
+    {
+     "photo": "primary",
+     "caption": "Primary bedroom with a vaulted ceiling.",
+     "title": "Vaulted primary bedroom",
+     "body": "At the back of the house, away from the street, with an exposed beam, windows on two walls and a double-door closet."
+    },
+    {
+     "photo": "bedroom2",
+     "caption": "Bedroom two, at the front corner.",
+     "title": "Bedroom two",
+     "body": "The larger secondary bedroom, with windows on two walls. It shares the hall bath with bedroom three."
+    },
+    {
+     "photo": "study",
+     "caption": "Bedroom three, with room for a desk.",
+     "title": "Bedroom three",
+     "body": "The closet sits on the hall side, which leaves the window wall open for a desk."
+    }
+   ],
+   "tiles": [
+    {
+     "photo": "office",
+     "title": "Primary bath",
+     "body": "Double sinks and a glass shower tiled to the ceiling."
+    },
+    {
+     "photo": "family",
+     "title": "New siding and roof",
+     "body": "Fiber cement siding, a new roof and a new driveway."
+    },
+    {
+     "photo": "lawn",
+     "title": "Covered patio",
+     "body": "A fenced yard with a covered patio and garage."
+    }
+   ]
+  },
+  "back": {
+   "kicker": "Outside + location",
+   "title": "Built to last, close to Downtown.",
+   "variant": "photos",
+   "plans": [
+    {
+     "photo": "front",
+     "label": "1940 bungalow, rebuilt"
+    }
+   ],
+   "planDisclosures": [],
+   "feature": {
+    "photo": "family",
+    "title": "Never flooded",
+    "body": "New wiring and breaker box, three-phase power, new plumbing, fiber cement siding and a new roof. Out back, a fenced yard with a covered garage beside the patio."
+   },
+   "locationTitle": "Location",
+   "locationBody": "A park is a few blocks away and coffee is under a mile. Navigation Esplanade is about 2 miles, and Downtown is 3.5 miles."
+  }
+ },
+ "companion": {
+  "flyerPhotos": [
+   "front",
+   "kitchen",
+   "living",
+   "dining",
+   "nook",
+   "primary",
+   "study"
+  ],
+  "listing": {
+   "heading": "The home, in detail",
+   "kicker": "East End, rebuilt",
+   "body": "A 1940 bungalow in the East End, rebuilt from the foundation up with new wiring, plumbing, siding and roof. The living room opens to the dining area and an all new kitchen. The vaulted primary bedroom sits at the back of the house. It has never flooded."
+  },
+  "postcard": {
+   "eyebrow": "Just listed",
+   "photos": [
+    "front",
+    "kitchen",
+    "living",
+    "primary",
+    "lawn"
+   ],
+   "notes": "Three bedrooms and two full baths in a 1940 bungalow rebuilt from the foundation up. New kitchen, vaulted primary bedroom and a covered patio. Never flooded."
+  }
+ }
+}
