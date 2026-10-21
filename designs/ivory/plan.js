@@ -8,6 +8,11 @@
                             crop:{side:'right', to:30}} ],
                    stairs:{x, y, w, d} } ],
        insets: [ { name:'Garage apartment', rooms:[...] } ] }
+     A room may carry zone:'living'|'sleep'|'bath'|'service' (otherwise read from its name and kind).
+     A level may carry doors:[{x, y, w, dir}] and windows:[{x, y, w, dir}] read from the listing plan (dir is the side of
+     the wall the door swings into: 'up'|'down' on a horizontal wall, 'left'|'right' on a vertical one; x,y is the hinge).
+     With no doors given, doors are placed where they normally go: bedrooms, baths and closets open onto the hall or
+     the room they serve, and the front door sits on the street side. Windows likewise go on outside walls.
 
    Rules it enforces:
    - every full level drawn at the same scale, labeled by floor; 1-3 levels side by side, 4 levels in a 2 x 2 grid,
@@ -18,6 +23,8 @@
    - when labels won't fit, levels marked living:false become small insets "drawn smaller" so the living level
      gets the larger spot (raised coastal homes); garage apartments are always insets
    - plans turn on their side when that draws them noticeably larger (tall, narrow townhomes in a 2 x 2 grid)
+   - styled, not bare (the owner, 10/21/2026): rooms tinted by zone (living, bedrooms, baths), door swings, windows,
+     and a legend drawn by the template (IvoryPlan.ZONES); doors show as wall openings, no swings (the owner's second round)
 */
 (function(){
   const PT = 72/96;
@@ -32,6 +39,25 @@
 
   const dimsOf = r => r.dims || `${Math.round(r.w)} x ${Math.round(r.d)}`;
   const isIndoor = r => r.kind !== 'outdoor';
+
+  // zone tints: living areas take the brand accent, bedrooms a warm sand, baths a soft slate
+  const ZONES = {
+    living: {label:'Living areas', fill:'var(--accent)', op:.13},
+    sleep:  {label:'Bedrooms',     fill:'#c4a46a',        op:.24},
+    bath:   {label:'Baths',        fill:'#7f9bb0',        op:.22},
+  };
+  function zoneOf(r){
+    if(r.zone) return r.zone;
+    if(r.kind==='outdoor' || r.kind==='garage' || r.kind==='open') return r.kind;
+    if(r.kind==='wet') return 'bath';
+    if(r.kind==='closet') return 'service';
+    const n = String(r.name||'').toLowerCase();
+    if(/bed|primary|suite|guest|nursery/.test(n)) return 'sleep';
+    if(/bath|powder/.test(n)) return 'bath';
+    if(/closet|pantry|laundry|utility|storage|mech|linen/.test(n)) return 'service';
+    if(/hall|entry|foyer|landing|gallery|stair/.test(n)) return 'open';
+    return 'living';
+  }
 
   // effective extent of a room after an outdoor crop
   function drawn(r){
@@ -49,7 +75,11 @@
     const bb = bbox(L), H = bb.y + bb.d;
     const rot = r => r && Object.assign({}, r, {x: H - (r.y + r.d), y: r.x, w: r.d, d: r.w,
       crop: r.crop ? {side:{right:'bottom', left:'top', top:'right', bottom:'left'}[r.crop.side], to:r.crop.to} : undefined});
-    return Object.assign({}, L, {rooms: L.rooms.map(rot), stairs: rot(L.stairs)});
+    const rotO = o => (o.dir==='up' || o.dir==='down')
+      ? Object.assign({}, o, {x: H - o.y, y: o.x, dir: o.dir==='up' ? 'right' : 'left'})
+      : Object.assign({}, o, {x: H - o.y - o.w, y: o.x, dir: o.dir==='left' ? 'up' : 'down'});
+    return Object.assign({}, L, {rooms: L.rooms.map(rot), stairs: rot(L.stairs), rotated: true,
+      doors: L.doors && L.doors.map(rotO), windows: L.windows && L.windows.map(rotO)});
   }
 
   function bbox(L){
@@ -122,6 +152,7 @@
       let best = null;
       [false, true].forEach(rot=>{
         if(rot && !opt.allowRotate) return;
+        if(opt.rotate !== undefined && rot !== opt.rotate) return;   // redraw in an orientation already chosen
         const lv = rot ? mainLv.map(rotateLevel) : mainLv;
         const A = arrange(lv); const s = scaleFor(A, w, box.h);
         const bad = fits(lv, s);
@@ -187,6 +218,81 @@
             insets: insets.length, levels: lv.length};
   }
 
+  /* Doors and windows for a level, in feet. Uses the level's own doors/windows when the plan gives them;
+     otherwise places them where they normally go. */
+  function openingsFor(L, R){
+    if(L.doors || L.windows) return {doors:L.doors||[], windows:L.windows||[]};
+    const E = 0.35, rooms = R.map(({r,e})=>({r, e, z:zoneOf(r)}));
+    const indoor = rooms.filter(o=>o.r.kind!=='outdoor');
+    // shared wall between a and b: {h, at, from, to, side} where side is a's wall facing b
+    const shared = (a, b) => {
+      const A = a.e, B = b.e;
+      const ox0 = Math.max(A.x, B.x), ox1 = Math.min(A.x+A.w, B.x+B.w), oy0 = Math.max(A.y, B.y), oy1 = Math.min(A.y+A.d, B.y+B.d);
+      if(Math.abs(A.y+A.d - B.y) < E && ox1-ox0 > 0) return {h:true, at:A.y+A.d, from:ox0, to:ox1, side:'down'};
+      if(Math.abs(B.y+B.d - A.y) < E && ox1-ox0 > 0) return {h:true, at:A.y, from:ox0, to:ox1, side:'up'};
+      if(Math.abs(A.x+A.w - B.x) < E && oy1-oy0 > 0) return {h:false, at:A.x+A.w, from:oy0, to:oy1, side:'right'};
+      if(Math.abs(B.x+B.w - A.x) < E && oy1-oy0 > 0) return {h:false, at:A.x, from:oy0, to:oy1, side:'left'};
+      return null;
+    };
+    const opposite = {up:'down', down:'up', left:'right', right:'left'};
+    const doors = [], windows = [];
+    const rank = (room, n) => {
+      const order = room.z==='service' ? ['sleep','open','living','bath'] : room.z==='bath' ? ['open','sleep','living'] : ['open','living'];
+      const i = order.indexOf(n.z); return i < 0 ? 99 : i;
+    };
+    const wantsDoor = o => ['sleep','bath','service'].includes(o.z) && o.r.kind!=='outdoor' && o.r.door!==false;
+    indoor.filter(wantsDoor).forEach(o=>{
+      let best = null;
+      indoor.forEach(n=>{ if(n===o || n.r.kind==='garage') return;
+        const w = shared(o, n); if(!w) return;
+        const len = w.to - w.from, need = o.z==='service' ? 2.2 : 2.6; if(len < need + 0.4) return;
+        const sc = rank(o, n) * 100 - len; if(!best || sc < best.sc) best = {sc, w, n};
+      });
+      if(!best || rank(o, best.n) === 99) return;
+      const w = best.w, dw = Math.min(o.z==='sleep' ? 3 : 2.5, w.to - w.from - 0.6);
+      // swing into the room (doors open into bedrooms, baths and closets); hinge near the start of the shared run
+      const swing = opposite[w.side];   // swings into this room, away from the wall it shares
+      const start = w.from + 0.4;
+      doors.push(w.h ? {x:start, y:w.at, w:dw, dir:swing} : {x:w.at, y:start, w:dw, dir:swing});
+    });
+    // front door: onto the front porch when the plan shows one; else entry/foyer, else the widest living area,
+    // on its street-side wall (bottom; left once turned on its side)
+    const porch = rooms.filter(o=>o.r.kind==='outdoor' && /porch|stoop|front/i.test(o.r.name));
+    let fd = null;
+    porch.forEach(pc=>indoor.filter(o=>o.z==='living' || o.z==='open' || /entry|foyer/i.test(o.r.name)).forEach(o=>{
+      const w = shared(o, pc); if(!w || w.to - w.from < 3.4 || fd) return;
+      const dw = Math.min(3, w.to - w.from - 0.4), a = (w.from + w.to)/2 - dw/2;
+      fd = w.h ? {x:a, y:w.at, w:dw, dir:opposite[w.side], front:true} : {x:w.at, y:a, w:dw, dir:opposite[w.side], front:true};
+    }));
+    if(fd) doors.push(fd);
+    else if(L.rotated){
+      const left = Math.min(...indoor.map(o=>o.e.x));
+      const entry = indoor.find(o=>/entry|foyer/i.test(o.r.name) && o.e.x < left + 6)
+                 || indoor.filter(o=>o.z==='living' && o.e.x < left + 3).sort((a,b)=>b.e.d-a.e.d)[0];
+      if(entry && entry.e.d >= 3.6){ const dw = Math.min(3, entry.e.d - 1); doors.push({x:entry.e.x, y:entry.e.y + (entry.e.d - dw)/2, w:dw, dir:'right', front:true}); }
+    } else {
+      const bottom = Math.max(...indoor.map(o=>o.e.y+o.e.d));
+      const entry = indoor.find(o=>/entry|foyer/i.test(o.r.name) && o.e.y+o.e.d > bottom - 6)
+                 || indoor.filter(o=>o.z==='living' && o.e.y+o.e.d > bottom - 3).sort((a,b)=>b.e.w-a.e.w)[0];
+      if(entry && entry.e.w >= 3.6){ const dw = Math.min(3, entry.e.w - 1); doors.push({x:entry.e.x + (entry.e.w - dw)/2, y:entry.e.y+entry.e.d, w:dw, dir:'up', front:true}); }
+    }
+    // windows: one per outside wall of living areas and bedrooms, on a clear run of 5 ft or more
+    indoor.filter(o=>o.z==='living' || o.z==='sleep').forEach(o=>{
+      const e = o.e;
+      [['up', true, e.y, e.x, e.x+e.w], ['down', true, e.y+e.d, e.x, e.x+e.w], ['left', false, e.x, e.y, e.y+e.d], ['right', false, e.x+e.w, e.y, e.y+e.d]].forEach(([side, h, at, a0, a1])=>{
+        let runs = [[a0, a1]];
+        rooms.forEach(n=>{ if(n===o) return; const w = shared(o, n); if(!w || w.side!==side) return;
+          runs = runs.flatMap(([p,q])=> w.to<=p || w.from>=q ? [[p,q]] : [[p, Math.max(p, w.from)], [Math.min(q, w.to), q]].filter(([u,v])=>v-u>0.1)); });
+        const run = runs.sort((p,q)=>(q[1]-q[0])-(p[1]-p[0]))[0];
+        if(!run || run[1]-run[0] < 5) return;
+        const ww = Math.min(5, (run[1]-run[0])*0.45), c = (run[0]+run[1])/2 - ww/2;
+        if(doors.some(d=>d.front && (h ? (d.dir==='up'||d.dir==='down') && Math.abs(d.y-at)<E && d.x < c+ww+1 && d.x+d.w > c-1 : (d.dir==='left'||d.dir==='right') && Math.abs(d.x-at)<E && d.y < c+ww+1 && d.y+d.w > c-1))) return;
+        windows.push(h ? {x:c, y:at, w:ww, dir:side} : {x:at, y:c, w:ww, dir:side});
+      });
+    });
+    return {doors, windows};
+  }
+
   function levelSVG(L, s, ox, oy, key){
     const R = L.rooms.map(r=>({r, e:drawn(r)}));
     const X = v => (ox + v*s).toFixed(2), Y = v => (oy + v*s).toFixed(2), S = v => (v*s).toFixed(2);
@@ -197,6 +303,8 @@
     R.forEach(({r,e})=>{
       const fill = r.kind==='outdoor' ? 'url(#hatch)' : r.kind==='garage' ? 'rgba(0,0,0,.055)' : 'var(--paper)';
       fills += `<rect x="${X(e.x)}" y="${Y(e.y)}" width="${S(e.w)}" height="${S(e.d)}" fill="${fill}"/>`;
+      const z = ZONES[zoneOf(r)];
+      if(z) fills += `<rect x="${X(e.x)}" y="${Y(e.y)}" width="${S(e.w)}" height="${S(e.d)}" fill="${z.fill}" fill-opacity="${z.op}"/>`;
       const dash = r.kind==='outdoor' ? ' stroke-dasharray="2 1.6"' : '';
       lines += `<rect x="${X(e.x)}" y="${Y(e.y)}" width="${S(e.w)}" height="${S(e.d)}" fill="none" stroke="var(--ink)" stroke-opacity="${r.kind==='outdoor'?.55:1}" stroke-width=".75"${dash}/>`;
       if(r.crop){ // clean break: a paper gap with a zigzag on the cut edge
@@ -221,6 +329,28 @@
                        : `<line x1="${X(st.x+t)}" y1="${Y(st.y)}" x2="${X(st.x+t)}" y2="${Y(st.y+st.d)}" stroke="var(--ink)" stroke-opacity=".6" stroke-width=".45"/>`;
       }
     }
+    // windows on outside walls, then doors (each cuts its wall with a paper gap)
+    const openings = openingsFor(L, R);
+    openings.windows.forEach(o=>{
+      const h = o.dir==='up' || o.dir==='down';
+      const x1 = +X(o.x), y1 = +Y(o.y), x2 = +X(h ? o.x+o.w : o.x), y2 = +Y(h ? o.y : o.y+o.w);
+      const nx = h ? 0 : 1.1, ny = h ? 1.1 : 0;
+      extra += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--paper)" stroke-width="3.2"/>`
+             + `<line x1="${(x1-nx).toFixed(2)}" y1="${(y1-ny).toFixed(2)}" x2="${(x2-nx).toFixed(2)}" y2="${(y2-ny).toFixed(2)}" stroke="var(--ink)" stroke-width=".5"/>`
+             + `<line x1="${(x1+nx).toFixed(2)}" y1="${(y1+ny).toFixed(2)}" x2="${(x2+nx).toFixed(2)}" y2="${(y2+ny).toFixed(2)}" stroke="var(--ink)" stroke-width=".5"/>`;
+    });
+    openings.doors.forEach(o=>{
+      const h = o.dir==='up' || o.dir==='down', sg = (o.dir==='down' || o.dir==='right') ? 1 : -1;
+      const hx = +X(o.x), hy = +Y(o.y), L2 = o.w*s;
+      const ex = h ? hx + L2 : hx, ey = h ? hy : hy + L2;            // far end of the opening
+      const lx = h ? hx : hx + sg*L2, ly = h ? hy + sg*L2 : hy;      // open leaf tip
+      const sweep = h ? (sg>0 ? 0 : 1) : (sg>0 ? 1 : 0);
+      // an opening in the wall, no door leaf or swing (the owner, 10/21/2026: "just leave openings"); short jambs mark the ends
+      const jx = h ? 0 : 1.9, jy = h ? 1.9 : 0;
+      extra += `<line x1="${hx}" y1="${hy}" x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}" stroke="var(--paper)" stroke-width="3.6"/>`
+             + `<line x1="${(hx-jx).toFixed(2)}" y1="${(hy-jy).toFixed(2)}" x2="${(hx+jx).toFixed(2)}" y2="${(hy+jy).toFixed(2)}" stroke="var(--ink)" stroke-width=".75"/>`
+             + `<line x1="${(ex-jx).toFixed(2)}" y1="${(ey-jy).toFixed(2)}" x2="${(ex+jx).toFixed(2)}" y2="${(ey+jy).toFixed(2)}" stroke="var(--ink)" stroke-width=".75"/>`;
+    });
     R.forEach(({r,e}, j)=>{
       const t = labelFor(r, s); if(!t) return;
       const cx = ox + (e.x + e.w/2)*s, cy = oy + (e.y + e.d/2)*s, h = t.length*LINE;
@@ -248,5 +378,5 @@
     return out;
   }
 
-  window.IvoryPlan = {draw, check, bbox};
+  window.IvoryPlan = {draw, check, bbox, ZONES, zoneOf};
 })();

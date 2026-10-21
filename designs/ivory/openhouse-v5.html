@@ -68,8 +68,15 @@ Ivory.whenFonts(function(){
   }
   h += `<div class="hair" style="left:304pt;top:${y+10}pt;width:272pt"></div>`;
   // two captioned photos fill the column from the rule to the card
-  const p0 = y + 22, ph = Math.round((616 - p0 - 34)/2);
-  [[s1,p0],[s2,p0+ph+34]].forEach(([id,py],i)=> h += Ivory.photo(D, '', id, `left:304pt;top:${py}pt;width:272pt;height:${ph}pt`) + Ivory.captionHTML(D, id, 304, py+ph+5, 272, 'col'+i));
+  // each photo gets its room name and a 3-line write-up (the owner, 10/21/2026: more copy here)
+  const notes = C.photoNotes || {}, capH = 50, p0 = y + 22, ph = Math.round((622 - p0 - 2*capH)/2);
+  [[s1,p0],[s2,p0+ph+capH]].forEach(([id,py],i)=>{
+    const c = Ivory.caption(D, id);
+    h += Ivory.photo(D, '', id, `left:304pt;top:${py}pt;width:272pt;height:${ph}pt`);
+    h += `<div class="abs cap-name" style="left:304pt;top:${py+ph+5}pt;width:272pt;height:10.5pt" data-slot="col${i}.name" data-lines="1">${esc(c.name)}</div>`;
+    h += notes[id] ? `<div class="abs body" style="left:304pt;top:${py+ph+17}pt;width:272pt;height:31.5pt;font-size:8.5pt;line-height:10.5pt" data-slot="col${i}.note" data-lines="3" data-fill="2" data-aim="3">${esc(notes[id])}</div>`
+                   : `<div class="abs cap-detail" style="left:304pt;top:${py+ph+16}pt;width:272pt;height:10pt" data-slot="col${i}.detail" data-lines="1">${esc(c.detail)}</div>`;
+  });
 
   h += `<div class="abs display address" data-slot="address" data-lines="3">${esc(L.address)}</div>`;
   h += `<div class="abs place placeline" data-slot="place" data-lines="2" data-fine="1">${esc(Ivory.place(L))}</div>`;

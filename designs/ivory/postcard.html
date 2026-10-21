@@ -6,9 +6,11 @@
 <link rel="stylesheet" href="ivory.css">
 <script src="ivory.js"></script>
 <!--
-  Ivory design · Just Listed postcards. data.piece.size = "6x11" (trim 792 x 432 pt) or "6x9" (648 x 432 pt),
-  data.piece.side = "front" | "back". The 6x9 reflows the 6x11: narrower photos and fewer where needed,
-  never smaller type. Print mode adds 0.125 in bleed on every edge (TrimBox set by the renderer).
+  Ivory design · Just Listed and Just Sold postcards. data.piece.card = "listed" (default) | "sold",
+  data.piece.size = "6x11" (trim 792 x 432 pt) or "6x9" (648 x 432 pt), data.piece.side = "front" | "back".
+  The 6x9 reflows the 6x11: narrower photos and fewer where needed, never smaller type.
+  Just Listed copy: data.companion.postcard. Just Sold copy: data.companion.sold (heading, lede, label, notes, photos),
+  all from the writer. Neither card has a price slot, a sale price, days on market or a "sold for" line. Print mode adds 0.125 in bleed on every edge (TrimBox set by the renderer).
   The back's right half is the mail vendor's address and postage zone, drawn from data.mailVendor;
   until a vendor is chosen it is a provisional box.
 -->
@@ -26,6 +28,8 @@
   .vendor .stamp{position:absolute;border:.6pt solid rgba(0,0,0,.28);font:600 5.5pt/1 var(--font-body);letter-spacing:1pt;color:var(--muted);display:flex;align-items:center;justify-content:center;text-transform:uppercase}
   .vendor .aline{position:absolute;height:.5pt;background:rgba(0,0,0,.2)}
   .vendor .vfoot{position:absolute;left:12pt;bottom:10pt;font-size:6pt;line-height:7.5pt;color:var(--muted)}
+  .sold-tag{padding:0 9pt;height:20pt;display:flex;align-items:center;background:var(--accent);color:#fff;font:700 9pt/1 var(--font-body);letter-spacing:2.4pt;text-transform:uppercase;white-space:nowrap}
+  .sold-head{font-size:19pt;line-height:23pt;white-space:normal}
   .fine{font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -36,16 +40,46 @@
 Ivory.whenFonts(function(){
   const D = Ivory.data();
   if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
-  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{}, PC = C.postcard||{};
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{};
+  const sold = D.piece.card === 'sold', PC = (sold ? C.sold : C.postcard) || {};
   document.body.dataset.mode = D.mode||'email';
   Ivory.applyBrand(b);
   const big = D.piece.size === '6x11';
   const W = big ? 792 : 648, H = 432;
   const ids = Ivory.photoOrder(D);
-  const pick = (PC.photos && PC.photos.length>=5) ? PC.photos : [ids[0], ids[1], ids[2], ids[5]||ids[3], ids[6]||ids[4]];
+  const pick = (PC.photos && PC.photos.length>=5) ? PC.photos.slice() : [ids[0], ids[1], ids[2], ids[5]||ids[3], ids[6]||ids[4]];
+  // the hero frame is wide: a full-house shot that would lose more than a quarter of its height (roofline) is swapped
+  // for the next photo that fits, so the house is never cut off
+  { const fr = (big ? 480 : 392) / 272, P = D.photos || {};
+    const fits = id => { const p = P[id] || {}; return id && (!Ivory.fullHouse(D, id) || !(p.w && p.h) || 1 - (p.w/p.h)/fr <= 0.25); };
+    if(!fits(pick[0])){ const alt = ids.find(id => fits(id) && !pick.slice(1).includes(id) && Ivory.fullHouse(D, id)) || ids.find(id => fits(id) && !pick.includes(id)); if(alt) pick[0] = alt; }
+    // the smaller slots are wider still; a whole-house shot goes only in the hero
+    for(let i = 1; i < pick.length; i++) if(Ivory.fullHouse(D, pick[i])){ const alt = ids.find(id => !pick.includes(id) && !Ivory.fullHouse(D, id)); if(alt) pick[i] = alt; } }
   let h = '';
 
-  if(D.piece.side === 'front'){
+  if(D.piece.side === 'front' && sold){
+    // Just Sold: hero with a SOLD tag, one captioned photo and the writer's short sold note on the right
+    const heroW = big ? 480 : 392, colX = 27 + heroW + 12, colW = W - 27 - colX;
+    h += `<div class="abs label eyebrow" style="width:${W-260}pt" data-slot="eyebrow" data-lines="1">${esc(PC.eyebrow || 'Just sold')}</div>`;
+    h += `<div class="abs display address" style="width:${W-27-27-180}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+    h += Ivory.logo(b, 'hdr-logo');
+    h += Ivory.fullRule(D, W, 70);
+    h += Ivory.photo(D, '', pick[0], `left:27pt;top:82pt;width:${heroW}pt;height:272pt`);
+    h += `<div class="abs sold-tag" style="left:27pt;top:334pt" data-slot="sold.tag" data-lines="1">Sold</div>`;
+    h += Ivory.photo(D, '', pick[1], `left:${colX}pt;top:82pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[1], colX, 190, colW, 'stack0');
+    h += `<div class="hair" style="left:${colX}pt;top:226pt;width:${colW}pt"></div>`;
+    // the heading takes one to three lines (never shrunk; a fourth is flagged) and the note follows it,
+    // (6 pt of room under the last line: tall-lettered picker fonts reach below a 23 pt line)
+    // with as many lines as fit above the place line (5 at most)
+    const pending = D.copyPending || !PC.heading;
+    const hn = pending ? 2 : Math.min(3, Ivory.linesNeeded('display sold-head', PC.heading, colW, 23));
+    h += pending ? Ivory.ghost(colX, 238, colW, 2, 23)
+       : `<div class="abs display sold-head" style="left:${colX}pt;top:238pt;width:${colW}pt;height:${hn*23+6}pt" data-slot="sold.heading" data-lines="3">${esc(PC.heading)}</div>`;
+    const ledeY = 238 + hn*23 + 8;
+    h += Ivory.text(D, PC.lede, colX, ledeY, colW, Math.min(5, Math.floor((360 - ledeY)/11)), 11, 8.5, 'sold.lede');
+    h += `<div class="abs place placeline" style="top:370pt;width:${W-54}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+    h += `<div class="abs factline" style="top:386pt;width:${W-54}pt" data-slot="facts" data-lines="1">${esc(Ivory.facts(L).join('  /  '))}</div>`;
+  } else if(D.piece.side === 'front'){
     const heroW = big ? 480 : 392, colX = 27 + heroW + 12, colW = W - 27 - colX;
     h += `<div class="abs label eyebrow" style="width:${W-260}pt" data-slot="eyebrow" data-lines="1">${esc(PC.eyebrow || 'Just listed')}</div>`;
     h += `<div class="abs display address" style="width:${W-27-27-180}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
@@ -66,7 +100,7 @@ Ivory.whenFonts(function(){
       h += Ivory.photo(D, '', id, `left:${x}pt;top:68pt;width:${pw}pt;height:${big?100:84}pt`) + Ivory.captionHTML(D, id, x, (big?172:156), pw, 'back'+i);
     });
     const nt = big ? 204 : 188;
-    h += `<div class="abs label notes-lbl" style="left:27pt;top:${nt}pt;width:${LW}pt" data-slot="notes.label" data-lines="1">Property notes</div>`;
+    h += `<div class="abs label notes-lbl" style="left:27pt;top:${nt}pt;width:${LW}pt" data-slot="notes.label" data-lines="1">${esc(PC.label || (sold ? 'To our neighbors' : 'Property notes'))}</div>`;
     h += Ivory.text(D, PC.notes, 27, nt+13, LW, big?3:4, 11, 8.5, 'notes');
     h += `<div class="hair" style="left:27pt;top:${big?262:268}pt;width:${LW}pt"></div>`;
     h += Ivory.card(D, {x:27, y:big?274:280, w:LW, h:big?118:112, nameSize:24, phoneSize:16, lineSize:8.5, qr:58, gap:14, brokerage:false,

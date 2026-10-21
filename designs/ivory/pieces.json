@@ -4,16 +4,18 @@
   "pieces": [
     {"id": "foldover",            "file": "foldover.html", "kind": "foldover", "label": "11 x 17 fold-over brochure"},
     {"id": "listing-flyer",       "file": "flyer.html",    "variant": "listing",   "trim": [612, 792], "print": "margin", "margin": 18, "label": "Listing flyer, 8.5 x 11"},
-    {"id": "just-listed-flyer",   "file": "flyer.html",    "variant": "just",      "trim": [612, 792], "print": "margin", "margin": 18, "label": "Just Listed flyer, 8.5 x 11"},
-    {"id": "open-house-flyer",    "file": "flyer.html",    "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "label": "Open House flyer, 8.5 x 11"},
-    {"id": "open-house-v1", "file": "openhouse-v1.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "candidate": true, "title": "Ivory Invitation", "label": "Open House flyer (Invitation), 8.5 x 11"},
-    {"id": "open-house-v2", "file": "openhouse-v2.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "candidate": true, "title": "Ivory Date Band", "label": "Open House flyer (Date Band), 8.5 x 11"},
-    {"id": "open-house-v3", "file": "openhouse-v3.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "candidate": true, "title": "Ivory Hero Panel", "label": "Open House flyer (Hero Panel), 8.5 x 11"},
-    {"id": "open-house-v4", "file": "openhouse-v4.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "candidate": true, "title": "Ivory Calendar", "label": "Open House flyer (Calendar), 8.5 x 11"},
-    {"id": "open-house-v5", "file": "openhouse-v5.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "candidate": true, "title": "Ivory Editorial", "label": "Open House flyer (Editorial), 8.5 x 11"},
-    {"id": "postcard-6x11-front", "file": "postcard.html", "size": "6x11", "side": "front", "trim": [792, 432], "print": "bleed", "label": "Postcard 6 x 11, front"},
-    {"id": "postcard-6x11-back",  "file": "postcard.html", "size": "6x11", "side": "back",  "trim": [792, 432], "print": "bleed", "label": "Postcard 6 x 11, back"},
-    {"id": "postcard-6x9-front",  "file": "postcard.html", "size": "6x9",  "side": "front", "trim": [648, 432], "print": "bleed", "label": "Postcard 6 x 9, front"},
-    {"id": "postcard-6x9-back",   "file": "postcard.html", "size": "6x9",  "side": "back",  "trim": [648, 432], "print": "bleed", "label": "Postcard 6 x 9, back"}
+    {"id": "open-house-v1", "file": "openhouse-v1.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "pick": true, "title": "Ivory Invitation", "label": "Open House flyer (Invitation), 8.5 x 11"},
+    {"id": "open-house-v2", "file": "openhouse-v2.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "pick": true, "title": "Ivory Date Band", "label": "Open House flyer (Date Band), 8.5 x 11"},
+    {"id": "open-house-v3", "file": "openhouse-v3.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "pick": true, "title": "Ivory Hero Panel", "label": "Open House flyer (Hero Panel), 8.5 x 11"},
+    {"id": "open-house-v4", "file": "openhouse-v4.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "pick": true, "title": "Ivory Calendar", "label": "Open House flyer (Calendar), 8.5 x 11"},
+    {"id": "open-house-v5", "file": "openhouse-v5.html", "variant": "openhouse", "trim": [612, 792], "print": "margin", "margin": 18, "pick": true, "title": "Ivory Editorial", "label": "Open House flyer (Editorial), 8.5 x 11"},
+    {"id": "postcard-6x11-front", "file": "postcard.html", "size": "6x11", "side": "front", "trim": [792, 432], "print": "bleed", "card": "listed", "label": "Just Listed postcard 6 x 11, front"},
+    {"id": "postcard-6x11-back",  "file": "postcard.html", "size": "6x11", "side": "back",  "trim": [792, 432], "print": "bleed", "card": "listed", "label": "Just Listed postcard 6 x 11, back"},
+    {"id": "postcard-6x9-front",  "file": "postcard.html", "size": "6x9",  "side": "front", "trim": [648, 432], "print": "bleed", "card": "listed", "label": "Just Listed postcard 6 x 9, front"},
+    {"id": "postcard-6x9-back",   "file": "postcard.html", "size": "6x9",  "side": "back",  "trim": [648, 432], "print": "bleed", "card": "listed", "label": "Just Listed postcard 6 x 9, back"},
+    {"id": "just-sold-6x11-front", "file": "postcard.html", "size": "6x11", "side": "front", "trim": [792, 432], "print": "bleed", "card": "sold", "label": "Just Sold postcard 6 x 11, front"},
+    {"id": "just-sold-6x11-back", "file": "postcard.html", "size": "6x11", "side": "back", "trim": [792, 432], "print": "bleed", "card": "sold", "label": "Just Sold postcard 6 x 11, back"},
+    {"id": "just-sold-6x9-front", "file": "postcard.html", "size": "6x9", "side": "front", "trim": [648, 432], "print": "bleed", "card": "sold", "label": "Just Sold postcard 6 x 9, front"},
+    {"id": "just-sold-6x9-back", "file": "postcard.html", "size": "6x9", "side": "back", "trim": [648, 432], "print": "bleed", "card": "sold", "label": "Just Sold postcard 6 x 9, back"}
   ]
 }
