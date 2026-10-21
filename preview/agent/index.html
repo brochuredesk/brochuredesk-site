@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Agent studio · test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="agent.css?v=5">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="brand" href="#home" data-go="home">BrochureDesk</a>
+    <span class="testtag" title="Working site: not linked, not indexed">Test drive</span>
+    <span class="saved" id="saved" aria-live="polite"></span>
+    <span class="who" id="who"></span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- Sign in -->
+<section class="view" id="vSignin" hidden>
+  <div class="card narrow">
+    <h1>Sign in</h1>
+    <p class="lede">Your packages save to your account as you work, so they're there tomorrow and on any computer.</p>
+    <form id="signinForm" class="stack">
+      <label>Email<input type="email" name="email" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="err" id="signinErr" role="alert"></p>
+    </form>
+    <p class="fine">Test drive without an account? <button type="button" class="link" id="localMode">Use this browser only</button>. Packages then stay in this browser.</p>
+  </div>
+</section>
+
+<!-- Agent home -->
+<section class="view" id="vHome" hidden>
+  <h1 id="hello">Welcome back</h1>
+  <div class="homegrid">
+    <div class="card">
+      <h2>New listing package</h2>
+      <p>Paste a Matrix listing link and we'll lay out your set.</p>
+      <button class="btn" type="button" data-go="start">Start a package</button>
+    </div>
+    <div class="card wide">
+      <h2>Pick up where you left off</h2>
+      <div id="pickup" class="pickup"></div>
+    </div>
+    <div class="card wide">
+      <h2>Past orders</h2>
+      <div id="orders" class="pickup"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 1. Paste the link, pick what they're buying -->
+<section class="view" id="vStart" hidden>
+  <h1>Paste your listing link</h1>
+  <form id="linkForm" class="linkrow">
+    <label class="sr" for="link">Matrix listing link</label>
+    <input id="link" type="url" placeholder="https://matrix.harmls.com/Matrix/Public/Portal.aspx?ID=..." autocomplete="off">
+    <button class="btn" type="submit" id="go">Go</button>
+  </form>
+  <p class="fine"><button type="button" class="link" id="sampleListing">Use the sample listing</button> (4127 Larkspur Bend, made up) to try the flow without a link.</p>
+  <div class="progress" id="progress" hidden>
+    <div class="bar"><i id="barFill"></i></div>
+    <ol class="steps" id="steps"><li data-step="lookup">Lookup</li><li data-step="photos">Photos</li><li data-step="details">Details</li></ol>
+    <p class="status" id="status" aria-live="polite"></p>
+    <p class="err" id="linkErr" role="alert"></p>
+  </div>
+  <div class="card pick" id="pickBox" hidden>
+    <h2>What would you like?</h2>
+    <div class="choices" role="radiogroup" aria-label="What you're buying">
+      <label class="choice"><input type="radio" name="kind" value="full" checked><span><b>Full package</b><em>$25</em><small>Fold-over brochure, listing flyer, Open House flyer, Just Listed postcard, and the Just Sold postcard after the sale</small></span></label>
+      <label class="choice"><input type="radio" name="kind" value="essentials"><span><b>The Essentials</b><em>$20</em><small>Everything but the fold-over brochure</small></span></label>
+      <label class="choice"><input type="radio" name="kind" value="single"><span><b>A single piece</b><em>$10</em><small>
+        <select id="singlePiece" aria-label="Which piece">
+          <option value="foldover">Fold-over brochure</option>
+          <option value="listing-flyer">Listing flyer</option>
+          <option value="open-house-flyer">Open House flyer</option>
+          <option value="postcard">Just Listed postcard</option>
+        </select></small></span></label>
+    </div>
+    <p class="sizes" id="sizeRow">Postcard size:
+      <label><input type="radio" name="size" value="6x11" checked> 6 x 11</label>
+      <label><input type="radio" name="size" value="6x9"> 6 x 9</label></p>
+    <button class="btn" type="button" id="toGallery" disabled>See designs</button>
+  </div>
+</section>
+
+<!-- 2. Design gallery -->
+<section class="view" id="vGallery" hidden>
+  <div class="head"><h1>Pick a design</h1><p class="lede" id="galleryLede"></p></div>
+  <h2 class="sub">Your designs</h2>
+  <div class="gallery" id="personal"></div>
+  <h2 class="sub">Our designs</h2>
+  <div class="gallery" id="sets"></div>
+  <div id="ohLibrary" hidden>
+    <h2 class="sub">Open house flyer library</h2>
+    <p class="fine">Any of these can stand in for your design's own Open House flyer. You can switch on the proof too.</p>
+    <div class="gallery small" id="ohList"></div>
+  </div>
+</section>
+
+<!-- 3. Rough-draft proof -->
+<section class="view" id="vRough" hidden>
+  <div class="head row">
+    <div><h1 id="roughTitle">Rough draft</h1>
+      <p class="lede">Arrange photos, colors, fonts and the copy style. Your words get written after you finalize.</p></div>
+    <label class="piecepick">Working on <select id="roughPiece"></select></label>
+  </div>
+  <div class="studio">
+    <aside class="strip" id="strip" aria-label="Listing photos">
+      <h3>Photos</h3>
+      <p class="hint">Drag a photo onto the proof to swap it in. Drag one off the proof (onto this strip) to take it out. Or click a photo here, then click a spot on the proof.</p>
+      <div class="thumbs" id="thumbs"></div>
+    </aside>
+    <div class="proofwrap">
+      <div class="designflip" id="designFlip" role="tablist" aria-label="Design"></div>
+      <div class="proof" id="roughProof"></div>
+    </div>
+    <aside class="controls">
+      <div class="ctl"><h3>Colors</h3><div class="swatches" id="swatches"></div></div>
+      <div class="ctl" id="fontsCtl"><h3>Fonts</h3><div id="fonts"></div></div>
+      <div class="ctl"><h3>Copy style</h3>
+        <select id="copyStyle">
+          <option value="classic">Classic</option><option value="luxury">Luxury</option><option value="urban">Modern &amp; Urban</option>
+          <option value="spread">Room to Spread Out</option><option value="easy">Easy Living</option>
+        </select>
+        <p class="sample" id="styleSample"></p></div>
+    </aside>
+  </div>
+  <div class="finalize">
+    <button class="btn big" type="button" id="finalize">Finalize design and create proof for review</button>
+    <p class="fine">Your copy is written next, about a minute. You can still change any word on the proof.</p>
+  </div>
+</section>
+
+<!-- writing -->
+<section class="view" id="vWriting" hidden>
+  <div class="card narrow center">
+    <h1>Writing your proof</h1>
+    <div class="bar"><i id="writeFill"></i></div>
+    <p class="status" id="writeStatus" aria-live="polite"></p>
+    <p class="err" id="writeErr" role="alert"></p>
+    <button class="btn line" type="button" id="writeRetry" hidden>Try again</button>
+  </div>
+</section>
+
+<!-- 4 + 5. Final proof, approve and order -->
+<section class="view" id="vFinal" hidden>
+  <div class="head row">
+    <div><h1 id="finalTitle">Your proof</h1>
+      <p class="lede">Click any text we wrote to change it.</p></div>
+    <label class="piecepick">Piece <select id="finalPiece"></select></label>
+  </div>
+  <div class="finalgrid">
+    <div class="proof" id="finalProof"></div>
+    <aside class="side">
+      <div class="ctl" id="ohFields" hidden>
+        <h3>Open house</h3>
+        <label>Type <select id="ohKind"><option value="public">Public</option><option value="broker">Broker</option></select></label>
+        <label>Date <input type="date" id="ohDate"></label>
+        <div class="two"><label>From <input type="time" id="ohStart" step="900"></label><label>To <input type="time" id="ohEnd" step="900"></label></div>
+      </div>
+      <div class="ctl approve">
+        <p class="pstate" id="pieceState"></p>
+        <button class="btn big" type="button" id="approve">Approve and order</button>
+        <p class="gray" id="approveNote">Fixes are still allowed after you approve, so no worries if you catch something later.</p>
+        <p class="fine" id="windowNote"></p>
+      </div>
+      <div class="ctl"><button class="link" type="button" id="backToRough">Back to the rough draft</button></div>
+    </aside>
+  </div>
+</section>
+
+</main>
+
+<!-- text editor pop-over -->
+<div class="pop" id="pop" hidden role="dialog" aria-label="Edit this text">
+  <p class="poplabel" id="popLabel"></p>
+  <div id="popChoose" class="popbtns">
+    <button class="btn" type="button" id="popSelf">Rewrite it myself</button>
+    <button class="btn line" type="button" id="popGuide">Guide AI</button>
+  </div>
+  <div id="popEdit" hidden>
+    <textarea id="popText" rows="4"></textarea>
+    <div class="countrow"><span class="count" id="popCount"></span>
+      <button type="button" class="link" id="popShorten" hidden>Want AI to shorten it for you?</button></div>
+  </div>
+  <div id="popAsk" hidden>
+    <textarea id="popInstr" rows="2" placeholder="For example: add more about the kitchen"></textarea>
+    <button class="btn" type="button" id="popAskGo">Rewrite it</button>
+  </div>
+  <p class="status" id="popStatus" aria-live="polite"></p>
+  <div class="popbtns end"><button class="btn line" type="button" id="popCancel">Cancel</button><button class="btn" type="button" id="popSave" hidden>Save</button></div>
+</div>
+
+<dialog id="dlg"><form method="dialog" id="dlgBody"></form></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/designs/shared/fontpicker.js"></script>
+<script src="agent.js?v=7"></script>
+</body>
+</html>
