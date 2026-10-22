@@ -14,7 +14,6 @@
   const KIND_LABEL = {full: 'Full package', essentials: 'The Essentials', single: 'Single piece'};
   const PIECES = [
     {id: 'foldover', label: 'Fold-over brochure', short: 'brochure'},
-    {id: 'listing-flyer', label: 'Listing flyer', short: 'flyer'},
     {id: 'open-house-flyer', label: 'Open House flyer', short: 'flyer'},
     {id: 'postcard', label: 'Just Listed postcard', short: 'postcard'},
   ];
@@ -342,7 +341,6 @@
     if(lid === 'open-house-flyer'){
       const oh = p && p.ohFlyer && p.ohFlyer.design === S.design && by[p.ohFlyer.piece];
       const f = oh || by['open-house-flyer']; return f ? [{piece: f, label: oh ? f.title : 'Open House flyer'}] : null; }
-    if(lid === 'listing-flyer') return by['listing-flyer'] ? [{piece: by['listing-flyer'], label: 'Listing flyer'}] : null;
     if(lid === 'postcard'){ const s = (p && p.order.size) || '6x11', f = by[`postcard-${s}-front`], b = by[`postcard-${s}-back`];
       return f && b ? [{piece: f, label: `${s.replace('x', ' x ')}, front`}, {piece: b, label: `${s.replace('x', ' x ')}, back`}] : null; }
     return null;
