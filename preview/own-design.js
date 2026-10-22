@@ -56,7 +56,6 @@
       likeHeading: 'Pieces you like (optional)', likeHint: 'Up to 2 files. PNG, JPG, WebP or PDF, up to 12 MB each.', likeChoose: 'Choose files',
       piecesHeading: 'Add matching pieces, $25 each',
       pieces: {
-        'listing-flyer': 'Listing flyer',
         'open-house-flyer': 'Open House flyer',
         'just-listed-postcard': 'Just Listed postcard',
         'just-sold-postcard': 'Just Sold postcard'
@@ -91,7 +90,7 @@
   const LOGO_EXT = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'ai', 'eps'];
   const LIKE_EXT = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
   const RASTER_SVG = ['png', 'jpg', 'jpeg', 'webp', 'svg'];
-  const PIECE_KEYS = ['listing-flyer', 'open-house-flyer', 'just-listed-postcard', 'just-sold-postcard'];
+  const PIECE_KEYS = ['open-house-flyer', 'just-listed-postcard', 'just-sold-postcard'];
   const DEFAULT_ENDPOINT = 'https://depwvwewbmxspoxidxrx.supabase.co/functions/v1/design-request';
   const DEFAULT_KEY = 'sb_publishable_mF60NaxAKLQV_pDLBoR2og_PzJ9fxxH';
   const BASE_CENTS = { agent: 10000, brokerage: 25000 };
