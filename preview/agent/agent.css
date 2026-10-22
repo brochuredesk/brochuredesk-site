@@ -156,3 +156,28 @@ dialog .opts .btn{text-align:left}
   .thumbs{display:flex;overflow-x:auto;gap:6px;padding-bottom:4px}
   .thumbs img{flex:0 0 96px;width:96px}
 }
+
+/* Just Listed / Just Sold library (test) */
+.libwrite{margin:12px 0 20px}
+.libsold{margin:0 0 16px;border:1px solid var(--line,#ddd);border-radius:8px;padding:10px 14px}
+.libsold summary{cursor:pointer;font-weight:600}
+.libgrid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 16px;margin-top:10px}
+.libgrid2 label{display:flex;flex-direction:column;gap:4px;font-size:14px}
+.libgrid2 label.chk{flex-direction:row;align-items:center;gap:8px}
+.libgrid2 label.wide{grid-column:1/-1}
+.libgrid2 input,.libgrid2 select{font:inherit;padding:6px 8px;border:1px solid var(--line,#ccc);border-radius:6px;max-width:100%}
+.libtabs{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.libtabs button{font:inherit;padding:6px 12px;border-radius:999px;border:1px solid var(--line,#ccc);background:none;cursor:pointer}
+.libtabs button[aria-selected=true]{background:#222;color:#fff;border-color:#222}
+.libbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0}
+.libpk{margin:0 0 28px}
+.libpk h3{margin:0 0 6px}
+.libpk .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.libpk .one{max-width:420px}
+@media (max-width:700px){.libpk .two{grid-template-columns:1fr}}
+.issues{font-size:13px;margin:6px 0 0;padding:0;list-style:none}
+.issues li{color:#9a2a1f}
+.issues li.ok{color:#2f6b3a}
+.dset.picked{outline:3px solid #222;outline-offset:2px}
+#libSizeRow label{display:inline-flex;align-items:center;gap:4px;margin-left:10px}
+#libSizeRow input{width:auto;margin:0}

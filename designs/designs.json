@@ -6,6 +6,13 @@
   "fonts": true
  },
  {
+  "id": "announce",
+  "name": "Just Listed and Just Sold library (test)",
+  "thumb": "/designs/announce/thumb.jpg",
+  "test": true,
+  "library": true
+ },
+ {
   "id": "answer-book",
   "name": "The Houston Answer Book",
   "thumb": "/preview/img/answer-book.jpg",

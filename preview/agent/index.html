@@ -7,7 +7,7 @@
 <title>Agent studio · test</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Figtree:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="agent.css?v=5">
+<link rel="stylesheet" href="agent.css?v=7">
 </head>
 <body>
 <header class="top">
@@ -96,12 +96,46 @@
   <div class="head"><h1>Pick a design</h1><p class="lede" id="galleryLede"></p></div>
   <h2 class="sub">Your designs</h2>
   <div class="gallery" id="personal"></div>
+  <div id="libEntry" hidden></div>
   <h2 class="sub">Our designs</h2>
   <div class="gallery" id="sets"></div>
   <div id="ohLibrary" hidden>
     <h2 class="sub">Open house flyer library</h2>
     <p class="fine">Any of these can stand in for your design's own Open House flyer. You can switch on the proof too.</p>
     <div class="gallery small" id="ohList"></div>
+  </div>
+</section>
+
+<!-- 2b. Just Listed / Just Sold library (test, 10/22/2026) -->
+<section class="view" id="vLib" hidden>
+  <div class="head"><h1>Just Listed and Just Sold <span class="badge">test</span></h1>
+    <p class="lede" id="libLede"></p></div>
+  <div class="libwrite" id="libWrite">
+    <p>First we read your photos (to keep the whole house in every crop) and write your Just Listed copy once. Every design below uses it.</p>
+    <button class="btn big" type="button" id="libGo">Read my photos and write my copy</button>
+    <p class="fine" id="libStatus" aria-live="polite"></p>
+  </div>
+  <div id="libBody" hidden>
+    <details class="libsold" id="libSold"><summary>Just Sold wording (for after the sale)</summary>
+      <div class="libgrid2">
+        <label>Headline <select id="lsHead"><option>Just Sold</option><option>Another Home Sold</option><option>Sold</option><option>Listed &amp; Sold</option></select></label>
+        <label>Who you represented <select id="lsSide"><option value="">Don't show</option><option value="seller">The seller</option><option value="buyer">The buyer</option><option value="both">Both</option></select></label>
+        <label>Days on market (MLS, list to contract) <input id="lsDays" inputmode="numeric" maxlength="3"></label>
+        <label>Offers received <input id="lsOffers" placeholder="a number, or leave empty" maxlength="3"></label>
+        <label class="chk"><input type="checkbox" id="lsOk"> My client approved sharing the offer count</label>
+        <label class="wide">Call to action <select id="lsCta"></select></label>
+        <label class="wide">Or your own words (up to 120 characters) <input id="lsOwn" maxlength="120"></label>
+      </div>
+    </details>
+    <div class="libtabs" role="tablist" id="libTabs"></div>
+    <p class="fine" id="libSizeRow">Postcard size: <label><input type="radio" name="libSize" value="6x9"> 6 x 9</label> <label><input type="radio" name="libSize" value="6x11"> 6 x 11</label></p>
+    <div class="gallery small" id="libList"></div>
+    <div class="libbar"><span id="libCount"></span><button class="btn" type="button" id="libReview" disabled>Review proofs</button></div>
+  </div>
+  <div id="libProof" hidden>
+    <div class="libbar"><button class="link" type="button" id="libBack">Back to the designs</button></div>
+    <div id="libProofs"></div>
+    <div class="libbar"><span class="fine" id="libOrderNote"></span><button class="btn big" type="button" id="libOrder">Approve and order (test)</button></div>
   </div>
 </section>
 
@@ -203,6 +237,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/designs/shared/fontpicker.js"></script>
-<script src="agent.js?v=7"></script>
+<script src="/designs/announce/annlib.js?v=2"></script>
+<script src="agent.js?v=11"></script>
 </body>
 </html>

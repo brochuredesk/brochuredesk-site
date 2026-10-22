@@ -89,11 +89,11 @@
   }
 
   // ---------- views ----------
-  const VIEWS = ['vSignin', 'vHome', 'vStart', 'vGallery', 'vRough', 'vWriting', 'vFinal'];
+  const VIEWS = ['vSignin', 'vHome', 'vStart', 'vGallery', 'vLib', 'vRough', 'vWriting', 'vFinal'];
   function show(id){
     VIEWS.forEach(v => $('#' + v).hidden = v !== id);
     closePop();
-    const hash = {vHome: 'home', vStart: 'start', vGallery: 'gallery', vRough: 'rough', vFinal: 'final'}[id];
+    const hash = {vHome: 'home', vStart: 'start', vGallery: 'gallery', vLib: 'library', vRough: 'rough', vFinal: 'final'}[id];
     if(hash && location.hash !== '#' + hash) history.replaceState(null, '', '#' + hash);
     window.scrollTo({top: 0, behavior: 'auto'});
   }
@@ -186,6 +186,7 @@
     pkg = p; lput('bd-current', p.id);
     resolvePhotos(p);
     if(where === 'gallery') return openGallery();
+    if(where === 'library' || (p.lib && !p.design)) return openLib();
     if(p.stage === 'rough' || p.stage === 'writing') return openRough();
     return openFinal(where === 'final' ? null : nextPiece());
   }
@@ -463,6 +464,12 @@
       box.querySelectorAll('figcaption').forEach((c, i) => c.textContent = pieceLabel(ps[i]));
     }
     $$('[data-use]').forEach(b => b.onclick = () => { pkg.design = b.dataset.use; save(); openRough(); });
+    // the Just Listed / Just Sold library: pieces picked one by one (test)
+    const lib = designs.find(d => d.library);
+    $('#libEntry').hidden = !lib;
+    if(lib) $('#libEntry').innerHTML = `<div class="offer"><h3>Just Listed and Just Sold library <span class="badge">test</span></h3>
+      <p>35 postcard and social designs. Pick any of them on their own, made from your listing.</p><p><button class="btn" type="button" id="toLib">Open the library</button></p></div>`;
+    if(lib) $('#toLib').onclick = () => openLib();
     // the open house library shows only when an Open House flyer is in the order
     const oh = ps.includes('open-house-flyer');
     $('#ohLibrary').hidden = !oh;
@@ -475,6 +482,205 @@
       for(const [i, {d, p}] of items.entries()) drawParts($(`[data-oh="${i}"]`), d.id, [{piece: p, label: p.title}], await dataFor(d.id, false));
       $$('[data-pickoh]').forEach(b => b.onclick = () => { const it = items[b.dataset.pickoh]; pkg.ohFlyer = {design: it.d.id, piece: it.p.id}; pkg.design = it.d.id; save(); openRough('open-house-flyer'); });
     }
+  }
+
+  // ---------- 2b. Just Listed / Just Sold library (test, 10/22/2026) ----------
+  // Designs from templates/announce, picked one by one. The Just Listed copy is written once for all of them (one writer
+  // call); Just Sold wording is the agent's picks plus the playbook (no AI). Photos are read once (Haiku) for each one's
+  // room and the box around the whole house, so every crop keeps the whole house.
+  const LIB = 'announce', PLAY = (window.ANN && ANN.PLAYBOOK) || {ctas: []};
+  const LIB_TABS = [{id: 'jl-mail', label: 'Just Listed postcards', card: 'listed', social: false}, {id: 'jl-social', label: 'Just Listed social', card: 'listed', social: true},
+    {id: 'js-mail', label: 'Just Sold postcards', card: 'sold', social: false}, {id: 'js-social', label: 'Just Sold social', card: 'sold', social: true}];
+  // the sample listing's two exterior photos, measured by hand (same boxes as samples/announce/data.json)
+  const SAMPLE_HOUSES = {'front.jpg': {kind: 'front', room: 'Front', house: {left: .14, top: .05, right: .88, bottom: .74}},
+    'family.jpg': {kind: 'side', room: 'Front', house: {left: .2, top: .19, right: .83, bottom: .67}}};
+  const ISSUE = {'off-page': 'Text runs off the page', 'overflow': 'Text doesn\'t fit its space', 'text-runs-into-band': 'Text runs into a color band',
+    'house-cut-off': 'The house is cut off', 'house-covered': 'Something covers the house', 'empty-photo-slot': 'A photo spot is empty', 'photo-missing': 'A photo didn\'t load',
+    'photo-repeated': 'The same photo is used twice', 'no-front-of-house': 'The front of the house isn\'t on this postcard', 'logo-missing': 'The logo is missing',
+    'logo-version-missing': 'This spot needs a white version of your logo', 'trec-logo-too-small': 'The logo is too small next to your name (TREC)', 'logo-under-0.35in': 'The logo is under 0.35 in',
+    'outside-safe-zone': 'Something is too close to the trim', 'type-too-small': 'Some type is under 8 pt', 'fine-print-below-6pt': 'Fine print is under 6 pt',
+    'low-contrast': 'Some text is hard to read on its color', 'story-safe-zone': 'Text sits under the Instagram/Facebook bars', 'outside-grid-crop': 'Address or name falls outside the grid crop',
+    'banned-phrase': 'A phrase we don\'t allow', 'neighborhood-name': 'The neighborhood name shows', 'missing-copy': 'Some copy is missing'};
+  const libState = p => p.lib || (p.lib = {houses: null, housesNote: '', copy: null, cost: 0, tab: 'jl-mail', picks: [],
+    sold: {headline: 'Just Sold', side: '', days: '', offers: '', offersOk: false, cta: 3, own: ''}, ordered: null});
+  function libSold(s){
+    const t = (s.own || '').trim() || PLAY.ctas[s.cta] || PLAY.ctas[0] || '', q = t.indexOf('?');
+    const cta = q > 0 && q < t.length - 1 ? {ctaHead: t.slice(0, q + 1), ctaShort: t.slice(q + 1).trim()} : {ctaHead: t};
+    return Object.assign({headline: s.headline, side: s.side || null, days: s.days ? +s.days : null,
+      offers: s.offers ? (/^\d+$/.test(s.offers.trim()) ? s.offers.trim() : 'multiple') : null, offersOk: !!s.offersOk}, cta);
+  }
+  function libData(){
+    const s = libState(pkg), P = {}, order = [];
+    pkg.photos.forEach((ph, i) => {
+      const h = (s.houses || {})['p' + i] || {};
+      if(['plan', 'aerial', 'other'].includes(h.kind)) return;   // floor plans, maps and aerials never go in a photo spot
+      const kind = {front: 'front exterior', side: 'side angle exterior', rear: 'rear exterior', yard: 'backyard'}[h.kind] || '';
+      P['p' + i] = {src: photoUrlNow(ph.url), tags: [kind, h.room, ph.desc].filter(Boolean).join(', '), room: h.room || '', house: h.house || undefined};
+      order.push('p' + i);
+    });
+    order.sort((a, b) => (P[b].house ? 1 : 0) - (P[a].house ? 1 : 0));   // whole-house exteriors first
+    const agent = Object.assign({}, SAMPLE_AGENT, {nar: true}, profile ? {name: profile.display_name || SAMPLE_AGENT.name, phone: profile.cell || SAMPLE_AGENT.phone,
+      email: profile.preferred_email || SAMPLE_AGENT.email} : {}, {headshot: null});
+    const logos = Object.fromEntries(['black', 'gold', 'white', 'forest', 'color', 'gold-on-dark'].map(k => [k, `/designs/samples/larkspur/AnyBrokerage_${k}.png`]));
+    return {template: LIB, sample: true, fontBase: '/fonts/pool/', agent, listing: pkg.listing, photos: P, photoOrder: order, mailVendor: null,
+      brand: {brokerage: 'Any Brokerage', address: '1200 Heights Blvd, Houston, TX 77008', sample: true, logo: logos.black, logoKnockout: logos.white, logos},
+      companion: {justListed: s.copy || {}, justSold: libSold(s.sold)}};
+  }
+  async function photoB64(url){
+    const blob = await fetch(url).then(r => r.blob()), bmp = await createImageBitmap(blob);
+    const k = Math.min(1, 512 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', .8).split(',')[1];
+  }
+  async function readHouses(){
+    const s = libState(pkg);
+    if(pkg.photos.every(ph => ph.url.startsWith('/designs/samples/'))){   // the sample listing: known boxes, no AI call
+      s.houses = Object.fromEntries(pkg.photos.map((ph, i) => [ 'p' + i, SAMPLE_HOUSES[ph.url.split('/').pop()] || {kind: 'interior', room: '', house: null}]));
+      return;
+    }
+    const photos = [];
+    for(const [i, ph] of pkg.photos.entries()) photos.push({id: 'p' + i, desc: ph.desc || '', data: await photoB64(photoUrlNow(ph.url))});
+    try { const j = await ai({action: 'houses', packageId: pkg.id, photos}); s.houses = j.photos; s.cost += j.cost || 0; s.housesNote = ''; }
+    catch(e){ s.houses = {}; s.housesNote = "We couldn't read the photos this time, so crops can't check for the whole house yet."; }
+  }
+  async function writeLib(){
+    const s = libState(pkg), ex = await example(LIB), exJL = Object.assign({}, ex.companion.justListed);
+    delete exJL.photoRoles;
+    exJL.captions = Object.entries(exJL.captions || {}).map(([photo, text]) => ({photo, text}));
+    const ids = Object.keys(libData().photos);
+    const draft = Object.fromEntries(Object.keys(exJL).map(k => [k, Array.isArray(exJL[k]) ? [] : typeof exJL[k] === 'string' ? '' : exJL[k]]));
+    draft.captions = ids.map(photo => ({photo, text: ''}));
+    // these designs never print the neighborhood name (city and state only), so the writer never sees it
+    const hood = (pkg.listing.neighborhood || '').trim(), re = hood ? new RegExp('\\b' + hood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi') : null;
+    const listing = Object.assign({}, pkg.listing, {neighborhood: '', description: re ? String(pkg.listing.description || '').replace(re, '') : pkg.listing.description});
+    const j = await ai({action: 'write', packageId: pkg.id, design: 'Just Listed postcards and social posts (city and state only, never a neighborhood or area name)', style: pkg.copyStyle, listing,
+      photos: Object.fromEntries(ids.map(id => [id, libData().photos[id].tags])), example: {copy: {}, companion: {justListed: exJL}},
+      draft: {copy: {}, companion: {justListed: draft}}, pieces: ['Just Listed postcard (front and back)', 'Just Listed social posts and stories']});
+    const jl = j.companion.justListed;
+    jl.captions = Object.fromEntries((jl.captions || []).filter(c => ids.includes(c.photo)).map(c => [c.photo, c.text]));
+    s.copy = jl; s.cost += j.cost || 0;
+  }
+  async function openLib(){
+    if(!pkg) return openStart();
+    const s = libState(pkg);
+    pkg.lib = s; save();
+    show('vLib');
+    $('#libLede').textContent = `${pkg.listing.address}. Pick any postcard or social design; each is made from your listing.`;
+    $('#libWrite').hidden = !!s.copy; $('#libBody').hidden = !s.copy; $('#libProof').hidden = true;
+    $('#libStatus').textContent = s.housesNote || '';
+    if(s.copy) libGrid();
+  }
+  $('#libGo').onclick = async () => {
+    const s = libState(pkg), b = $('#libGo');
+    b.disabled = true;
+    try {
+      $('#libStatus').textContent = 'Reading your photos…';
+      if(!s.houses) await readHouses();
+      save();
+      $('#libStatus').textContent = 'Writing your Just Listed copy and checking every line…';
+      await writeLib();
+      store.event(pkg.id, 'library-write', {cost: s.cost});
+      save(true); openLib();
+    } catch(e) {
+      $('#libStatus').textContent = e.message === 'daily-cap' ? "We've hit today's writing limit for test drives. Try again tomorrow." : "We couldn't finish writing just now. Try again.";
+    } finally { b.disabled = false; }
+  };
+  function soldForm(){
+    const s = libState(pkg).sold;
+    $('#lsCta').innerHTML = PLAY.ctas.map((t, i) => `<option value="${i}">${esc(t)}</option>`).join('');
+    $('#lsHead').value = s.headline; $('#lsSide').value = s.side; $('#lsDays').value = s.days; $('#lsOffers').value = s.offers;
+    $('#lsOk').checked = s.offersOk; $('#lsCta').value = String(s.cta); $('#lsOwn').value = s.own;
+    const upd = () => { Object.assign(s, {headline: $('#lsHead').value, side: $('#lsSide').value, days: $('#lsDays').value.replace(/\D/g, ''),
+      offers: $('#lsOffers').value.trim(), offersOk: $('#lsOk').checked, cta: +$('#lsCta').value, own: $('#lsOwn').value}); save();
+      if(libState(pkg).tab.startsWith('js')) libGrid(); };
+    ['#lsHead', '#lsSide', '#lsCta', '#lsOk'].forEach(q => $(q).onchange = upd);
+    ['#lsDays', '#lsOffers', '#lsOwn'].forEach(q => $(q).onchange = upd);
+  }
+  async function libGrid(){
+    const s = libState(pkg), S = await spec(LIB), tab = LIB_TABS.find(t => t.id === s.tab);
+    soldForm();
+    $('#libTabs').innerHTML = LIB_TABS.map(t => `<button type="button" role="tab" aria-selected="${t.id === s.tab}" data-tab="${t.id}">${t.label}</button>`).join('');
+    $$('[data-tab]').forEach(b => b.onclick = () => { s.tab = b.dataset.tab; save(); libGrid(); });
+    $('#libSizeRow').hidden = tab.social;
+    const size = pkg.order.size || '6x9';
+    $$('input[name=libSize]').forEach(r => { r.checked = r.value === size; r.onchange = () => { pkg.order.size = r.value; save(); libGrid(); }; });
+    const pieces = S.pieces.filter(p => p.card === tab.card && !p.auto && (tab.social ? p.kind === 'social' : p.size === size && p.side === 'front'));
+    $('#libList').innerHTML = pieces.map(p => `<div class="dset${s.picks.includes(p.design) ? ' picked' : ''}" data-d="${p.design}"><div class="minis one"></div>
+      <div class="row"><small>${esc(p.design.replace(/^J[LS]-/, ''))} · ${esc(p.title)}${p.category ? ' · ' + esc(p.category) : ''}</small>
+      <button class="link" type="button" data-pick="${p.design}">${s.picks.includes(p.design) ? 'Remove' : 'Add'}</button></div></div>`).join('');
+    const data = libData();
+    for(const p of pieces) drawParts($(`.dset[data-d="${p.design}"] .minis`), LIB, [{piece: p, label: p.title}], data);
+    $$('[data-pick]').forEach(b => b.onclick = () => { const d = b.dataset.pick; s.picks = s.picks.includes(d) ? s.picks.filter(x => x !== d) : s.picks.concat(d); save(); libGrid(); });
+    $('#libCount').textContent = s.picks.length ? `${s.picks.length} picked: ${s.picks.join(', ')}` : 'Nothing picked yet.';
+    $('#libReview').disabled = !s.picks.length;
+  }
+  const libParts = (S, d) => {
+    const ps = S.pieces.filter(p => p.design === d), size = pkg.order.size || '6x9';
+    const social = ps.find(p => p.kind === 'social');
+    if(social) return [{piece: social, label: social.label}];
+    return ['front', 'back'].map(side => ps.find(p => p.size === size && p.side === side)).map(p => ({piece: p, label: p.side === 'front' ? 'Front' : 'Back'}));
+  };
+  $('#libReview').onclick = async () => {
+    const s = libState(pkg), S = await spec(LIB);
+    $('#libBody').hidden = true; $('#libProof').hidden = false;
+    $('#libProofs').innerHTML = s.picks.map(d => `<div class="libpk" data-pk="${d}"><h3>${esc(d)} · ${esc((S.pieces.find(p => p.design === d) || {}).title || '')}</h3>
+      <div class="${libParts(S, d).length > 1 ? 'two' : 'one'}"></div><ul class="issues"></ul></div>`).join('');
+    const data = libData();
+    for(const d of s.picks){
+      const box = $(`[data-pk="${d}"] > div`), found = [];
+      let left = libParts(S, d).length;
+      drawParts(box, LIB, libParts(S, d), data, fr => {
+        try { found.push(...(fr.contentWindow.brochureCheck() || [])); } catch(e) {}
+        if(--left) return;
+        const kinds = [...new Set(found.map(c => c.kind))];
+        $(`[data-pk="${d}"] .issues`).innerHTML = kinds.length ? kinds.map(k => `<li>${esc(ISSUE[k] || k)}</li>`).join('') : '<li class="ok">Passes every print check.</li>';
+      });
+    }
+    $('#libOrderNote').textContent = s.ordered ? `Ordered ${dayFmt(s.ordered.at)} (test).` : '';
+    libOrderButtons();
+  };
+  $('#libBack').onclick = () => { $('#libProof').hidden = true; $('#libBody').hidden = false; libGrid(); };
+  function libOrderButtons(){
+    const s = libState(pkg);
+    $('#libOrder').textContent = s.ordered ? 'Download the files' : 'Approve and order (test)';
+  }
+  $('#libOrder').onclick = async () => {
+    const s = libState(pkg);
+    if(!s.ordered){
+      const v = await ask(`<h2>Order these ${s.picks.length} pieces</h2><p>${esc(s.picks.join(', '))} for ${esc(pkg.listing.address)}.</p>
+        <p class="fine"><b>Test checkout:</b> no card is charged. On the live site this step is Stripe, and the postcards go to your mail vendor's cart.</p>`,
+        [['Approve and order (test)', 'pay'], ['Cancel', 'cancel', 'line']]);
+      if(v !== 'pay') return;
+      s.ordered = {at: new Date().toISOString(), picks: s.picks.slice(), size: pkg.order.size, test: true};
+      store.event(pkg.id, 'library-order', {picks: s.picks, size: pkg.order.size, cost: s.cost, test: true});
+      save(true); libOrderButtons();
+      $('#libOrderNote').textContent = `Ordered ${dayFmt(s.ordered.at)} (test).`;
+    }
+    const S = await spec(LIB), btns = [];
+    for(const d of s.ordered.picks) for(const pt of libParts(S, d)) btns.push([`${d} ${pt.piece.kind === 'social' ? '(full size)' : pt.label.toLowerCase() + ' (print PDF)'}`, pt.piece.id, 'line']);
+    const id = await ask('<h2>Your files</h2><p>Postcards open the print box at the exact size with bleed (pick Save as PDF). Social pieces open full size in a new tab.</p>', btns.concat([['Done', 'done']]), true);
+    if(!id || id === 'done') return;
+    const piece = S.pieces.find(p => p.id === id);
+    libFile(piece);
+  };
+  async function libFile(piece){
+    const social = piece.kind === 'social';
+    const data = Object.assign(libData(), {mode: social ? 'email' : 'print', piece});
+    const html = srcdoc(LIB, await tpl(LIB, piece.file), data, null, true);
+    if(social){   // a real link the agent clicks (a tab opened after loading counts as a pop-up and gets blocked)
+      const url = URL.createObjectURL(new Blob([html], {type: 'text/html'}));
+      await ask(`<h2>${esc(piece.design)} full size</h2><p><a class="btn" href="${url}" target="_blank" rel="noopener">Open it in a new tab</a></p>
+        <p class="fine">${piece.px[0]} x ${piece.px[1]} px. A one-click image download comes with the server renderer.</p>`, [['Done', 'done', 'line']]);
+      return;
+    }
+    document.querySelectorAll('iframe.bd-print').forEach(f => f.remove());
+    const fr = document.createElement('iframe');
+    fr.className = 'bd-print'; fr.setAttribute('aria-hidden', 'true');
+    fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1200px;height:900px;border:0';
+    fr.onload = () => Promise.resolve(fr.contentWindow.brochureReady).then(() => setTimeout(() => fr.contentWindow.print(), 300));
+    document.body.appendChild(fr);
+    fr.srcdoc = html;
   }
 
   // ---------- 3. rough-draft proof ----------

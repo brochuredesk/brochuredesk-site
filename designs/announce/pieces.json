@@ -1,0 +1,1581 @@
+{
+ "design": "announce",
+ "name": "Just Listed and Just Sold library (test)",
+ "test": true,
+ "note": "Approved designs from docs/briefs/approved-designs-handoff (10/22/2026). Test library only: every piece is marked test, so it shows on test pages and test accounts and never to real customers until each design passes the publish gate with the owner's approval. auto = a layout the system switches to on its own (never offered in the picker).",
+ "pieces": [
+  {
+   "id": "jl-m01-6x9-front",
+   "file": "card.html",
+   "design": "JL-M01",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Airy Script Triptych",
+   "label": "Just Listed postcard 6 x 9 (Airy Script Triptych), front"
+  },
+  {
+   "id": "jl-m01-6x9-back",
+   "file": "card.html",
+   "design": "JL-M01",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Airy Script Triptych",
+   "label": "Just Listed postcard 6 x 9 (Airy Script Triptych), back"
+  },
+  {
+   "id": "jl-m01-6x11-front",
+   "file": "card.html",
+   "design": "JL-M01",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Airy Script Triptych",
+   "label": "Just Listed postcard 6 x 11 (Airy Script Triptych), front"
+  },
+  {
+   "id": "jl-m01-6x11-back",
+   "file": "card.html",
+   "design": "JL-M01",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Airy Script Triptych",
+   "label": "Just Listed postcard 6 x 11 (Airy Script Triptych), back"
+  },
+  {
+   "id": "jl-m02-6x9-front",
+   "file": "card.html",
+   "design": "JL-M02",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Ivory Panorama",
+   "label": "Just Listed postcard 6 x 9 (Ivory Panorama), front"
+  },
+  {
+   "id": "jl-m02-6x9-back",
+   "file": "card.html",
+   "design": "JL-M02",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Ivory Panorama",
+   "label": "Just Listed postcard 6 x 9 (Ivory Panorama), back"
+  },
+  {
+   "id": "jl-m02-6x11-front",
+   "file": "card.html",
+   "design": "JL-M02",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Ivory Panorama",
+   "label": "Just Listed postcard 6 x 11 (Ivory Panorama), front"
+  },
+  {
+   "id": "jl-m02-6x11-back",
+   "file": "card.html",
+   "design": "JL-M02",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Ivory Panorama",
+   "label": "Just Listed postcard 6 x 11 (Ivory Panorama), back"
+  },
+  {
+   "id": "jl-m03-6x9-front",
+   "file": "card.html",
+   "design": "JL-M03",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Modern White Card",
+   "label": "Just Listed postcard 6 x 9 (Modern White Card), front"
+  },
+  {
+   "id": "jl-m03-6x9-back",
+   "file": "card.html",
+   "design": "JL-M03",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Modern White Card",
+   "label": "Just Listed postcard 6 x 9 (Modern White Card), back"
+  },
+  {
+   "id": "jl-m03-6x11-front",
+   "file": "card.html",
+   "design": "JL-M03",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Modern White Card",
+   "label": "Just Listed postcard 6 x 11 (Modern White Card), front"
+  },
+  {
+   "id": "jl-m03-6x11-back",
+   "file": "card.html",
+   "design": "JL-M03",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Modern White Card",
+   "label": "Just Listed postcard 6 x 11 (Modern White Card), back"
+  },
+  {
+   "id": "jl-m04-6x9-front",
+   "file": "card.html",
+   "design": "JL-M04",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Charcoal Status Band",
+   "label": "Just Listed postcard 6 x 9 (Charcoal Status Band), front"
+  },
+  {
+   "id": "jl-m04-6x9-back",
+   "file": "card.html",
+   "design": "JL-M04",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Charcoal Status Band",
+   "label": "Just Listed postcard 6 x 9 (Charcoal Status Band), back"
+  },
+  {
+   "id": "jl-m04-6x11-front",
+   "file": "card.html",
+   "design": "JL-M04",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Charcoal Status Band",
+   "label": "Just Listed postcard 6 x 11 (Charcoal Status Band), front"
+  },
+  {
+   "id": "jl-m04-6x11-back",
+   "file": "card.html",
+   "design": "JL-M04",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Charcoal Status Band",
+   "label": "Just Listed postcard 6 x 11 (Charcoal Status Band), back"
+  },
+  {
+   "id": "jl-m05-6x9-front",
+   "file": "card.html",
+   "design": "JL-M05",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Offset Twilight",
+   "label": "Just Listed postcard 6 x 9 (Offset Twilight), front"
+  },
+  {
+   "id": "jl-m05-6x9-back",
+   "file": "card.html",
+   "design": "JL-M05",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Offset Twilight",
+   "label": "Just Listed postcard 6 x 9 (Offset Twilight), back"
+  },
+  {
+   "id": "jl-m05-6x11-front",
+   "file": "card.html",
+   "design": "JL-M05",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Offset Twilight",
+   "label": "Just Listed postcard 6 x 11 (Offset Twilight), front"
+  },
+  {
+   "id": "jl-m05-6x11-back",
+   "file": "card.html",
+   "design": "JL-M05",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Offset Twilight",
+   "label": "Just Listed postcard 6 x 11 (Offset Twilight), back"
+  },
+  {
+   "id": "jl-m06-6x9-front",
+   "file": "card.html",
+   "design": "JL-M06",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Black and Gold",
+   "label": "Just Listed postcard 6 x 9 (Black and Gold), front"
+  },
+  {
+   "id": "jl-m06-6x9-back",
+   "file": "card.html",
+   "design": "JL-M06",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Black and Gold",
+   "label": "Just Listed postcard 6 x 9 (Black and Gold), back"
+  },
+  {
+   "id": "jl-m06-6x11-front",
+   "file": "card.html",
+   "design": "JL-M06",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Black and Gold",
+   "label": "Just Listed postcard 6 x 11 (Black and Gold), front"
+  },
+  {
+   "id": "jl-m06-6x11-back",
+   "file": "card.html",
+   "design": "JL-M06",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Black and Gold",
+   "label": "Just Listed postcard 6 x 11 (Black and Gold), back"
+  },
+  {
+   "id": "jl-m07-6x9-front",
+   "file": "card.html",
+   "design": "JL-M07",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Address Stripe",
+   "label": "Just Listed postcard 6 x 9 (Address Stripe), front"
+  },
+  {
+   "id": "jl-m07-6x9-back",
+   "file": "card.html",
+   "design": "JL-M07",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Address Stripe",
+   "label": "Just Listed postcard 6 x 9 (Address Stripe), back"
+  },
+  {
+   "id": "jl-m07-6x11-front",
+   "file": "card.html",
+   "design": "JL-M07",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Address Stripe",
+   "label": "Just Listed postcard 6 x 11 (Address Stripe), front"
+  },
+  {
+   "id": "jl-m07-6x11-back",
+   "file": "card.html",
+   "design": "JL-M07",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Address Stripe",
+   "label": "Just Listed postcard 6 x 11 (Address Stripe), back"
+  },
+  {
+   "id": "jl-m08-6x9-front",
+   "file": "card.html",
+   "design": "JL-M08",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Blue Sidebar",
+   "label": "Just Listed postcard 6 x 9 (Blue Sidebar), front"
+  },
+  {
+   "id": "jl-m08-6x9-back",
+   "file": "card.html",
+   "design": "JL-M08",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Blue Sidebar",
+   "label": "Just Listed postcard 6 x 9 (Blue Sidebar), back"
+  },
+  {
+   "id": "jl-m08-6x11-front",
+   "file": "card.html",
+   "design": "JL-M08",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Blue Sidebar",
+   "label": "Just Listed postcard 6 x 11 (Blue Sidebar), front"
+  },
+  {
+   "id": "jl-m08-6x11-back",
+   "file": "card.html",
+   "design": "JL-M08",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Blue Sidebar",
+   "label": "Just Listed postcard 6 x 11 (Blue Sidebar), back"
+  },
+  {
+   "id": "jl-m11-6x9-front",
+   "file": "card.html",
+   "design": "JL-M11",
+   "card": "listed",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Panorama",
+   "label": "Just Listed postcard 6 x 9 (Twilight Panorama), front"
+  },
+  {
+   "id": "jl-m11-6x9-back",
+   "file": "card.html",
+   "design": "JL-M11",
+   "card": "listed",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Panorama",
+   "label": "Just Listed postcard 6 x 9 (Twilight Panorama), back"
+  },
+  {
+   "id": "jl-m11-6x11-front",
+   "file": "card.html",
+   "design": "JL-M11",
+   "card": "listed",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Panorama",
+   "label": "Just Listed postcard 6 x 11 (Twilight Panorama), front"
+  },
+  {
+   "id": "jl-m11-6x11-back",
+   "file": "card.html",
+   "design": "JL-M11",
+   "card": "listed",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Panorama",
+   "label": "Just Listed postcard 6 x 11 (Twilight Panorama), back"
+  },
+  {
+   "id": "jl-s04-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S04",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "White Fireplace Portrait",
+   "label": "Just Listed post 1080 x 1350 (White Fireplace Portrait)"
+  },
+  {
+   "id": "jl-s07-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S07",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Olive Photo First",
+   "label": "Just Listed post 1080 x 1350 (Olive Photo First)"
+  },
+  {
+   "id": "jl-s12-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S12",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Tan Side Gallery",
+   "label": "Just Listed post 1080 x 1350 (Tan Side Gallery)"
+  },
+  {
+   "id": "jl-s13-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S13",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Editorial White Frame",
+   "label": "Just Listed post 1080 x 1350 (Editorial White Frame)"
+  },
+  {
+   "id": "jl-s14-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S14",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Espresso Split",
+   "label": "Just Listed post 1080 x 1350 (Espresso Split)"
+  },
+  {
+   "id": "jl-s18-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S18",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "White Side Column",
+   "label": "Just Listed post 1080 x 1350 (White Side Column)"
+  },
+  {
+   "id": "jl-s19-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S19",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Beige Center Stripe",
+   "label": "Just Listed post 1080 x 1350 (Beige Center Stripe)"
+  },
+  {
+   "id": "jl-s20-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S20",
+   "card": "listed",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Asymmetric Grid",
+   "label": "Just Listed post 1080 x 1350 (Asymmetric Grid)"
+  },
+  {
+   "id": "jl-s01-story",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S01",
+   "card": "listed",
+   "size": "story",
+   "px": [
+    1080,
+    1920
+   ],
+   "trim": [
+    810.0,
+    1440.0
+   ],
+   "test": true,
+   "title": "Ivory Vertical Hero",
+   "label": "Just Listed story 1080 x 1920 (Ivory Vertical Hero)"
+  },
+  {
+   "id": "jl-s15-story",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S15",
+   "card": "listed",
+   "size": "story",
+   "px": [
+    1080,
+    1920
+   ],
+   "trim": [
+    810.0,
+    1440.0
+   ],
+   "test": true,
+   "title": "Gold Arched Story",
+   "label": "Just Listed story 1080 x 1920 (Gold Arched Story)"
+  },
+  {
+   "id": "jl-s17-story",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JL-S17",
+   "card": "listed",
+   "size": "story",
+   "px": [
+    1080,
+    1920
+   ],
+   "trim": [
+    810.0,
+    1440.0
+   ],
+   "test": true,
+   "title": "Charcoal Story",
+   "label": "Just Listed story 1080 x 1920 (Charcoal Story)"
+  },
+  {
+   "id": "js-m03-6x9-front",
+   "file": "card.html",
+   "design": "JS-M03",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Script Band Strip",
+   "label": "Just Sold postcard 6 x 9 (Script Band Strip), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m03-6x9-back",
+   "file": "card.html",
+   "design": "JS-M03",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Script Band Strip",
+   "label": "Just Sold postcard 6 x 9 (Script Band Strip), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m03-6x11-front",
+   "file": "card.html",
+   "design": "JS-M03",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Script Band Strip",
+   "label": "Just Sold postcard 6 x 11 (Script Band Strip), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m03-6x11-back",
+   "file": "card.html",
+   "design": "JS-M03",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Script Band Strip",
+   "label": "Just Sold postcard 6 x 11 (Script Band Strip), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m04-6x9-front",
+   "file": "card.html",
+   "design": "JS-M04",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Forest Round Crop",
+   "label": "Just Sold postcard 6 x 9 (Forest Round Crop), front",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m04-6x9-back",
+   "file": "card.html",
+   "design": "JS-M04",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Forest Round Crop",
+   "label": "Just Sold postcard 6 x 9 (Forest Round Crop), back",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m04-6x11-front",
+   "file": "card.html",
+   "design": "JS-M04",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Forest Round Crop",
+   "label": "Just Sold postcard 6 x 11 (Forest Round Crop), front",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m04-6x11-back",
+   "file": "card.html",
+   "design": "JS-M04",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Forest Round Crop",
+   "label": "Just Sold postcard 6 x 11 (Forest Round Crop), back",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m05-6x9-front",
+   "file": "card.html",
+   "design": "JS-M05",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Cream Panel and Navy Sweep",
+   "label": "Just Sold postcard 6 x 9 (Cream Panel and Navy Sweep), front",
+   "category": "Contemporary"
+  },
+  {
+   "id": "js-m05-6x9-back",
+   "file": "card.html",
+   "design": "JS-M05",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Cream Panel and Navy Sweep",
+   "label": "Just Sold postcard 6 x 9 (Cream Panel and Navy Sweep), back",
+   "category": "Contemporary"
+  },
+  {
+   "id": "js-m05-6x11-front",
+   "file": "card.html",
+   "design": "JS-M05",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Cream Panel and Navy Sweep",
+   "label": "Just Sold postcard 6 x 11 (Cream Panel and Navy Sweep), front",
+   "category": "Contemporary"
+  },
+  {
+   "id": "js-m05-6x11-back",
+   "file": "card.html",
+   "design": "JS-M05",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Cream Panel and Navy Sweep",
+   "label": "Just Sold postcard 6 x 11 (Cream Panel and Navy Sweep), back",
+   "category": "Contemporary"
+  },
+  {
+   "id": "js-m06-6x9-front",
+   "file": "card.html",
+   "design": "JS-M06",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Medallion Photo",
+   "label": "Just Sold postcard 6 x 9 (Medallion Photo), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m06-6x9-back",
+   "file": "card.html",
+   "design": "JS-M06",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Medallion Photo",
+   "label": "Just Sold postcard 6 x 9 (Medallion Photo), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m06-6x11-front",
+   "file": "card.html",
+   "design": "JS-M06",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Medallion Photo",
+   "label": "Just Sold postcard 6 x 11 (Medallion Photo), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m06-6x11-back",
+   "file": "card.html",
+   "design": "JS-M06",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Medallion Photo",
+   "label": "Just Sold postcard 6 x 11 (Medallion Photo), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m07-6x9-front",
+   "file": "card.html",
+   "design": "JS-M07",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic",
+   "label": "Just Sold postcard 6 x 9 (Four-Room Mosaic), front",
+   "category": "Specialty: Listed & Sold"
+  },
+  {
+   "id": "js-m07-6x9-back",
+   "file": "card.html",
+   "design": "JS-M07",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic",
+   "label": "Just Sold postcard 6 x 9 (Four-Room Mosaic), back",
+   "category": "Specialty: Listed & Sold"
+  },
+  {
+   "id": "js-m07-6x11-front",
+   "file": "card.html",
+   "design": "JS-M07",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic",
+   "label": "Just Sold postcard 6 x 11 (Four-Room Mosaic), front",
+   "category": "Specialty: Listed & Sold"
+  },
+  {
+   "id": "js-m07-6x11-back",
+   "file": "card.html",
+   "design": "JS-M07",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic",
+   "label": "Just Sold postcard 6 x 11 (Four-Room Mosaic), back",
+   "category": "Specialty: Listed & Sold"
+  },
+  {
+   "id": "js-m07-long-6x9-front",
+   "file": "card.html",
+   "design": "JS-M07-long",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic (long name)",
+   "label": "Just Sold postcard 6 x 9 (Four-Room Mosaic (long name)), front",
+   "category": "Specialty: Listed & Sold",
+   "auto": true,
+   "note": "picked automatically when the agent name is too long for JS-M07"
+  },
+  {
+   "id": "js-m07-long-6x9-back",
+   "file": "card.html",
+   "design": "JS-M07-long",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic (long name)",
+   "label": "Just Sold postcard 6 x 9 (Four-Room Mosaic (long name)), back",
+   "category": "Specialty: Listed & Sold",
+   "auto": true,
+   "note": "picked automatically when the agent name is too long for JS-M07"
+  },
+  {
+   "id": "js-m07-long-6x11-front",
+   "file": "card.html",
+   "design": "JS-M07-long",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic (long name)",
+   "label": "Just Sold postcard 6 x 11 (Four-Room Mosaic (long name)), front",
+   "category": "Specialty: Listed & Sold",
+   "auto": true,
+   "note": "picked automatically when the agent name is too long for JS-M07"
+  },
+  {
+   "id": "js-m07-long-6x11-back",
+   "file": "card.html",
+   "design": "JS-M07-long",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Room Mosaic (long name)",
+   "label": "Just Sold postcard 6 x 11 (Four-Room Mosaic (long name)), back",
+   "category": "Specialty: Listed & Sold",
+   "auto": true,
+   "note": "picked automatically when the agent name is too long for JS-M07"
+  },
+  {
+   "id": "js-m08-6x9-front",
+   "file": "card.html",
+   "design": "JS-M08",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Night Band",
+   "label": "Just Sold postcard 6 x 9 (Twilight Night Band), front",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m08-6x9-back",
+   "file": "card.html",
+   "design": "JS-M08",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Night Band",
+   "label": "Just Sold postcard 6 x 9 (Twilight Night Band), back",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m08-6x11-front",
+   "file": "card.html",
+   "design": "JS-M08",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Night Band",
+   "label": "Just Sold postcard 6 x 11 (Twilight Night Band), front",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m08-6x11-back",
+   "file": "card.html",
+   "design": "JS-M08",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Twilight Night Band",
+   "label": "Just Sold postcard 6 x 11 (Twilight Night Band), back",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m09-6x9-front",
+   "file": "card.html",
+   "design": "JS-M09",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "White Script Band",
+   "label": "Just Sold postcard 6 x 9 (White Script Band), front",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m09-6x9-back",
+   "file": "card.html",
+   "design": "JS-M09",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "White Script Band",
+   "label": "Just Sold postcard 6 x 9 (White Script Band), back",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m09-6x11-front",
+   "file": "card.html",
+   "design": "JS-M09",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "White Script Band",
+   "label": "Just Sold postcard 6 x 11 (White Script Band), front",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m09-6x11-back",
+   "file": "card.html",
+   "design": "JS-M09",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "White Script Band",
+   "label": "Just Sold postcard 6 x 11 (White Script Band), back",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-m10-6x9-front",
+   "file": "card.html",
+   "design": "JS-M10",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Your Neighbor's House",
+   "label": "Just Sold postcard 6 x 9 (Your Neighbor's House), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m10-6x9-back",
+   "file": "card.html",
+   "design": "JS-M10",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Your Neighbor's House",
+   "label": "Just Sold postcard 6 x 9 (Your Neighbor's House), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m10-6x11-front",
+   "file": "card.html",
+   "design": "JS-M10",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Your Neighbor's House",
+   "label": "Just Sold postcard 6 x 11 (Your Neighbor's House), front",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m10-6x11-back",
+   "file": "card.html",
+   "design": "JS-M10",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Your Neighbor's House",
+   "label": "Just Sold postcard 6 x 11 (Your Neighbor's House), back",
+   "category": "Classic"
+  },
+  {
+   "id": "js-m13-6x9-front",
+   "file": "card.html",
+   "design": "JS-M13",
+   "card": "sold",
+   "size": "6x9",
+   "side": "front",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Photo Grid",
+   "label": "Just Sold postcard 6 x 9 (Four-Photo Grid), front",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m13-6x9-back",
+   "file": "card.html",
+   "design": "JS-M13",
+   "card": "sold",
+   "size": "6x9",
+   "side": "back",
+   "trim": [
+    648,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Photo Grid",
+   "label": "Just Sold postcard 6 x 9 (Four-Photo Grid), back",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m13-6x11-front",
+   "file": "card.html",
+   "design": "JS-M13",
+   "card": "sold",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Photo Grid",
+   "label": "Just Sold postcard 6 x 11 (Four-Photo Grid), front",
+   "category": "Modern"
+  },
+  {
+   "id": "js-m13-6x11-back",
+   "file": "card.html",
+   "design": "JS-M13",
+   "card": "sold",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "test": true,
+   "title": "Four-Photo Grid",
+   "label": "Just Sold postcard 6 x 11 (Four-Photo Grid), back",
+   "category": "Modern"
+  },
+  {
+   "id": "js-s01-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JS-S01",
+   "card": "sold",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Stacked Serif",
+   "label": "Just Sold post 1080 x 1350 (Stacked Serif)",
+   "category": "Classic"
+  },
+  {
+   "id": "js-s02-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JS-S02",
+   "card": "sold",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Rounded Square",
+   "label": "Just Sold post 1080 x 1350 (Rounded Square)",
+   "category": "Classic"
+  },
+  {
+   "id": "js-s03-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JS-S03",
+   "card": "sold",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Moody Room",
+   "label": "Just Sold post 1080 x 1350 (Moody Room)",
+   "category": "Luxury"
+  },
+  {
+   "id": "js-s04-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JS-S04",
+   "card": "sold",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Angled Panel",
+   "label": "Just Sold post 1080 x 1350 (Angled Panel)",
+   "category": "Modern"
+  },
+  {
+   "id": "js-s06-post",
+   "file": "card.html",
+   "kind": "social",
+   "design": "JS-S06",
+   "card": "sold",
+   "size": "post",
+   "px": [
+    1080,
+    1350
+   ],
+   "trim": [
+    810.0,
+    1012.5
+   ],
+   "test": true,
+   "title": "Dark Glass",
+   "label": "Just Sold post 1080 x 1350 (Dark Glass)",
+   "category": "Modern"
+  }
+ ]
+}
