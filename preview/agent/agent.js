@@ -205,24 +205,21 @@
     $('#status').textContent = text;
   }
   const MSG = {
-    har: "That's a har.com link. HAR's site blocks automatic reading, so we need the Matrix link instead.",
-    'other-site': 'We can only read Matrix links right now, not Zillow or Realtor.com.',
-    'not-matrix': "That doesn't look like a Matrix listing link. It should start with https://matrix.harmls.com/.",
-    'not-a-link': "That doesn't look like a link yet. Paste the whole Matrix link, starting with https://.",
-    blocked: "HAR's site asked us to prove we're a person, and we won't try to get past that. Give it a few minutes and try again.",
+    'other-site': "We couldn't find that listing from the link. Paste its HAR or Matrix link instead.",
+    'not-a-listing': "That HAR link isn't a single listing. Open the listing on HAR and copy that page's link.",
+    'not-matrix': "That doesn't look like a Matrix listing link. Paste the link from the Matrix email or share page.",
+    'not-a-link': "That doesn't look like a link yet. Paste the whole listing link, starting with https://.",
+    blocked: "That site asked us to prove we're a person, and we won't try to get past that. Paste the HAR or Matrix link instead.",
     unreadable: "We opened the link but couldn't find the listing on it.",
-    'not-found': "That link didn't open a listing. It may have expired. Make a fresh one in Matrix.",
-    unreachable: "We couldn't reach Matrix just now. Try again in a moment.",
+    'not-found': "That link didn't open a listing. It may have expired.",
+    unreachable: "We couldn't reach the listing site just now. Try again in a moment.",
     'slow-down': "That's a lot of tries in a row. Wait a few minutes and try again.",
     network: 'Something went wrong on our end while reading the link. Try again.'
   };
+  // HAR, Matrix (share and emailed links), Zillow / Realtor.com / Redfin (found on HAR by address) and brokerage pages all go to the reader
   function localCheck(v){
     let u; try { u = new URL(v); } catch(e) { return 'not-a-link'; }
-    const h = u.hostname.toLowerCase();
-    if(h === 'har.com' || h.endsWith('.har.com')) return 'har';
-    if(/(^|\.)(zillow|realtor|redfin|trulia|homes|movoto)\.com$/.test(h)) return 'other-site';
-    if(h !== 'matrix.harmls.com') return 'not-matrix';
-    return '';
+    return /^https?:$/.test(u.protocol) ? '' : 'not-a-link';
   }
   $('#linkForm').addEventListener('submit', e => { e.preventDefault(); runLookup($('#link').value.trim()); });
   $('#sampleListing').onclick = () => runLookup('sample');
@@ -245,7 +242,7 @@
       const worker = async () => {
         while(next < cand.length && got.filter(Boolean).length < MAX_PHOTOS){
           const i = next++;
-          try { const u = await loadPhoto(cand[i].url, link !== 'sample'); got[i] = u ? cand[i] : null; } catch(e) { got[i] = null; }
+          try { const u = await loadPhoto(cand[i].url, link !== 'sample', cand[i].direct); got[i] = u ? cand[i] : null; } catch(e) { got[i] = null; }
           done++; if(done <= want) stepTo('photos', 25 + Math.round(55 * done / want), `Getting photo ${Math.min(done, want)} of ${want}…`);
         }
       };
@@ -254,8 +251,10 @@
       if(!keep.length) throw {code: 'unreadable'};
       stepTo('details', 90, 'Filling in the details…');
       const l = j.listing;
-      lookup = {link, listing: {address: l.address, neighborhood: l.neighborhood || '', city: l.city || 'Houston', state: 'Texas', zip: l.zip || '',
-        beds: l.beds, baths: l.baths, halfBaths: l.halfBaths || 0, sqft: l.sqft, yearBuilt: l.yearBuilt || l.year, stories: l.stories || null, description: l.description || ''},
+      // the whole listing record is kept (description, every detail field, rooms, what conveys, every photo caption,
+      // and price / schools in `withheld`, which package-ai never passes to the writer)
+      lookup = {link, listing: Object.assign({}, l, {address: l.address, neighborhood: l.neighborhood || '', city: l.city || 'Houston', state: 'Texas', zip: l.zip || '',
+        beds: l.beds, baths: l.baths, halfBaths: l.halfBaths || 0, sqft: l.sqft, yearBuilt: l.yearBuilt || l.year, stories: l.stories || null, description: l.description || ''}),
         photos: keep.map(p => ({n: p.n, url: p.url, desc: p.desc || ''}))};
       stepTo('done', 100, `Found ${lookup.listing.address}: ${keep.length} photos. Pick what you'd like below.`);
       $('#toGallery').disabled = false;
@@ -313,10 +312,11 @@
     return false;
   }
   // Matrix photos come through our reader (browsers can't fetch them directly); sample photos are on this site.
-  async function loadPhoto(url, viaReader){
+  async function loadPhoto(url, viaReader, direct){
     if(photoSrc.has(url)) return photoSrc.get(url);
     if(!viaReader && url.startsWith('/')){ photoSrc.set(url, url); return url; }
-    const r = await fetch(`${FN_MATRIX}?photo=${encodeURIComponent(url)}`);
+    // a brokerage site's own photos can't go through the reader (Matrix and HAR photos only); try them straight from the site
+    const r = await fetch(direct ? url : `${FN_MATRIX}?photo=${encodeURIComponent(url)}`);
     if(!r.ok) throw new Error('photo');
     const blob = await r.blob();
     if(isCollage(await createImageBitmap(blob))) return null;
@@ -551,7 +551,11 @@
     draft.captions = ids.map(photo => ({photo, text: ''}));
     // these designs never print the neighborhood name (city and state only), so the writer never sees it
     const hood = (pkg.listing.neighborhood || '').trim(), re = hood ? new RegExp('\\b' + hood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi') : null;
-    const listing = Object.assign({}, pkg.listing, {neighborhood: '', description: re ? String(pkg.listing.description || '').replace(re, '') : pkg.listing.description});
+    const strip = t => re ? String(t || '').replace(re, '') : t;
+    const details = Object.fromEntries(Object.entries(pkg.listing.details || {}).map(([sec, f]) =>
+      [sec, Object.fromEntries(Object.entries(f).filter(([k]) => !/subdivision|market area|legal/i.test(k)).map(([k, v]) => [k, strip(v)]))]));
+    const listing = Object.assign({}, pkg.listing, {neighborhood: '', description: strip(pkg.listing.description), details,
+      photoCaptions: (pkg.listing.photoCaptions || []).map(c => ({n: c.n, caption: strip(c.caption)}))});
     const j = await ai({action: 'write', packageId: pkg.id, design: 'Just Listed postcards and social posts (city and state only, never a neighborhood or area name)', style: pkg.copyStyle, listing,
       photos: Object.fromEntries(ids.map(id => [id, libData().photos[id].tags])), example: {copy: {}, companion: {justListed: exJL}},
       draft: {copy: {}, companion: {justListed: draft}}, pieces: ['Just Listed postcard (front and back)', 'Just Listed social posts and stories']});
