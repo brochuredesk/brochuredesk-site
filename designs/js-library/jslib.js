@@ -524,7 +524,7 @@
       h.photo('living', 868, 52, 144, 330, k); }}},
   };
 
-  // ---------------------------------------------------------------- the agent's own text changes (the owner, 10/24/2026)
+  // ---------------------------------------------------------------- the agent's own text changes (10/24/2026)
   // An agent can click any text spot and change its wording, font (from the design's tested fonts), color and size
   // (80% to 130% of the design's size). The print checks still run on the result. Edits are saved per side and spot:
   // D.textEdits = {"back:4": {text, font, color, size}}. A spot is the outermost element that holds text, numbered in order.
