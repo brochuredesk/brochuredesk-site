@@ -73,18 +73,33 @@
   }
 
   // Which listing photo fills each role; never the same photo twice on one side of a card.
-  function photoPicker(D){
-    const P = D.photos || {}, roles = D.photoRoles || {}, used = new Set(), notes = [];
-    const ids = Object.keys(P);
-    return {notes, pick(role){
-      let id = roles[role] && P[roles[role]] ? roles[role] : (P[role] ? role : null);
-      if(id && used.has(id)) id = null;
-      if(!id){ const re = ROLE_TAGS[role]; id = ids.find(k => !used.has(k) && re && re.test(P[k].tags || '')) ||
-                 (EXTERIOR[role] ? null : ids.find(k => !used.has(k) && !/exterior/i.test(P[k].tags||'')));
-               if(id) notes.push({kind:'photo-stand-in', slot:'photo.' + role, photo:id}); }
-      if(!id) return {id:null, src:''};
-      used.add(id); return {id, src:P[id].src};
-    }};
+  // Which listing photo fills each photo spot the design asks for. Photos carry a label from the photo-tags step
+  // (package-ai "tag-photos": front, side, back, kitchen, primary...). Each spot takes the first unused photo whose
+  // label is on its list, in order, so nothing repeats anywhere on the card, front or back.
+  const ROLE_LABELS = {front:['front'], family:['side','front','back'], lawn:['back','patio','pool','yard','side'],
+    kitchen:['kitchen'], kitchen2:['kitchen','dining','nook'], living:['living','family'], dining:['dining','nook','living','kitchen'],
+    nook:['nook','dining','kitchen'], primary:['primary','bedroom'], bedroom2:['bedroom','primary'], study:['bedroom','office'],
+    office:['bath','office','bedroom'], hall:['entry','stairs','living','family']};
+  function assignPhotos(D, roles){
+    const P = D.photos || {}, fixed = D.photoRoles || {}, ids = Object.keys(P), used = new Set(), map = {}, notes = [];
+    const labeled = ids.some(k => P[k].role);
+    roles.forEach(role => {
+      if(role in map) return;
+      let id = fixed[role] && P[fixed[role]] && !used.has(fixed[role]) ? fixed[role] : null;
+      if(!id && !labeled && P[role] && !used.has(role)) id = role;                      // sample data names photos by role
+      if(!id && labeled) for(const lab of (ROLE_LABELS[role] || [])){ id = ids.find(k => !used.has(k) && P[k].role === lab); if(id) break; }
+      if(!id){ const re = ROLE_TAGS[role]; id = ids.find(k => !used.has(k) && re && re.test((P[k].tags || '') + ' ' + (P[k].note || ''))) || null; }
+      if(!id && !EXTERIOR[role]) id = ids.find(k => !used.has(k) && !P[k].exterior && !/exterior/i.test(P[k].tags || '')) || null;
+      if(id && !(fixed[role] === id || (!labeled && id === role) || (labeled && (ROLE_LABELS[role] || [])[0] === P[id].role))) notes.push({kind:'photo-stand-in', slot:'photo.' + role, photo:id});
+      if(id) used.add(id);
+      map[role] = id;
+    });
+    return {map, notes};
+  }
+  const rolesIn = tpls => { const out = []; tpls.forEach(t => t && (t.innerHTML.match(/\{\{photo:(\w+)\}\}/g) || []).forEach(m => { const r = m.slice(8, -2); if(out.indexOf(r) < 0) out.push(r); })); return out; };
+  function photoPicker(D, assigned){
+    const P = D.photos || {};
+    return {notes:assigned.notes, pick(role){ const id = assigned.map[role]; return id ? {id, src:P[id].src} : {id:null, src:''}; }};
   }
   function logoFor(B, kind){
     if(kind === 'white') return B.logoKnockout || B.logoOnDark || B.logo || '';
@@ -105,8 +120,8 @@
     return n > 10;
   }
   const TOK = /\{\{([^}]+)\}\}/g;
-  function fill(root, D, v){
-    const B = D.brand || {}, pick = photoPicker(D), issues = [];
+  function fill(root, D, v, assigned){
+    const B = D.brand || {}, pick = photoPicker(D, assigned), issues = [];
     const sub = s => s.replace(TOK, (m, k) => {
       if(k in v) return v[k];
       issues.push({kind:'unknown-token', slot:k}); return '';
@@ -313,7 +328,9 @@
     const frag = tpl.content.cloneNode(true);
     const card = frag.querySelector('#card');
     card.removeAttribute('id'); card.classList.add('js-card');
-    const filled = fill(card, D, v);
+    // photos are assigned across the whole card (front first, then back) so a photo never shows up twice
+    const assigned = assignPhotos(D, rolesIn([chooseTemplate(doc, 'front', hs, long), chooseTemplate(doc, 'back', hs, long)]));
+    const filled = fill(card, D, v, assigned);
     host.appendChild(card);
     if((opts.size || '6x9') === '6x11') widen(card, side === 'front');
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
