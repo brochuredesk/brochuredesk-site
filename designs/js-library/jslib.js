@@ -47,7 +47,8 @@
     const art = /^(8|11|18)/.test(year) ? 'an' : 'a';
     const factsA = `${year ? art + ' ' + year : 'a'} ${storyW}${bb ? ' with ' + bb : ''}`;
     const dom = +S.daysOnMarket || 0, offers = +S.offers || 0;
-    const name = (A.name || '').trim(), np = name.split(/\s+/);
+    // "Name on mailers" from the agent's profile when they set one (a shorter form of a long name), else their name
+    const name = (A.mailerName || A.name || '').trim(), np = name.split(/\s+/);
     const first = np[0] || '', last = np.slice(1).join(' ');
     const ret = B.returnAddress || [];
     const v = {
@@ -325,6 +326,10 @@
       .then(() => Promise.all([...faces].map(f => document.fonts.load(f).catch(() => null))))
       .then(() => document.fonts.ready)
       .then(() => { const r = layout(card, D, side === 'front'); if(opts.print) forPrint(card);
+        // a name that won't fit this design: one plain message for the agent (shorten the mailer name or pick another design)
+        const parts = [v.agentName, v.agentFirst, v.agentLast].filter(x => x && x.length > 2).map(x => x.toLowerCase().slice(0, 12));
+        if(r.issues.some(c => /overflow|safe-area|mail-zone/.test(c.kind) && c.text && parts.some(x => c.text.toLowerCase().indexOf(x) >= 0)))
+          r.issues.unshift({kind:'name-too-long', slot:'agent.mailerName', name:v.agentName});
         return {card, issues:filled.filter(x => x.kind !== 'photo-stand-in').concat(r.issues), notes:filled.filter(x => x.kind === 'photo-stand-in').concat(r.notes),
                 variant:{side, headshot:hs, longName:long}}; });
   }
