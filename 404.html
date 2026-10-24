@@ -435,6 +435,10 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <p class="pf-hint">Exactly how it prints on your contact card, like Alex Morgan or Alex J. Morgan.</p>
         <input id="pfDisplay" type="text" autocomplete="name" maxlength="40" required>
 
+        <label class="pf-lbl" for="pfMailer">Name on mailers <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <p class="pf-hint">Your postcards use this name. If your name is long, a shorter form here fits every design, like Alex Morgan or Alexandra M. Reyes. Leave it blank to use the name above.</p>
+        <input id="pfMailer" type="text" autocomplete="off" maxlength="40">
+
         <label class="pf-lbl" for="pfGreet">What should we call you?</label>
         <p class="pf-hint">Used when we welcome you back.</p>
         <input id="pfGreet" type="text" autocomplete="given-name" maxlength="24">
@@ -565,6 +569,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     const p = profile || {};
     $('pfDisplay').value = p.display_name || [me.team.first_name, me.team.last_name].filter(Boolean).join(' ');
     $('pfGreet').value = p.greeting_name || me.team.first_name || '';
+    $('pfMailer').value = p.mailer_name || '';
     $('pfEmail').value = p.preferred_email || me.email || '';
     $('pfCell').value = p.cell || '';
     pendingPhoto = null; removePhoto = false;
@@ -742,9 +747,12 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         cropSet = pendingPhoto.crop;
         st.textContent = 'Saving...';
       }
-      const row = { user_id: me.id, display_name: display, greeting_name: greet, preferred_email: email, cell,
+      const row = { user_id: me.id, display_name: display, mailer_name: $('pfMailer').value.trim() || null, greeting_name: greet, preferred_email: email, cell,
         headshot_path: path, headshot_original_path: origPath, headshot_crop: cropSet, updated_at: new Date().toISOString() };
-      const { error } = await sb.from('agent_profiles').upsert(row);
+      let { error } = await sb.from('agent_profiles').upsert(row);
+      if (error && /mailer_name/.test(error.message || '')) {   // until the mailer_name column exists, save the rest
+        delete row.mailer_name; ({ error } = await sb.from('agent_profiles').upsert(row));
+      }
       if (error) throw error;
       const keep = new Set([path, origPath].filter(Boolean));
       const stale = [profile?.headshot_path, profile?.headshot_original_path].filter(p => p && !keep.has(p));
