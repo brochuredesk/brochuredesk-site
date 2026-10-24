@@ -920,6 +920,42 @@
    "label": "Just Sold postcard M11, 6 x 11, back"
   },
   {
+   "id": "js-m11-6x11-plain-front",
+   "file": "m11.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M11",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M11, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m11-6x11-plain-back",
+   "file": "m11.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M11",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M11, 6 x 11 plain, back"
+  },
+  {
    "id": "js-m12-6x9-front",
    "file": "m12.html",
    "size": "6x9",
@@ -1336,6 +1372,42 @@
    "label": "Just Sold postcard M18, 6 x 11, back"
   },
   {
+   "id": "js-m18-6x11-plain-front",
+   "file": "m18.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M18",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M18, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m18-6x11-plain-back",
+   "file": "m18.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M18",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M18, 6 x 11 plain, back"
+  },
+  {
    "id": "js-m19-6x9-front",
    "file": "m19.html",
    "size": "6x9",
@@ -1478,6 +1550,42 @@
    ],
    "approved": false,
    "label": "Just Sold postcard M21, 6 x 11, back"
+  },
+  {
+   "id": "js-m21-6x11-plain-front",
+   "file": "m21.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M21",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M21, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m21-6x11-plain-back",
+   "file": "m21.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M21",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M21, 6 x 11 plain, back"
   },
   {
    "id": "js-m23-6x9-front",
@@ -1624,6 +1732,42 @@
    "label": "Just Sold postcard M24, 6 x 11, back"
   },
   {
+   "id": "js-m24-6x11-plain-front",
+   "file": "m24.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M24",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M24, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m24-6x11-plain-back",
+   "file": "m24.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M24",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M24, 6 x 11 plain, back"
+  },
+  {
    "id": "js-m25-6x9-front",
    "file": "m25.html",
    "size": "6x9",
@@ -1698,6 +1842,42 @@
    ],
    "approved": false,
    "label": "Just Sold postcard M25, 6 x 11, back"
+  },
+  {
+   "id": "js-m25-6x11-plain-front",
+   "file": "m25.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M25",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M25, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m25-6x11-plain-back",
+   "file": "m25.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M25",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M25, 6 x 11 plain, back"
   },
   {
    "id": "js-m26-6x9-front",
@@ -1980,6 +2160,42 @@
    "label": "Just Sold postcard M29, 6 x 11, back"
   },
   {
+   "id": "js-m29-6x11-plain-front",
+   "file": "m29.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M29",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M29, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m29-6x11-plain-back",
+   "file": "m29.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M29",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M29, 6 x 11 plain, back"
+  },
+  {
    "id": "js-m30-6x9-front",
    "file": "m30.html",
    "size": "6x9",
@@ -2252,6 +2468,42 @@
    "label": "Just Sold postcard M35, 6 x 11, back"
   },
   {
+   "id": "js-m35-6x11-plain-front",
+   "file": "m35.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M35",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M35, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m35-6x11-plain-back",
+   "file": "m35.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M35",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M35, 6 x 11 plain, back"
+  },
+  {
    "id": "js-m36-6x9-front",
    "file": "m36.html",
    "size": "6x9",
@@ -2394,6 +2646,42 @@
    ],
    "approved": false,
    "label": "Just Sold postcard M37, 6 x 11, back"
+  },
+  {
+   "id": "js-m37-6x11-plain-front",
+   "file": "m37.html",
+   "size": "6x11",
+   "side": "front",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M37",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M37, 6 x 11 plain, front"
+  },
+  {
+   "id": "js-m37-6x11-plain-back",
+   "file": "m37.html",
+   "size": "6x11",
+   "side": "back",
+   "trim": [
+    792,
+    432
+   ],
+   "print": "bleed",
+   "card": "sold",
+   "design": "M37",
+   "group": "specialty",
+   "plain": true,
+   "needs": [],
+   "approved": false,
+   "label": "Just Sold postcard M37, 6 x 11 plain, back"
   },
   {
    "id": "js-m38-6x9-front",
