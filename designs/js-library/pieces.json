@@ -60,15 +60,6 @@
    "needs": []
   },
   {
-   "id": "M11",
-   "file": "m11.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "offers"
-   ]
-  },
-  {
    "id": "M12",
    "file": "m12.html",
    "group": "main",
@@ -104,15 +95,6 @@
    "needs": []
   },
   {
-   "id": "M18",
-   "file": "m18.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "offers"
-   ]
-  },
-  {
    "id": "M19",
    "file": "m19.html",
    "group": "main",
@@ -120,38 +102,11 @@
    "needs": []
   },
   {
-   "id": "M21",
-   "file": "m21.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "daysOnMarket"
-   ]
-  },
-  {
    "id": "M23",
    "file": "m23.html",
    "group": "main",
    "title": "",
    "needs": []
-  },
-  {
-   "id": "M24",
-   "file": "m24.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "offers"
-   ]
-  },
-  {
-   "id": "M25",
-   "file": "m25.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "daysOnMarket"
-   ]
   },
   {
    "id": "M26",
@@ -173,15 +128,6 @@
    "group": "main",
    "title": "",
    "needs": []
-  },
-  {
-   "id": "M29",
-   "file": "m29.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "daysOnMarket"
-   ]
   },
   {
    "id": "M30",
@@ -210,15 +156,6 @@
    "group": "main",
    "title": "",
    "needs": []
-  },
-  {
-   "id": "M37",
-   "file": "m37.html",
-   "group": "main",
-   "title": "",
-   "needs": [
-    "daysOnMarket"
-   ]
   },
   {
    "id": "M38",
@@ -291,11 +228,74 @@
    "needs": []
   },
   {
+   "id": "M11",
+   "file": "m11.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "offers"
+   ]
+  },
+  {
+   "id": "M18",
+   "file": "m18.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "offers"
+   ]
+  },
+  {
+   "id": "M21",
+   "file": "m21.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "daysOnMarket"
+   ]
+  },
+  {
+   "id": "M24",
+   "file": "m24.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "offers"
+   ]
+  },
+  {
+   "id": "M25",
+   "file": "m25.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "daysOnMarket"
+   ]
+  },
+  {
+   "id": "M29",
+   "file": "m29.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "daysOnMarket"
+   ]
+  },
+  {
    "id": "M35",
    "file": "m35.html",
    "group": "specialty",
    "title": "",
    "needs": []
+  },
+  {
+   "id": "M37",
+   "file": "m37.html",
+   "group": "specialty",
+   "title": "",
+   "needs": [
+    "daysOnMarket"
+   ]
   }
  ],
  "pieces": [
@@ -567,7 +567,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M11",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -585,7 +585,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M11",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -763,7 +763,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M18",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -781,7 +781,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M18",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -831,7 +831,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M21",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -849,7 +849,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M21",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -899,7 +899,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M24",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -917,7 +917,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M24",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "offers"
    ],
@@ -935,7 +935,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M25",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -953,7 +953,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M25",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -1067,7 +1067,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M29",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -1085,7 +1085,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M29",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -1263,7 +1263,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M37",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
@@ -1281,7 +1281,7 @@
    "print": "bleed",
    "card": "sold",
    "design": "M37",
-   "group": "main",
+   "group": "specialty",
    "needs": [
     "daysOnMarket"
    ],
