@@ -81,6 +81,8 @@
     <p class="note" style="margin-top:-6px">Specialty cards show a sale detail (days on market or number of offers) or a side label. • means the card needs that sale detail.</p>
     <fieldset><legend>Card size</legend>
       <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11 (draft)</button></div>
+      <div id="plainbox" style="display:none"><label>Sale detail on this 6 x 11 specialty card</label>
+      <div class="seg" id="plain"><button type="button" data-v="0" aria-pressed="true">Show it</button><button type="button" data-v="1">Leave it out</button></div></div>
     </fieldset>
     <fieldset><legend>Agent</legend>
       <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
@@ -136,6 +138,7 @@
     'type-too-small': c => `Type under 8 pt: "${c.text}".`,
     'photo-under-300ppi': c => `A photo is under 300 ppi at this size (the print file enlarges it).`,
     'roof-cut': () => 'The top of the house is cut off.',
+    'house-cut': () => 'The house doesn’t fit in its photo (the top or bottom is cut off).',
     'missing-photo': c => `No photo for ${c.slot.replace('photo.','')}.`,
     'copy-fit': () => 'The write-up does not fill its lines.',
     'missing-return-address': () => 'No brokerage return address.',
@@ -156,6 +159,7 @@
       return new Promise(res => setTimeout(res, 150)).then(() => t); });
   }
   const size = () => $('size').querySelector('[aria-pressed="true"]').dataset.v;
+  const plain = () => !!cur && cur.group === 'specialty' && size() === '6x11' && $('plain').querySelector('[aria-pressed="true"]').dataset.v === '1';
   function scaleFrames(){ document.querySelectorAll('.frame').forEach(f => { const h = f.querySelector('.host'); h.style.transform = `scale(${f.clientWidth / (size() === '6x11' ? 1056 : 864)})`; }); }
   window.addEventListener('resize', scaleFrames);
   function showChecks(box, r){
@@ -168,6 +172,7 @@
   function render(){
     if(!cur) return; const my = ++seq; $('busy').style.display = 'block';
     $('t-draft').style.display = size() === '6x11' ? 'block' : 'none';
+    $('plainbox').style.display = cur.group === 'specialty' && size() === '6x11' ? 'block' : 'none';
     readForm();
     const d = JSON.parse(JSON.stringify(data));
     d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
@@ -175,7 +180,7 @@
       const el = document.querySelector(`.side[data-side="${side}"]`), host = el.querySelector('.host');
       host.style.transform = 'none';
       el.querySelector('.frame').classList.toggle('wide', size() === '6x11');
-      return JSLib.mount(host, t, d, {side, size:size()}).then(r => { if(my !== seq) return; showChecks(el.querySelector('.checks'), r); });
+      return JSLib.mount(host, t, d, {side, size:size(), plain:plain()}).then(r => { if(my !== seq) return; showChecks(el.querySelector('.checks'), r); });
     }))).then(() => { if(my === seq){ scaleFrames(); $('busy').style.display = 'none'; } })
       .catch(e => { $('busy').textContent = 'Something went wrong: ' + e.message; });
   }
@@ -196,7 +201,7 @@
     let ps = document.getElementById('pagesize'); if(!ps){ ps = document.createElement('style'); ps.id = 'pagesize'; document.head.appendChild(ps); }
     ps.textContent = `@media print{@page{size:${wide ? '11.25in' : '9.25in'} 6.25in;margin:0}}`;
     box.style.display = 'block'; box.style.position = 'absolute'; box.style.left = '-10000px';
-    JSLib.mount(box.firstChild, html[cur.file], d, {side, print:true, size:size()}).then(r => {
+    JSLib.mount(box.firstChild, html[cur.file], d, {side, print:true, size:size(), plain:plain()}).then(r => {
       box.firstChild.style.background = getComputedStyle(r.card).backgroundColor;
       box.style.cssText = ''; $('busy').style.display = 'none'; $('busy').textContent = 'Drawing the cards…';
       document.title = `${cur.id} ${side} - ${d.listing.address}`;
@@ -206,6 +211,7 @@
   }
   document.querySelectorAll('[data-print]').forEach(b => b.onclick = () => printSide(b.dataset.print));
   $('size').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
+  $('plain').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('plain').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
   $('hs').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('hs').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
   $('longname').onclick = () => { $('f-mailer').value = ''; $('f-name').value = 'Alexandra Montgomery-Reyes'; $('f-email').value = 'alexandra@anybrokerage.com'; $('f-web').value = 'alexandramreyes.com'; render(); };
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
