@@ -281,7 +281,20 @@
     lput('bd-current', pkg.id);
     save(true);
     openGallery();
+    tagPhotos();
   };
+  // Label what each photo shows (front of the house, kitchen, primary bedroom...) once per listing, in the background,
+  // so every design can fill its photo spots on its own and keep the whole roof in exterior shots. Costs about a cent.
+  async function tagPhotos(){
+    const p = pkg; if(!p || p.photoTags) return;
+    const list = p.photos.map((ph, i) => ({id: 'p' + i, url: ph.url, desc: ph.desc || ''})).filter(x => /^https:\/\//.test(x.url));
+    if(!list.length) return;
+    try {
+      const j = await ai({action: 'tag-photos', packageId: p.id, photos: list});
+      (j.photos || []).forEach(t => { const ph = p.photos[+t.id.slice(1)]; if(ph) Object.assign(ph, {role: t.role, exterior: t.exterior, house: t.house, note: t.note}); });
+      p.photoTags = true; if(p === pkg) save();
+    } catch(e) { /* labels are a helper: designs still fill from the MLS captions without them */ }
+  }
   function suggestStyle(L){
     if(L.sqft >= 3800) return 'luxury';
     if(L.beds >= 4) return 'spread';
@@ -378,7 +391,7 @@
     const d = designs.find(x => x.id === designId) || {}, fs = await fontSpec(designId);
     const arr = arrangement(pkg, designId), ids = arr.map(i => 'p' + i);
     const P = {};
-    arr.forEach(i => { const ph = pkg.photos[i]; P['p' + i] = {src: photoUrlNow(ph.url), tags: ph.desc || ''}; });
+    arr.forEach(i => { const ph = pkg.photos[i]; P['p' + i] = {src: photoUrlNow(ph.url), tags: [ph.desc || '', ph.note || ''].filter(Boolean).join(', '), role: ph.role, exterior: ph.exterior, house: ph.house, fullHouse: ph.house ? true : undefined}; });
     const S = d.sample || {};
     const fonts = fontsFor(pkg, fs);
     const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, {accent: pkg.brand.accent},
