@@ -7,8 +7,10 @@
    Renderer (renderer/render.py): the page reads #brochure-data (with data.piece and data.mode) and draws itself.
    Site preview:   JSLib.mount(container, designHtmlText, data, {side:'back'}) returns a promise with the checks. */
 (function(){
-  const W = 864, H = 576, BLEED_PX = 12;             // 9 x 6 in at 96 px/in; 0.125 in bleed
-  const ZONES = {postage:[736,16,112,131], address:[540,250,320,150], barcode:[408,516,456,60]};
+  const W0 = 864, H = 576, BLEED_PX = 12;            // 6 x 9 card: 9 x 6 in at 96 px/in; 0.125 in bleed. 6 x 11 is 1056 px wide.
+  const WIDE = 1056;
+  // mail zones on a 6 x 9 back; on a 6 x 11 back they sit the same distance from the right edge
+  const zones = dx => ({postage:[736+dx,16,112,131], address:[540+dx,250,320,150], barcode:[408+dx,516,456,60]});
   const NUM = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
   const SUFFIX = /^(street|st|avenue|ave|drive|dr|lane|ln|road|rd|boulevard|blvd|court|ct|way|place|pl|circle|cir|trail|trl|parkway|pkwy|terrace|ter|loop|row|square|sq)\.?$/i;
   const STATES = {alabama:'AL',alaska:'AK',arizona:'AZ',arkansas:'AR',california:'CA',colorado:'CO',connecticut:'CT',delaware:'DE',florida:'FL',georgia:'GA',
@@ -149,6 +151,7 @@
 
   function layout(card, D, front){
     const issues = [], notes = [];
+    const W = card.offsetWidth || W0, dx = W - W0;
     const scale = card.getBoundingClientRect().width / W || 1;
     const R = el => { const c = card.getBoundingClientRect(), r = el.getBoundingClientRect();
       return {left:(r.left-c.left)/scale, top:(r.top-c.top)/scale, right:(r.right-c.left)/scale, bottom:(r.bottom-c.top)/scale, width:r.width/scale, height:r.height/scale}; };
@@ -159,6 +162,10 @@
       outer: for(const d of [0,-0.25,0.25,-0.5,0.5]){ el.style.fontSize = (fs0 + d) + 'px';
         for(const a of A){ el.textContent = a; const s = stat(el, scale); if(s.n !== n) continue;
           if(!best || s.last > best.last) best = {a, d, last:s.last}; if(s.last >= min) break outer; } }
+      // a wider card (6 x 11) can run out of sentences: set the type up to 1 px larger, then plan a line or two fewer
+      if(!best) fallback: for(const n2 of [n, n - 1, n - 2]) for(const d of [0.75, 1, 0, 0.5]){ el.style.fontSize = (fs0 + d) + 'px';
+        for(const a of A){ el.textContent = a; const s = stat(el, scale); if(s.n !== n2) continue;
+          if(!best || s.last > best.last) best = {a, d, last:s.last}; if(s.last >= min) break fallback; } }
       if(best){ el.style.fontSize = (fs0 + best.d) + 'px'; el.textContent = best.a; }
       else issues.push({kind:'copy-fit', slot:'copy.pitch', lines:n});
       if(best && best.last < 0.6) notes.push({kind:'copy-short-last-line', slot:'copy.pitch', last:+best.last.toFixed(2)});
@@ -202,7 +209,7 @@
       el.querySelectorAll(':scope > div:not(.nm):not(#cc)').forEach(v => { if(v.offsetWidth < 3) v.style.top = (parseFloat(v.style.top || 0) + d) + 'px'; });
     });
     // ---- print checks
-    const Z = front ? {} : ZONES;
+    const Z = front ? {} : zones(dx);
     const hit = (r, z) => r.left < z[0] + z[2] && r.right > z[0] && r.top < z[1] + z[3] && r.bottom > z[1];
     const w = document.createTreeWalker(card, NodeFilter.SHOW_TEXT); let nd;
     while((nd = w.nextNode())){ if(!nd.textContent.trim()) continue; const p = nd.parentElement; if(p.closest('[data-z]')) continue;
@@ -216,13 +223,13 @@
         const fs = fsPx, inkTop = r.top + Math.max(0, (r.bottom - r.top - fs) / 2) + fs * 0.24, inkBot = r.bottom - Math.max(0, (r.bottom - r.top - fs) / 2) - fs * 0.14;
         // outside the 1/8 in safe area = a print problem; inside it but within 1/4 in of the trim = a note
         if(r.left < 12 || inkTop < 12 || r.right > W - 12 || inkBot > H - 12) issues.push({kind:'text-outside-safe-area', slot:'text', text:nd.textContent.trim().slice(0,30)});
-        else if(r.left < 23 || inkTop < 14 || r.right > 841 || inkBot > 553) notes.push({kind:'text-near-trim', slot:'text', text:nd.textContent.trim().slice(0,30)});
+        else if(r.left < 23 || inkTop < 14 || r.right > W - 23 || inkBot > 553) notes.push({kind:'text-near-trim', slot:'text', text:nd.textContent.trim().slice(0,30)});
       } }
     card.querySelectorAll('img, [data-blk]').forEach(el => { if(el.closest('[data-z]')) return; const r = R(el);
       for(const k in Z) if(hit(r, Z[k])) issues.push({kind:'image-in-mail-zone', slot:k}); });
     card.querySelectorAll('*').forEach(el => { if(el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).whiteSpace === 'nowrap' && el.clientWidth > 0)
       issues.push({kind:'overflow', slot:el.closest('[data-nf],[data-k="ret"]') ? 'agent.name' : 'text', text:el.textContent.trim().slice(0,30)}); });
-    if(!front){ const A = {l:532, t:242, r:W, b:H};
+    if(!front){ const A = {l:532 + dx, t:242, r:W, b:H};
       card.querySelectorAll('*').forEach(el => { if(el.closest('[data-z]')) return; const cs = getComputedStyle(el);
         const vis = el.tagName === 'IMG' || (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'rgb(255, 255, 255)') || cs.backgroundImage !== 'none';
         if(!vis) return; const r = R(el); if(r.width < 2 || r.height < 2) return;
@@ -242,6 +249,7 @@
 
   // Print file: the review marks in the mail area don't print (the white areas stay), and the art runs 1/8 in past the trim.
   function forPrint(card){
+    const W = card.offsetWidth || W0;
     card.querySelectorAll('[data-z]').forEach(el => {
       const bg = getComputedStyle(el).backgroundColor;
       if(!bg || bg === 'rgba(0, 0, 0, 0)') { el.style.visibility = 'hidden'; return; }
@@ -264,6 +272,35 @@
     });
   }
 
+  // 6 x 11: the same design on the wider card. Fronts stretch evenly. On backs the mail side (postage, address block,
+  // barcode strip and anything above the address block) keeps its size and moves right; the design side grows from
+  // 528 to 720 px, so photos get wider and the seller pitch picks more sentences to fill its planned lines.
+  function widen(card, front){
+    const dx = WIDE - W0, kF = WIDE / W0, kL = (528 + dx) / 528;
+    card.style.width = WIDE + 'px';
+    [...card.children].forEach(el => {
+      if(el.tagName === 'SCRIPT' || getComputedStyle(el).position !== 'absolute') return;
+      const cr = card.getBoundingClientRect(), er = el.getBoundingClientRect();   // (SVG has no offsetLeft)
+      const l = er.left - cr.left, w = er.width, t = er.top - cr.top, r = l + w, s = el.style;
+      if(s.right && s.right !== 'auto' && !s.left) return;   // pinned to the right edge: it stays there
+      let nl, nr;
+      if(front){ nl = l * kF; nr = r * kF; }
+      else if(el.hasAttribute('data-z') || l >= 528){ nl = l + dx; nr = r + dx; }
+      else if(r <= 532){ nl = l * kL; nr = (t >= 500 && Math.abs(r - 408) < 1) ? 408 + dx : Math.min(r * kL, r > 520 ? 528 + dx - 8 : 1e9); }
+      else { nl = l * kL; nr = r + dx; }
+      // circles and other round shapes keep their size; only their center moves
+      const br = getComputedStyle(el).borderTopLeftRadius;
+      if(br.indexOf('%') >= 0 ? parseFloat(br) >= 40 : parseFloat(br) >= Math.min(w, el.offsetHeight) / 2 - 1){ const c = (nl + nr) / 2; nl = c - w / 2; nr = c + w / 2; }
+      s.left = nl + 'px'; s.width = (nr - nl) + 'px'; s.right = 'auto'; s.boxSizing = 'border-box';
+      if(el.tagName.toLowerCase() === 'svg'){   // drawn frames and waves follow the new width
+        const nw = nr - nl; el.setAttribute('width', nw);
+        if(el.getAttribute('viewBox')) el.setAttribute('preserveAspectRatio', 'none');
+        else el.querySelectorAll('rect').forEach(rc => { const x = +rc.getAttribute('x'), rw = +rc.getAttribute('width');
+          if(x < 60 && x + rw > w - 60) rc.setAttribute('width', rw + nw - w); });
+      }
+    });
+  }
+
   // ---------------------------------------------------------------- public: draw one side
   function draw(doc, host, D, side, opts){
     opts = opts || {};
@@ -277,6 +314,7 @@
     card.removeAttribute('id'); card.classList.add('js-card');
     const filled = fill(card, D, v);
     host.appendChild(card);
+    if((opts.size || '6x9') === '6x11') widen(card, side === 'front');
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
     const imgs = [...card.querySelectorAll('img')].filter(i => i.getAttribute('src'));
     // load every face the card uses before measuring (copy fitting depends on the real letter widths)
@@ -310,9 +348,11 @@
     const page = document.createElement('div'); page.className = 'page' + (print ? ' bleed' : ''); page.dataset.page = side;
     pages.appendChild(page);
     const bleedPt = print ? 9 : 0;
-    window.pieceSize = {W:648 + 2 * bleedPt, H:432 + 2 * bleedPt, bleed:bleedPt};
+    const wide = D.piece.size === '6x11';
+    if(wide) page.classList.add('wide');
+    window.pieceSize = {W:(wide ? 792 : 648) + 2 * bleedPt, H:432 + 2 * bleedPt, bleed:bleedPt};
     window.photoPlacements = () => [...page.querySelectorAll('img[data-photo]')].map(im => ({src:im.getAttribute('src'), w:im.clientWidth / 96, h:im.clientHeight / 96}));
-    window.brochureReady = draw(document, page, D, side, {print}).then(r => {
+    window.brochureReady = draw(document, page, D, side, {print, size:D.piece.size}).then(r => {
       if(print) page.style.background = getComputedStyle(r.card).backgroundColor;
       const need = (D.piece.needs || []).filter(k => !(D.sold || {})[k]);
       need.forEach(k => r.issues.push({kind:'missing-sale-fact', slot:'sold.' + k}));
