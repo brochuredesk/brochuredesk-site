@@ -383,7 +383,7 @@
     const fonts = fontsFor(pkg, fs);
     const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, {accent: pkg.brand.accent},
       Object.keys(fonts).length ? {fonts} : {});
-    const agent = Object.assign({}, SAMPLE_AGENT, profile ? {name: profile.display_name || SAMPLE_AGENT.name, phone: profile.cell || SAMPLE_AGENT.phone,
+    const agent = Object.assign({}, SAMPLE_AGENT, profile ? {name: profile.display_name || SAMPLE_AGENT.name, mailerName: profile.mailer_name || null, phone: profile.cell || SAMPLE_AGENT.phone,
       email: profile.preferred_email || SAMPLE_AGENT.email} : {}, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {});
     const written = final && pkg.copy[designId];
     const oh = pkg.openHouse && pkg.openHouse.date ? pkg.openHouse : null;
