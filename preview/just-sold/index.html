@@ -74,7 +74,7 @@
   <aside>
     <div class="grp"><h2>Main set</h2><div class="list" id="list-main"></div></div>
     <div class="grp"><h2>Specialty</h2><div class="list" id="list-specialty"></div></div>
-    <p class="note" style="margin-top:-6px">• shows a sale fact (days on market or offers); offered only when the listing has it.</p>
+    <p class="note" style="margin-top:-6px">Specialty cards show a sale detail (days on market or number of offers) or a side label. • means the card needs that sale detail.</p>
     <fieldset><legend>Agent</legend>
       <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
       <label for="f-name">Name</label><input type="text" id="f-name">
@@ -169,7 +169,7 @@
     cur = spec.designs.find(x => x.id === id);
     document.querySelectorAll('.list button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
     $('t-name').textContent = cur.id + (cur.title ? ' · ' + cur.title : '');
-    $('t-sub').textContent = cur.group === 'specialty' ? 'Specialty: side labels like "Represented the seller" stay on this card.' : '';
+    $('t-sub').textContent = cur.group !== 'specialty' ? '' : cur.id === 'M35' ? 'Specialty card: keeps "Represented the seller."' : 'Specialty card for agents who want to show this sale detail.';
     $('t-note').textContent = cur.needs.length ? `Shows ${cur.needs.map(n => n === 'offers' ? 'the number of offers' : 'days on market').join(' and ')}. Offered only when the listing has it.` : '';
     try{ history.replaceState(null, '', '#' + id); }catch(e){}
     render();
