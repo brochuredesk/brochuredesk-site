@@ -357,6 +357,8 @@
         return h.box(im, l, t, w, hh); },
       text(s){ return s.replace(TOK, (m, k) => k in v ? v[k] : ''); },
       parts(){ return [...card.children].filter(e => e.tagName !== 'SCRIPT'); },
+      // copy that has to fill its lines: the fitter picks the version that fills them best (same as the seller pitch)
+      fill(el, alts, lines, min){ el.classList.add('fill'); el.dataset.alts = JSON.stringify(alts.map(h.text)); el.dataset.lines = lines; el.dataset.min = min || 0.85; return el; },
       v,
     };
     return h;
@@ -376,11 +378,14 @@
     M14: {front:{run(h){   // a fourth point (three looked sparse)
       const last = h.q('A plan that fits'), list = last.parentElement, b = last.cloneNode(true);
       b.lastChild.nodeValue = 'Repairs worth making first'; list.appendChild(b);
-      h.css(list, {top:'274px', gap:'12px'}); }}},
+      h.css(list, {gap:'12px'});   // centered top to bottom between the paragraph and the rule under the points
+      const para = h.rect(h.top(h.q('Thinking about selling'))), rule = h.parts().find(e => { const r = h.rect(e); return r.h < 4 && r.w > 100 && r.t > para.b; });
+      h.box(list, null, (para.b + h.rect(rule).t) / 2 - h.rect(list).h / 2); }}},
     M16: {front:{run(h){   // about two more lines
       h.q('glad to show you').textContent = 'I’d be glad to show you what your home could sell for and how I’d market it. You’ll get the recent sales near you, a clear price range and a plan that fits your timing. I can also tell you which repairs are worth making before you list and which ones aren’t. Call me to get started.'; }}},
     M23: {back:{run(h){   // the "Another home sold" block centered top to bottom on the photo beside it
-      const parts = ['ANOTHER HOME', 'SOLD', 'BY ', h.v.street, 'crossed your mind'].map(t => h.top(h.q(t)));
+      const parts = ['ANOTHER HOME', 'SOLD', 'BY ', h.v.street, 'private consultation'].map(t => h.top(h.q(t)));
+      parts.forEach(e => h.css(e, {fontSize:(parseFloat(getComputedStyle(e).fontSize) + 1.35) + 'px'}));   // about 1 pt bigger than the write-up (recheck)
       const R = parts.map(h.rect), p = h.rect(h.q('photo:dining'));
       const d = (p.t + p.b) / 2 - (Math.min(...R.map(r => r.t)) + Math.max(...R.map(r => r.b))) / 2;
       parts.forEach((e, i) => h.box(e, null, R[i].t + d)); }}},
@@ -392,14 +397,28 @@
       ['JUST SOLD', h.v.street, 'Thinking about selling?'].forEach(t => { const e = h.top(h.q(t)); h.box(e, null, h.rect(e).t - d); });
       const f = h.top(h.q('fill')); h.box(f, null, h.rect(f).t - d); f.dataset.lines = 5; }}},
     M27: {front:{run(h){   // two or three more lines
-      h.q('thought about selling').textContent = 'If you’ve thought about selling, call me. I’ll show you what your home could bring, how I’d market it and what the recent sales near you mean for your price. I can also tell you which repairs are worth making before you list. Let’s set a time to talk.'; }}},
+      const a = 'If you’ve thought about selling, call me. I’ll show you what your home could bring, how I’d market it and what the recent sales near you mean for your price.';
+      h.fill(h.q('thought about selling'), [   // five full lines (recheck: the last line has to be full)
+        a + ' I can also tell you which repairs are worth making before you list and which ones aren’t. Let’s set a time to talk.',
+        a + ' You’ll get a clear price range and a plan that fits your timing. Let’s set a time to talk.',
+        a + ' I can also tell you which repairs are worth making before you list. You’ll get a clear price range and a plan that fits your timing.',
+        a + ' You’ll get a clear price range, a plan that fits your timing and an honest list of the repairs worth making first. Let’s set a time to talk.',
+        a + ' I can also tell you which repairs are worth making before you list. Let’s set a time to talk.',
+        a + ' I can also tell you which repairs are worth making before you list and which ones aren’t. You’ll get a clear price range and a plan that fits your timing.',
+        a + ' I can also tell you which repairs are worth making before you list, so you don’t spend money where it won’t pay off. Let’s set a time to talk.',
+        a + ' You’ll get a clear price range, a plan that fits your timing and an honest read on which repairs are worth making first. Let’s set a time to talk.',
+        a + ' I can also tell you which repairs are worth making before you list and which ones aren’t. You’ll get a clear price range and a plan that fits your timing. Let’s talk.',
+        a + ' You’ll get a clear price range, a plan that fits your timing and an honest read on which repairs are worth making first. Call or text me to set a time.',
+        a + ' I can also tell you which repairs are worth making before you list, so you don’t spend money where it won’t pay off. Call or text me to set a time to talk.'], 5, 0.85); }}},
     M34: {front:{run(h){   // name and number larger and a little lower; a callout of its own (the back keeps "Thinking about selling?")
       const n = h.top(h.q(h.v.agentName)), p = h.top(h.q(h.v.agentPhone));
       h.css(n, {fontSize:'24px'}); h.box(n, null, 440); h.css(p, {fontSize:'21px'}); h.box(p, null, 472);
       h.q('Thinking about selling?').textContent = 'Curious what your home is worth in today’s market? Let’s set a time to talk.'; }}},
     M42: {front:{roles:['kitchen', 'dining'], run(h){   // a shorter main photo so the whole house shows, two interiors stacked beside it
       const f = h.q('photo:front'), r = h.rect(f), w = 640, x = r.l + w + 8, cw = r.r - x, ch = (r.h - 8) / 2;
-      h.box(f, null, null, w); h.photo('kitchen', x, r.t, cw, ch, f); h.photo('dining', x, r.t + ch + 8, cw, ch, f); }}},
+      h.box(f, null, null, w); h.photo('kitchen', x, r.t, cw, ch, f); h.photo('dining', x, r.t + ch + 8, cw, ch, f);
+      const t = h.top(h.q('ANOTHER HOME SOLD')), lg = h.rect(h.q('logo'));   // larger, centered on the logo's height (recheck)
+      h.css(t, {fontSize:'22px'}); h.box(t, null, (lg.t + lg.b) / 2 - h.rect(t).h / 2); }}},
     M48: {back:{run(h){    // the four-photo row with even gaps, from under the J to just short of the postage area
       [['dining', 33, 322], ['living', 363, 180], ['bedroom2', 551, 180], ['nook', 739, 181]].forEach(([r, l, w]) => h.box(h.q('photo:' + r), l, null, w)); }}},
     M49: {back:{roles:['bedroom2'], run(h){   // the same four-photo row as M48
@@ -410,7 +429,8 @@
       const n = h.top(h.q(h.v.agentName)), p = h.top(h.q(h.v.agentPhone));
       h.css(n, {fontSize:'34px'}); h.box(n, null, 465); h.css(p, {fontSize:'15px'}); h.box(p, null, 512); }}},
     'M30-RED': {front:{run(h){   // the logo a little bigger
-      h.css(h.q('logo'), {width:'150px', height:'38px'}); }}},
+      const lg = h.q('logo'); h.css(lg, {width:'150px', height:'38px', marginTop:'0', objectPosition:'right center'});
+      h.css(lg.parentElement, {alignItems:'center'}); }}},   // centered top to bottom on "Your home could be next" and the line under it (recheck)
     'M30-GREEN': {front:{run(h){   // heading up and tighter; a taller, wider middle photo that shows the whole house; side photos a little narrower
       const at = (e, y) => h.box(e, null, y), parts = h.parts().map(e => [e, h.rect(e)]);
       at(h.top(h.q('ANOTHER HOME SOLD')), 34); at(h.top(h.q('Just Sold')), 44); at(h.top(h.q(h.v.STREET)), 155);
@@ -429,9 +449,22 @@
     // ---- specialty cards (sale details). plain(): the plain version leaves the sale detail out.
     M11: {front:{roles:['dining', 'nook'], run(h){   // a smaller front photo that shows the whole house, two interiors stacked beside it
       const f = h.q('photo:front'); h.box(f, 0, 0, 700, 396);
-      h.photo('dining', 708, 0, 348, 194, f); h.photo('nook', 708, 202, 348, 194, f); }},
-      plain(h, side){ if(side !== 'front') return; const o = h.top(h.q(h.v.OFFERS)); o.style.display = 'none';
-        h.parts().forEach(e => { const r = h.rect(e); if(e !== o && r.l > 360 && r.l < 700 && r.t > 420) h.box(e, null, r.t - 11); }); }},
+      h.photo('dining', 708, 0, 348, 194, f); h.photo('nook', 708, 202, 348, 194, f);
+      // recheck: two or three full lines under "Thinking about selling?"; the column moves up to make room
+      const col = h.parts().filter(e => { const r = h.rect(e); return r.l > 360 && r.l < 700 && r.t > 400 && r.h < 60; });
+      col.forEach(e => h.box(e, null, h.rect(e).t - 10));
+      const t = h.top(h.q('show you what your home could bring')); h.box(t, null, h.rect(h.top(h.q('Thinking about selling?'))).b + 6);
+      h.fill(t, ['I’ll show you what your home could bring, how I’d market it and what the recent sales near you mean for your price.',
+        'I’ll show you what your home could bring and how I’d market it. You’ll get a clear price range and a plan for your timing.',
+        'I’ll walk you through the recent sales near you, show you what your home could bring and explain how I’d market it.',
+        'I’ll show you what your home could bring and how I’d market it, with the recent sales near you to back it up.',
+        'I’ll show you what your home could bring and how I’d market it. Let’s set a time to talk.'], 3, 0.85); }},
+      back:{run(h){        // recheck: the right photo stays; the two left photos widen so both gaps match the thin one; return address centered over the right photo
+      const r = h.rect(h.q('photo:primary')), a = h.q('photo:living'), b = h.q('photo:kitchen'), g = h.rect(b).l - h.rect(a).r, w = (r.l - g - g) / 2;
+      h.box(a, 0, null, w); h.box(b, w + g, null, w);
+      const ret = h.top(h.q(h.v.ret1)); h.css(ret, {textAlign:'center'}); h.box(ret, r.l, null, r.w); }},
+      plain(h, side){ if(side !== 'front') return; const o = h.top(h.q(h.v.OFFERS)), d = h.rect(h.top(h.q(h.v.street))).t - h.rect(o).t; o.style.display = 'none';
+        h.parts().forEach(e => { const r = h.rect(e); if(e !== o && r.l > 360 && r.l < 700 && r.t > 400) h.box(e, null, r.t - d); }); }},
     M18: {front:{run(h){   // address a little bigger; the write-up a little bigger, centered between the gold line and "Your agent"
       const a = h.top(h.q(h.v.street)); h.css(a, {fontSize:'19px'});
       const gold = h.parts().find(e => { const r = h.rect(e); return r.h < 4 && r.w < 60 && r.t > 100 && r.t < 200; });
@@ -440,13 +473,22 @@
       const y0 = h.rect(gold).b, y1 = h.rect(h.top(h.q('YOUR AGENT'))).t; h.box(t, null, (y0 + y1) / 2 - h.rect(t).h / 2); }},
       back:{run(h){        // the middle photo moves right so the gaps on both sides match
       const a = h.rect(h.q('photo:living')), k = h.q('photo:kitchen'), c = h.rect(h.q('photo:primary'));
-      h.box(k, (a.r + c.l - h.rect(k).w) / 2); }},
+      h.box(k, (a.r + c.l - h.rect(k).w) / 2);
+      // recheck: the dark SOLD bar runs to the right edge of the third photo; the return address sits on it, centered top to bottom
+      const bar = h.top(h.q('SOLD')), ret = h.top(h.q(h.v.ret1)), br = h.rect(bar); h.box(bar, null, null, c.r - br.l);
+      h.box(ret, c.l, br.t + (br.h - h.rect(ret).h) / 2); }},
       plain(h){ h.q(h.v.OFFERS + ' RECEIVED').style.display = 'none'; }},
     M21: {front:{roles:['dining', 'primary'], run(h){   // two photos on the side so the main photo shows the whole house; the Just Sold tile under them
       const f = h.q('photo:front'); h.box(f, 0, 0, 716, 440);
       h.photo('dining', 724, 0, 332, 158, f); h.photo('primary', 724, 166, 332, 158, f);
       h.box(h.top(h.q('JUST SOLD!')), 724, 332, 332, 108); }},
-      plain(h, side){ if(side !== 'front') return; h.q('SOLD IN ' + h.v.DOMDAYS).style.display = 'none';
+      back:{roles:['nook'], run(h){   // recheck: a grid like the front: main photo, then a photo over the Just Sold tile; a third photo under the return address
+      h.box(h.q('photo:living'), 0, 0, 440, 238); h.box(h.q('photo:kitchen'), 448, 0, 264, 115);
+      h.box(h.top(h.q('JUST SOLD!')), 448, 123, 264, 115);
+      h.parts().forEach(e => { const r = h.rect(e); if(!e.textContent.trim() && !e.querySelector('img') && e.tagName !== 'IMG' && r.t < 10 && r.l > 500 && r.r < 1060 && !e.hasAttribute('data-z')) e.style.display = 'none'; });
+      const ret = h.top(h.q(h.v.ret1)); h.css(ret, {color:'#161616', textShadow:'none'}); h.box(ret, 732, 18);
+      h.photo('nook', 732, 86, 184, 152, h.q('photo:kitchen')); }},
+      plain(h, side){ h.q('SOLD IN ' + h.v.DOMDAYS).style.display = 'none'; if(side !== 'front') return;
         const w = h.q('Wondering how fast'); if(w) w.textContent = w.textContent.replace(/^Wondering how fast yours could sell\?/, 'Thinking about selling?'); }},
     M24: {front:{run(h){   // the corner text centered, "Another home sold" and "Multiple offers received" a little bigger
       const b = h.top(h.q('ANOTHER HOME SOLD'));
@@ -472,6 +514,7 @@
       plain(h){ h.q('REPRESENTED THE SELLER').style.display = 'none'; }},
     M37: {plain(h, side){ const d = h.top(h.q('in ' + h.v.domDays)), r = h.rect(d); d.style.display = 'none';
       const shift = side === 'front' ? 40 : 36;
+      if(side === 'front'){ const t = h.q('Thinking about selling? I’ll show you'); if(t) t.textContent = t.textContent.replace(/(could bring\.)/, '$1 You’ll get a clear price range and a plan that fits your timing.'); }
       h.parts().forEach(e => { const q = h.rect(e); if(e !== d && q.l < 400 && q.t > r.t && q.b < 400 && !e.querySelector('img')) h.box(e, null, q.t - shift); }); }},
     M17: {front:{roles:['nook'], run(h){
       const l = h.q('photo:living'); h.box(h.q('photo:front'), 37, null, 640); h.box(l, 686, null, 162);
@@ -480,6 +523,61 @@
       const k = h.q('photo:kitchen'); h.box(h.q('photo:front'), 44, null, 660); h.box(k, 714, null, 144);
       h.photo('living', 868, 52, 144, 330, k); }}},
   };
+
+  // ---------------------------------------------------------------- the agent's own text changes (the owner, 10/24/2026)
+  // An agent can click any text spot and change its wording, font (from the design's tested fonts), color and size
+  // (80% to 130% of the design's size). The print checks still run on the result. Edits are saved per side and spot:
+  // D.textEdits = {"back:4": {text, font, color, size}}. A spot is the outermost element that holds text, numbered in order.
+  const SIZE_MIN = 0.8, SIZE_MAX = 1.3;
+  const LOCKED = el => !!el.closest('[data-k="disc"]');   // the listed-property notice keeps its wording
+  function fontsOf(doc){
+    const out = [];
+    doc.querySelectorAll('link[href*="fonts.googleapis"]').forEach(l => (l.getAttribute('href').match(/family=([^&:]+)/g) || [])
+      .forEach(m => { const f = decodeURIComponent(m.slice(7)).replace(/\+/g, ' '); if(out.indexOf(f) < 0) out.push(f); }));
+    return out;
+  }
+  function spotsOf(card){
+    const all = [...card.querySelectorAll('*')].filter(e => !e.closest('[data-z]') && !e.closest('svg') && e.tagName !== 'SCRIPT' && getComputedStyle(e).display !== 'none'
+      && (e.classList.contains('fill') || [...e.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim())));
+    return all.filter(e => !all.some(o => o !== e && o.contains(e)));
+  }
+  function applyEdits(card, side, edits, fonts){
+    const done = [];
+    spotsOf(card).forEach((e, i) => {
+      const id = side + ':' + i, ed = edits[id]; e.dataset.spot = id; if(!ed) return;
+      e._before = overlaps(card, e);   // what the design already lets it sit on (a banner over a photo)
+      const each = f => [e, ...e.querySelectorAll('*')].forEach(f);
+      if(ed.text != null && !LOCKED(e)){ e.classList.remove('fill'); delete e.dataset.alts;
+        e.innerHTML = String(ed.text).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'})[c]).replace(/\n/g, '<br>'); }
+      if(ed.font && fonts.indexOf(ed.font) >= 0) each((x, k) => x.style.fontFamily = k === undefined || x === e ? `'${ed.font}', sans-serif` : 'inherit');
+      if(ed.color && /^#[0-9a-f]{3,8}$/i.test(ed.color)){ e.style.color = ed.color; e.querySelectorAll('*').forEach(x => x.style.color = 'inherit'); }
+      const k = Math.min(SIZE_MAX, Math.max(SIZE_MIN, +ed.size || 1));
+      if(k !== 1) each(x => { const cs = getComputedStyle(x); x.style.fontSize = (parseFloat(cs.fontSize) * k) + 'px';
+        if(/px$/.test(cs.lineHeight)) x.style.lineHeight = (parseFloat(cs.lineHeight) * k) + 'px'; });
+      e.dataset.edited = '1'; done.push(e);
+    });
+    return done;
+  }
+  function overlaps(card, e){
+    const a = e.getBoundingClientRect(), k = card.getBoundingClientRect().width / card.offsetWidth;
+    return [...card.querySelectorAll('[data-spot], img, [data-spot] ~ *')].filter(o => o !== e && !o.contains(e) && !e.contains(o) && getComputedStyle(o).display !== 'none' && (() => {
+      const b = o.getBoundingClientRect(); return Math.min(a.right, b.right) - Math.max(a.left, b.left) > 2 * k && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 2 * k; })());
+  }
+  // an edited spot must not run into other text or a photo it didn't already sit on
+  function editChecks(card, edited){
+    const issues = [];
+    edited.forEach(e => {
+      if(e.scrollWidth > e.clientWidth + 1 && getComputedStyle(e).whiteSpace === 'nowrap') return;   // reported as overflow already
+      const before = e._before || [];
+      const hit = overlaps(card, e).find(o => before.indexOf(o) < 0 && !o.closest('[data-hs]') && (o.dataset.spot || o.tagName === 'IMG'));
+      if(hit) issues.push({kind:'text-overlap', slot:e.dataset.spot, text:e.textContent.trim().slice(0, 30)}); });
+    return issues;
+  }
+  function spotInfo(card, fonts){
+    return spotsOf(card).map(e => { const cs = getComputedStyle(e);
+      return {id:e.dataset.spot, text:e.innerText, font:(cs.fontFamily.split(',')[0] || '').replace(/['"]/g, ''), color:cs.color,
+              pt:+(parseFloat(cs.fontSize) * 0.75).toFixed(1), edited:!!e.dataset.edited, locked:LOCKED(e)}; });
+  }
 
   // ---------------------------------------------------------------- public: draw one side
   function draw(doc, host, D, side, opts){
@@ -505,6 +603,7 @@
       if(fix[side] && fix[side].run) fix[side].run(h, {hs, long});
       // the plain version of a specialty card leaves out the sale detail (days on market, offers)
       if(opts.plain && fix.plain) fix.plain(h, side, {hs, long}); }
+    const fonts = fontsOf(doc), edited = applyEdits(card, side, D.textEdits || {}, fonts);
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
     const imgs = [...card.querySelectorAll('img')].filter(i => i.getAttribute('src'));
     // load every face the card uses before measuring (copy fitting depends on the real letter widths)
@@ -514,13 +613,13 @@
     return Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })))
       .then(() => Promise.all([...faces].map(f => document.fonts.load(f).catch(() => null))))
       .then(() => document.fonts.ready)
-      .then(() => { const r = layout(card, D, side === 'front'); if(opts.print) forPrint(card);
+      .then(() => { const r = layout(card, D, side === 'front'); r.issues.push(...editChecks(card, edited)); if(opts.print) forPrint(card);
         // a name that won't fit this design: one plain message for the agent (shorten the mailer name or pick another design)
         const parts = [v.agentName, v.agentFirst, v.agentLast].filter(x => x && x.length > 2).map(x => x.toLowerCase().slice(0, 12));
         if(r.issues.some(c => /overflow|safe-area|mail-zone/.test(c.kind) && c.text && parts.some(x => c.text.toLowerCase().indexOf(x) >= 0)))
           r.issues.unshift({kind:'name-too-long', slot:'agent.mailerName', name:v.agentName});
         return {card, issues:filled.filter(x => x.kind !== 'photo-stand-in').concat(r.issues), notes:filled.filter(x => x.kind === 'photo-stand-in').concat(r.notes),
-                variant:{side, headshot:hs, longName:long}}; });
+                variant:{side, headshot:hs, longName:long}, fonts, spots:spotInfo(card, fonts), sizeRange:[SIZE_MIN, SIZE_MAX]}; });
   }
 
   const JSLib = window.JSLib = {values, draw,
@@ -552,7 +651,7 @@
       need.forEach(k => r.issues.push({kind:'missing-sale-fact', slot:'sold.' + k}));
       window.proofNotes = r.notes;
       document.body.dataset.version = (r.variant.headshot ? 'headshot' : 'no-headshot') + (r.variant.longName ? '-long-name' : '');
-      window.brochureCheck = () => r.issues;
+      window.brochureCheck = () => r.issues; window.brochureSpots = () => ({fonts:r.fonts, spots:r.spots});
       return true;
     });
   });
