@@ -85,6 +85,7 @@
     <fieldset><legend>Agent</legend>
       <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
       <label for="f-name">Name</label><input type="text" id="f-name">
+      <label for="f-mailer">Name on mailers <span style="font-weight:400">(optional, a shorter form for postcards)</span></label><input type="text" id="f-mailer" placeholder="Same as name">
       <div class="row2"><div><label for="f-phone">Phone</label><input type="text" id="f-phone"></div>
       <div><label for="f-web">Website</label><input type="text" id="f-web"></div></div>
       <label for="f-email">Email</label><input type="text" id="f-email">
@@ -121,10 +122,11 @@
   const fix = o => JSON.parse(JSON.stringify(o).replace(/"\/designs\//g, '"' + ROOT + 'designs/'));
   const $ = id => document.getElementById(id);
   let spec, sample, data, cur, html = {}, loadedFonts = new Set(), seq = 0;
-  const FIELDS = {name:['agent','name'], phone:['agent','phone'], web:['agent','web'], email:['agent','email'],
+  const FIELDS = {name:['agent','name'], mailer:['agent','mailerName'], phone:['agent','phone'], web:['agent','web'], email:['agent','email'],
     street:['listing','address'], city:['listing','city'], year:['listing','yearBuilt'], beds:['listing','beds'], baths:['listing','baths'],
     dom:['sold','daysOnMarket'], offers:['sold','offers']};
   const WORDS = {
+    'name-too-long': () => 'Your name is too long for this design. Shorten your mailer name or pick another design.',
     'missing-sale-fact': c => `This design needs the ${c.slot === 'sold.offers' ? 'number of offers' : 'days on market'}.`,
     'overflow': c => `A line runs past its space: "${c.text}".`,
     'text-outside-safe-area': c => `Text is too close to the edge to print safely: "${c.text}".`,
@@ -157,7 +159,8 @@
   function scaleFrames(){ document.querySelectorAll('.frame').forEach(f => { const h = f.querySelector('.host'); h.style.transform = `scale(${f.clientWidth / (size() === '6x11' ? 1056 : 864)})`; }); }
   window.addEventListener('resize', scaleFrames);
   function showChecks(box, r){
-    const bad = r.issues.filter(c => WORDS[c.kind] && c.kind !== 'photo-under-300ppi');
+    const long = r.issues.some(c => c.kind === 'name-too-long');
+    const bad = r.issues.filter(c => WORDS[c.kind] && c.kind !== 'photo-under-300ppi' && !(long && c.kind !== 'name-too-long' && c.text && /overflow|safe-area|mail-zone/.test(c.kind)));
     box.className = 'checks ' + (bad.length ? 'bad' : 'ok');
     box.innerHTML = bad.length ? '<b>Needs attention before printing:</b><ul>' + bad.map(c => '<li>' + WORDS[c.kind](c).replace(/</g,'&lt;') + '</li>').join('') + '</ul>'
                                : 'Print checks pass.';
@@ -204,7 +207,7 @@
   document.querySelectorAll('[data-print]').forEach(b => b.onclick = () => printSide(b.dataset.print));
   $('size').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
   $('hs').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('hs').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
-  $('longname').onclick = () => { $('f-name').value = 'Alexandra Montgomery-Reyes'; $('f-email').value = 'alexandra@anybrokerage.com'; $('f-web').value = 'alexandramreyes.com'; render(); };
+  $('longname').onclick = () => { $('f-mailer').value = ''; $('f-name').value = 'Alexandra Montgomery-Reyes'; $('f-email').value = 'alexandra@anybrokerage.com'; $('f-web').value = 'alexandramreyes.com'; render(); };
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
   let t; document.querySelectorAll('aside input').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
   Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
