@@ -1,4 +1,4 @@
-/* Open House flyer picker and updater (the owner, 10/19/2026). Published as /designs/shared/openhouse.js.
+/* Open House flyer picker and updater (10/19/2026). Published as /designs/shared/openhouse.js.
 
    Every design set has its own Open House flyer, the recommended default. The agent can pick the Open House flyer of
    any other approved design instead, at the proof or on the update page; the rest of the package stays in its design.
@@ -16,7 +16,7 @@
           log(row)   {event: 'switch'|'reset'|'update'|'download', from, to, where}, for the switch counts
           download(pkg, flyer)  both files (print-at-home and email) from the renderer; printer(pkg, flyer) the upload panel
    Skin: the host page sets --oh-accent, --oh-ink, --oh-paper, --oh-line, --oh-font (a team page passes its team colors).
-   Wording on buttons and headings is a draft; the owner's call. */
+   Wording on buttons and headings is a draft. */
 (function(){
   const LIMITS = {refreshments: 50, note: 70};   // same as pipeline/openhouse.py
   const KINDS = {public: 'Public', broker: 'Broker', realtor: 'REALTOR®'};

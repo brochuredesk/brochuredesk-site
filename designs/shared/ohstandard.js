@@ -8,7 +8,7 @@
      logo-count      exactly one brokerage logo (or one text brokerage when there is no logo file)
      qr              one QR code, at least 54 pt (0.75 in) square
      price / photo-number / staging   no listing price, no "Photo 12", no "virtually staged"
-   The TREC broker-name size rule needs the logo's wordmark measured by eye; it is recorded with the owner's approval. */
+   The TREC broker-name size rule needs the logo's wordmark measured by eye; it is recorded as approved. */
 (function(){
   const PT = 72 / 96;
   const size = el => parseFloat(getComputedStyle(el).fontSize) * PT;
