@@ -4,5 +4,7 @@ html, body { margin: 0; padding: 0; background: #fff; }
 @page { margin: 0; }
 .page { position: relative; width: 864px; height: 576px; overflow: hidden; }
 .page.bleed { width: 888px; height: 600px; }
+.page.wide { width: 1056px; }
+.page.wide.bleed { width: 1080px; }
 .page.bleed > .js-card { position: absolute !important; left: 12px; top: 12px; overflow: visible !important; }
 .js-card { position: relative; }
