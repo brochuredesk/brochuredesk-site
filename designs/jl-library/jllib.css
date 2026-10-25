@@ -1,0 +1,8 @@
+/* Just Listed postcard library: page frame for the renderer. Each card is 864 x 576 px (9 x 6 in at 96 px/in). */
+html, body { margin: 0; padding: 0; background: #fff; }
+* { -webkit-font-smoothing: antialiased; }
+@page { margin: 0; }
+.page { position: relative; width: 864px; height: 576px; overflow: hidden; }
+.page.bleed { width: 888px; height: 600px; }
+.page.bleed > .jl-card { position: absolute !important; left: 12px; top: 12px; overflow: visible !important; }
+.jl-card { position: relative; }
