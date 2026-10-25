@@ -8,24 +8,24 @@
     support: 'support@brochuredesk.com',
     agent: {
       heading: 'Your own design',
-      body: "Send us your logo, colors and a piece or two you like. We'll build a fold-over that's yours alone, saved to your account for every listing after.",
-      price: '$100 for the fold-over. Want the flyers or postcards to match? $25 each, one time.',
-      promise: 'Ready in 2 business days. We keep fixing it until you approve it, and you pay only then.',
+      body: "Send us your logo, colors and a piece or two you like. We'll build a full set that's yours alone: the fold-over brochure, Open House flyer with sign-in sheet, Just Listed and Just Sold postcards, and social posts. It's saved to your account for every listing after.",
+      price: '$250, one time, for the whole set.',
+      promise: 'First look at your fold-over in 2 business days. Once you approve it, the rest of the set follows within 3 business days. We keep fixing it until you approve it, and you pay only then.',
       button: 'Request my design'
     },
     brokerage: {
       heading: 'One design for your whole brokerage',
-      body: "We build one fold-over around your brokerage's brand. Every agent you sponsor can use it, and each agent's pieces carry their own contact card.",
-      price: '$250 for the fold-over. Matching flyers or postcards are $25 each, one time.',
-      promise: 'Ready in 2 business days. We keep fixing it until you approve it, and you pay only then.',
+      body: "We build one full set around your brokerage's brand: fold-over, Open House flyer, Just Listed and Just Sold postcards, and social posts. Every agent you sponsor can use it, and each agent's pieces carry their own contact card.",
+      price: '$500, one time, for the whole set.',
+      promise: 'First look at the fold-over in 2 business days. Once you approve it, the rest of the set follows within 3 business days. We keep fixing it until you approve it, and you pay only then.',
       button: 'Request a brokerage design'
     },
     // Used when the org is a team instead of a brokerage (broker mode and public mode).
     team: {
       heading: 'One design for your whole team',
-      body: "We build one fold-over around your team's brand. Every agent on your team can use it, and each agent's pieces carry their own contact card.",
-      price: '$250 for the fold-over. Matching flyers or postcards are $25 each, one time.',
-      promise: 'Ready in 2 business days. We keep fixing it until you approve it, and you pay only then.',
+      body: "We build one full set around your team's brand: fold-over, Open House flyer, Just Listed and Just Sold postcards, and social posts. Every agent on your team can use it, and each agent's pieces carry their own contact card.",
+      price: '$500, one time, for the whole set.',
+      promise: 'First look at the fold-over in 2 business days. Once you approve it, the rest of the set follows within 3 business days. We keep fixing it until you approve it, and you pay only then.',
       button: 'Request a team design'
     },
     toggle: { label: 'I am', agent: 'An agent', broker: 'A team or broker' },
@@ -54,17 +54,12 @@
       colorsUsed: 'Colors confirmed.', colorsPick: 'Pick your colors', colorsOptional: 'Optional. Click a color to change it.',
       colorsAdd: 'Add a color', colorRemove: 'Remove color',
       likeHeading: 'Pieces you like (optional)', likeHint: 'Up to 2 files. PNG, JPG, WebP or PDF, up to 12 MB each.', likeChoose: 'Choose files',
-      piecesHeading: 'Add matching pieces, $25 each',
-      pieces: {
-        'open-house-flyer': 'Open House flyer',
-        'just-listed-postcard': 'Just Listed postcard',
-        'just-sold-postcard': 'Just Sold postcard'
-      },
+      total: '{fee} for the whole set, charged only when you approve it',
       notes: 'Anything we should know?',
       uploadsNote: "Uploads are optional. If anything's missing, our reply will ask for it.",
       sending: 'Sending...',
       thanks: 'Thanks, {preferred}. Your request is in.',
-      due: 'Your first look is due {due}.',
+      due: 'Your first look at the fold-over is due {due}.',
       sentTo: 'We sent a confirmation to {email}.'
     },
     errors: {
@@ -90,11 +85,9 @@
   const LOGO_EXT = ['png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', 'ai', 'eps'];
   const LIKE_EXT = ['png', 'jpg', 'jpeg', 'webp', 'pdf'];
   const RASTER_SVG = ['png', 'jpg', 'jpeg', 'webp', 'svg'];
-  const PIECE_KEYS = ['open-house-flyer', 'just-listed-postcard', 'just-sold-postcard'];
   const DEFAULT_ENDPOINT = 'https://depwvwewbmxspoxidxrx.supabase.co/functions/v1/design-request';
   const DEFAULT_KEY = 'sb_publishable_mF60NaxAKLQV_pDLBoR2og_PzJ9fxxH';
-  const BASE_CENTS = { agent: 10000, brokerage: 25000 };
-  const PIECE_CENTS = 2500;
+  const BASE_CENTS = { agent: 25000, brokerage: 50000 };   // the whole matching set (10/24/2026)
 
   // ---------- styles ----------
   const CSS = `
@@ -149,7 +142,6 @@
 .od-sw input[type=color]{width:44px;height:44px;padding:0;border:1px solid #b5b3ae;border-radius:3px;background:#fff;cursor:pointer}
 .od-sw.unset input[type=color]{border-style:dashed;opacity:.55}
 .od-sw .x{width:28px;height:28px;border:0;background:none;color:var(--od-muted);font-size:18px;line-height:1;cursor:pointer}
-.od-pieces{display:grid;gap:4px}
 .od-chk{display:flex;align-items:center;gap:10px;font-size:15.5px;padding:7px 0;cursor:pointer}
 .od-chk input{width:20px;height:20px;accent-color:var(--od-primary);flex:none;margin:0}
 .od-total{font-weight:600;margin:8px 0 0}
@@ -274,7 +266,7 @@
     el.textContent = '';
     el.appendChild(root);
 
-    const st = { kind: null, logo: null, logoOnFile: !!ctx.logo, useOwnLogo: false, likes: [], colors: [], suggested: false, confirmed: false, pieces: new Set(), managerDone: false };
+    const st = { kind: null, logo: null, logoOnFile: !!ctx.logo, useOwnLogo: false, likes: [], colors: [], suggested: false, confirmed: false, managerDone: false };
 
     const cardsWrap = h('div', { class: 'od-cards' });
     const formWrap = h('div', { class: 'od-formwrap' });
@@ -368,7 +360,7 @@
     // ----- the form -----
     function openForm(kind) {
       if (kind !== st.kind) {
-        st.kind = kind; st.logo = null; st.useOwnLogo = false; st.likes = []; st.colors = []; st.suggested = false; st.confirmed = false; st.pieces = new Set();
+        st.kind = kind; st.logo = null; st.useOwnLogo = false; st.likes = []; st.colors = []; st.suggested = false; st.confirmed = false;
       }
       renderForm();
       formWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -413,24 +405,8 @@
       const likeBox = h('div');
       form.append(likeBox);
 
-      // pieces
-      const totalP = h('p', { class: 'od-total', 'aria-live': 'polite' });
-      const pieceBox = h('div', { class: 'od-pieces' });
-      PIECE_KEYS.forEach(k => {
-        const cb = h('input', { type: 'checkbox', value: k });
-        cb.checked = st.pieces.has(k);
-        cb.addEventListener('change', () => { cb.checked ? st.pieces.add(k) : st.pieces.delete(k); updateTotal(); });
-        pieceBox.append(h('label', { class: 'od-chk' }, cb, F.pieces[k]));
-      });
-      form.append(h('div', {}, h('h4', { text: F.piecesHeading }), pieceBox, totalP));
-      function updateTotal() {
-        const n = st.pieces.size;
-        const t = base + n * PIECE_CENTS;
-        totalP.textContent = n
-          ? `Fold-over ${money(base)} + ${n} ${n === 1 ? 'piece' : 'pieces'} ${money(n * PIECE_CENTS)} = ${money(t)}, charged only when you approve`
-          : `Fold-over ${money(base)}, charged only when you approve`;
-      }
-      updateTotal();
+      // the fee for the whole set (no extra pieces since 10/24/2026)
+      form.append(h('p', { class: 'od-total', text: fill(F.total, { fee: money(base) }) }));
 
       const notes = h('textarea', { name: 'notes', maxlength: String(LIMITS.notes), rows: '4' });
       form.append(h('label', { class: 'od-lbl' }, F.notes, notes));
@@ -594,7 +570,6 @@
         fd.append('colors', JSON.stringify(colors));
         fd.append('colorsConfirmed', kit || (st.confirmed && colors.length) ? '1' : '0');
         fd.append('brandKit', kit ? '1' : '0');
-        fd.append('pieces', JSON.stringify([...st.pieces]));
         fd.append('notes', notes.value.trim());
         fd.append('website', hp.value);
         if (logoFile) fd.append('logo', logoFile, logoFile.name);
