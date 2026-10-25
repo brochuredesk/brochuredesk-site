@@ -208,3 +208,23 @@ dialog .opts .btn{text-align:left}
 .planup{margin-top:10px}
 .dset.grayed{opacity:.5}
 .dset.grayed [data-why]{opacity:1}
+
+/* brokerage switch */
+.switchline{margin:-2px 0 10px}
+.link.quiet{font-weight:400;font-style:italic;color:var(--gray);text-decoration:none;font-size:14px}
+.link.quiet:hover{text-decoration:underline}
+.card.note{border-color:var(--emerald);background:#f4f8f6}
+.rsteps{display:flex;flex-wrap:wrap;gap:6px 18px;list-style:none;padding:0;margin:0 0 14px;font-size:14px;color:var(--gray)}
+.rsteps li.on{color:var(--ink);font-weight:700}
+.rsteps li.done{color:var(--emerald)}
+.rb-colors{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.rb-colors input[type=color]{width:52px;height:40px;padding:2px}
+.rb-logo{max-height:70px;max-width:260px;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px}
+.rb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.rb-tile{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;font-weight:400}
+.rb-tile img{width:84px;height:56px;object-fit:cover;border-radius:4px}
+.rb-tile small{display:block;color:var(--slate)}
+.rb-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 22px}
+.rb-pair h4{margin:0 0 4px;font-size:13px;color:var(--slate)}
+@media (max-width:640px){.rb-pair{grid-template-columns:1fr}}
+.stack2{display:grid;gap:10px;max-width:520px}

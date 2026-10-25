@@ -94,7 +94,7 @@
   }
 
   // ---------- views ----------
-  const VIEWS = ['vSignin', 'vHome', 'vStart', 'vGallery', 'vLib', 'vRough', 'vWriting', 'vFinal'];
+  const VIEWS = ['vSignin', 'vHome', 'vStart', 'vGallery', 'vLib', 'vRough', 'vWriting', 'vFinal', 'vRebrand'];
   function show(id){
     VIEWS.forEach(v => $('#' + v).hidden = v !== id);
     closePop();
@@ -169,6 +169,15 @@
   function fixesOpen(p){ const w = windows(p); return !w || new Date() <= new Date(w.fixesUntil); }
   async function openHome(){
     show('vHome');
+    $('#switchLine').onclick = () => openRebrand();
+    const note = lget(NOTE_KEY(), null);
+    $('#switchNote').hidden = !note;
+    if(note){
+      $('#switchNote').innerHTML = `<h2>New brokerage?</h2><p>Your profile shows ${esc(note.to || 'a new sponsoring broker')}. We'll update the pieces you've ordered for free.</p>
+        <p><button class="btn" type="button" id="noteGo">Update my pieces</button> <button class="link" type="button" id="noteNo">Not now</button></p>`;
+      lput(NOTE_KEY(), null);   // shown once
+      $('#noteGo').onclick = () => openRebrand(); $('#noteNo').onclick = () => { $('#switchNote').hidden = true; };
+    }
     $('#hello').textContent = `Welcome back${profile && (profile.greeting_name || profile.display_name) ? ', ' + (profile.greeting_name || profile.display_name.split(' ')[0]) : ''}`;
     let list = [];
     try { list = await store.list(); } catch(e) { $('#pickup').innerHTML = '<p class="err">We couldn\'t load your packages. Refresh to try again.</p>'; return; }
@@ -187,6 +196,192 @@
     $('#orders').innerHTML = past.length ? past.map(p => row(p, 'past')).join('') : '<p class="empty">No orders in the last 60 days.</p>';
     $$('[data-open]').forEach(b => b.onclick = () => { const p = list.find(x => x.id === b.dataset.open); openPackage(p); });
   }
+  // ---------- brokerage switch: free rebrand (brief brokerage-switch-and-matrix-links-10-24) ----------
+  // The agent's brand kit (brokerage, logo, colors, office, TREC sponsoring broker, contact) feeds every piece. Changing
+  // brokerages updates it once; then any past order from the last 2 years re-renders in the new brand for free (data
+  // fields only: no writer, reviewer or photo read), with before and after proofs, and goes to the printer the usual way.
+  // Test page: the kit lives in this browser (agent_profiles.brand_kit once the 10/25 migration runs).
+  const KIT_KEY = () => 'bd-brand-kit:' + (me ? me.id : 'local'), NOTE_KEY = () => 'bd-switch-note:' + (me ? me.id : 'local');
+  let kitOverride;   // a render for one brand (the rebrand's before and after)
+  const brandKit = () => lget(KIT_KEY(), null);
+  function kitBrand(k){
+    if(!k) return {};
+    const o = {brokerage: k.brokerage, logo: k.logo, logoOnDark: k.logoOnDark || k.logo, phone: k.officePhone, web: k.officeWeb, address: k.officeAddress,
+      sponsoringBroker: k.sponsoringBroker, sample: false};
+    return Object.fromEntries(Object.entries(o).filter(([, v]) => v != null && v !== ''));
+  }
+  function saveKit(k){
+    const old = brandKit();
+    lput(KIT_KEY(), k);
+    if(sb && me) sb.from('agent_profiles').update({brand_kit: k}).eq('user_id', me.id).then(({error}) => { if(error) console.warn('brand kit not saved to the account yet', error.message); });
+    // watch for switches: a new sponsoring broker shows a one-time note on the next visit to Agent home
+    if(old && k.sponsoringBroker && old.sponsoringBroker && k.sponsoringBroker !== old.sponsoringBroker) lput(NOTE_KEY(), {to: k.sponsoringBroker, at: new Date().toISOString()});
+  }
+  // the logo's own colors, most used first (near-white, near-black and see-through pixels left out)
+  async function logoColors(src){
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+    const k = Math.min(1, 160 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+    const g = c.getContext('2d', {willReadFrequently: true}); g.drawImage(img, 0, 0, c.width, c.height);
+    const d = g.getImageData(0, 0, c.width, c.height).data, bins = new Map();
+    for(let i = 0; i < d.length; i += 4){
+      if(d[i + 3] < 200) continue;
+      const mx = Math.max(d[i], d[i + 1], d[i + 2]), mn = Math.min(d[i], d[i + 1], d[i + 2]);
+      if(mn > 235 || mx < 25) continue;
+      const key = [d[i], d[i + 1], d[i + 2]].map(v => v >> 4).join(','), b = bins.get(key) || {n: 0, r: 0, g: 0, b: 0};
+      b.n++; b.r += d[i]; b.g += d[i + 1]; b.b += d[i + 2]; bins.set(key, b);
+    }
+    const hex = b => '#' + [b.r, b.g, b.b].map(v => Math.round(v / b.n).toString(16).padStart(2, '0')).join('');
+    const out = [];
+    for(const b of [...bins.values()].sort((x, y) => y.n - x.n)){
+      const h = hex(b), far = out.every(o => { const a = parseInt(o.slice(1), 16), q = parseInt(h.slice(1), 16);
+        return Math.abs((a >> 16) - (q >> 16)) + Math.abs((a >> 8 & 255) - (q >> 8 & 255)) + Math.abs((a & 255) - (q & 255)) > 90; });
+      if(far) out.push(h); if(out.length === 3) break;
+    }
+    return out.length ? out : ['#1f4e5f'];
+  }
+  const fileUrl = f => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+  const RB_STEPS = ['Upload your new brokerage logo.', 'Update your contact info.', 'Pick the pieces to update.', 'Review your updated pieces.', 'Send to my printer.'];
+  let rb = null;
+  async function openRebrand(){
+    show('vRebrand');
+    const k = brandKit() || {};
+    rb = {step: 0, kit: JSON.parse(JSON.stringify(k)), old: k, orders: [], picks: new Set(), designFor: {}};
+    rb.kit.contact = Object.assign({email: (profile && profile.preferred_email) || '', phone: (profile && profile.cell) || '', web: ''}, k.contact || {});
+    try { rb.orders = (await store.list()).filter(p => p.paid && new Date(p.paid.at) >= new Date(addDays(new Date().toISOString(), -730))); } catch(e) { rb.orders = []; }
+    rb.picks = new Set(rb.orders.map(p => p.id));   // all checked by default
+    rbDraw();
+  }
+  function rbDraw(){
+    $('#rbSteps').innerHTML = RB_STEPS.map((t, i) => `<li class="${i < rb.step ? 'done' : i === rb.step ? 'on' : ''}">${t.replace(/\.$/, '')}</li>`).join('');
+    [rbLogo, rbContact, rbPick, rbReview, rbSend][rb.step]();
+    window.scrollTo({top: 0});
+  }
+  const rbNav = (next, back) => `<p class="acts">${back ? '<button type="button" class="btn line" id="rbBack">Back</button>' : ''}<button type="button" class="btn" id="rbNext">${next}</button></p>`;
+  function rbWire(onNext){
+    const b = $('#rbBack'); if(b) b.onclick = () => { rb.step--; rbDraw(); };
+    $('#rbNext').onclick = async () => { if(await onNext() !== false){ rb.step++; rbDraw(); } };
+  }
+  function rbLogo(){
+    const K = rb.kit, cs = K.colors || [];
+    $('#rbBody').innerHTML = `<h2>${RB_STEPS[0]}</h2>
+      <div class="stack2">
+        <label>Brokerage logo (PNG, JPG or SVG)<input type="file" id="rbLogo" accept="image/png,image/jpeg,image/svg+xml"></label>
+        ${K.logo ? `<img class="rb-logo" src="${esc(K.logo)}" alt="Your new brokerage logo">` : ''}
+        <div id="rbColors">${cs.length ? `<p>Do these colors look right?</p><div class="rb-colors">${cs.map((c, i) => `<input type="color" value="${c}" data-ci="${i}" aria-label="Brand color ${i + 1}">`).join('')}
+          <button type="button" class="link" id="rbColorsOk">${K.colorsOk ? 'Colors confirmed' : 'Yes, use these'}</button></div>` : ''}</div>
+        <label>Brokerage name<input id="rbName" value="${esc(K.brokerage || '')}" autocomplete="organization"></label>
+        <label>Office address<input id="rbAddr" value="${esc(K.officeAddress || '')}"></label>
+        <label>Office phone<input id="rbOPhone" value="${esc(K.officePhone || '')}" inputmode="tel"></label>
+        <label>Office website<input id="rbOWeb" value="${esc(K.officeWeb || '')}"></label>
+        <label>Sponsoring broker (as licensed with TREC)<input id="rbBroker" value="${esc(K.sponsoringBroker || '')}"></label>
+        <p class="gray">The TREC license lookup fills this in once it's connected; for now, type it as TREC lists it.</p>
+      </div><p class="err" id="rbErr"></p>${rbNav('Next')}`;
+    $('#rbLogo').onchange = async e => { const f = e.target.files[0]; if(!f) return;
+      K.logo = await fileUrl(f); K.colors = await logoColors(K.logo).catch(() => ['#1f4e5f']); K.colorsOk = false; rbLogo(); };
+    $$('[data-ci]').forEach(i => i.oninput = () => { K.colors[+i.dataset.ci] = i.value; K.colorsOk = true; });
+    const ok = $('#rbColorsOk'); if(ok) ok.onclick = () => { K.colorsOk = true; ok.textContent = 'Colors confirmed'; };
+    rbWire(() => {
+      Object.assign(K, {brokerage: $('#rbName').value.trim(), officeAddress: $('#rbAddr').value.trim(), officePhone: $('#rbOPhone').value.trim(),
+        officeWeb: $('#rbOWeb').value.trim(), sponsoringBroker: $('#rbBroker').value.trim()});
+      if(!K.logo || !K.brokerage){ $('#rbErr').textContent = 'Add the new logo and the brokerage name first.'; return false; }
+      K.colorsOk = true;
+    });
+  }
+  function rbContact(){
+    const C = rb.kit.contact;
+    $('#rbBody').innerHTML = `<h2>${RB_STEPS[1]}</h2><div class="stack2">
+      <label>Email<input id="rbEmail" type="email" value="${esc(C.email || '')}" autocomplete="email"></label>
+      <label>Phone<input id="rbPhone" value="${esc(C.phone || '')}" inputmode="tel" autocomplete="tel"></label>
+      <label>Website<input id="rbWeb" value="${esc(C.web || '')}" autocomplete="url"></label></div>${rbNav('Next', true)}`;
+    rbWire(async () => {
+      const email = $('#rbEmail').value.trim(), before = (rb.old.contact || {}).email || (profile && profile.preferred_email) || '';
+      Object.assign(C, {email, phone: $('#rbPhone').value.trim(), web: $('#rbWeb').value.trim()});
+      if(email && before && email.toLowerCase() !== before.toLowerCase()){
+        const v = await ask('<h2>Use this new email to sign in too?</h2><p>Your account, profile and order history stay the same.</p>', [['Yes', 'yes'], ['No, just on my pieces', 'no', 'line']]);
+        rb.newLogin = v === 'yes' ? email : null;
+      }
+    });
+  }
+  // a past order's design that belonged to the old brokerage (its personalized design or portal kit) can't come along
+  const ownedDesign = p => { const d = designs.find(x => x.id === p.design); return !!(d && d.owner && d.owner !== 'standard'); };
+  function closestDesigns(p){
+    const was = designs.find(x => x.id === p.design) || {}, score = d => ['layout', 'photos', 'fold', 'plan', 'look'].reduce((n, k) => n + (was[k] != null && was[k] === d[k] ? 1 : 0), 0);
+    return designs.filter(d => !d.library && !(d.owner && d.owner !== 'standard')).sort((a, b) => score(b) - score(a)).slice(0, 5);
+  }
+  function rbPick(){
+    const tile = p => { const cover = p.photos[0] ? photoUrlNow(p.photos[0].url) : '';
+      return `<label class="rb-tile"><input type="checkbox" data-rb="${p.id}"${rb.picks.has(p.id) ? ' checked' : ''}>${cover ? `<img src="${esc(cover)}" alt="">` : ''}
+        <span><b>${esc(p.listing.address)}</b><small>Ordered ${dayFmt(p.paid.at)}</small><small>${piecesOf(p).map(pieceLabel).join(', ')}</small></span></label>`; };
+    $('#rbBody').innerHTML = `<h2>${RB_STEPS[2]}</h2>` + (rb.orders.length ? `<div class="rb-grid">${rb.orders.map(tile).join('')}</div>`
+      : '<p class="empty">No orders from the last 2 years yet. Your new brand is saved for every new package.</p>') + `<p class="err" id="rbErr"></p>` + rbNav(rb.orders.length ? 'Next' : 'Save my new brand', true);
+    $$('[data-rb]').forEach(c => c.onchange = () => { c.checked ? rb.picks.add(c.dataset.rb) : rb.picks.delete(c.dataset.rb); });
+    rbWire(() => {
+      if(!rb.orders.length){ rbFinish([]); openHome(); return false; }
+      if(!rb.picks.size){ $('#rbErr').textContent = 'Pick at least one order, or go back to Agent home.'; return false; }
+    });
+  }
+  async function rbReview(){
+    const list = rb.orders.filter(p => rb.picks.has(p.id));
+    $('#rbBody').innerHTML = `<h2>${RB_STEPS[3]}</h2><p class="fine">Before on the left, your new brand on the right. Copy, photos, crops and the floor plan stay as you ordered them.</p>` +
+      list.map(p => `<section data-rbp="${p.id}"><h3>${esc(p.listing.address)}</h3>${ownedDesign(p) ? `<div class="offer" data-closest="${p.id}"></div>` : ''}
+        ${piecesOf(p).map(lid => `<div class="rb-pair" data-lid="${lid}"><div><h4>${esc(pieceLabel(lid))}, before</h4><div class="proof single" data-side="before"></div></div>
+          <div><h4>After</h4><div class="proof single" data-side="after"></div></div></div>`).join('')}</section>`).join('') + rbNav('Looks good', true);
+    rbWire(() => {});
+    const keep = pkg;
+    for(const p of list){
+      if(ownedDesign(p)){   // that design stays with the old brokerage: our five closest, then the whole gallery
+        const box = $(`[data-closest="${p.id}"]`), near = closestDesigns(p);
+        box.innerHTML = `<h3>Closest to what you had</h3><div class="rb-colors">${near.map(d => `<button type="button" class="btn line" data-swap="${p.id}:${d.id}">${esc(d.name)}</button>`).join('')}</div>
+          <p class="fine">Or pick any of our designs: ${designs.filter(d => !d.library && !(d.owner && d.owner !== 'standard')).map(d => `<button type="button" class="link" data-swap="${p.id}:${d.id}">${esc(d.name)}</button>`).join(' · ')}</p>`;
+        rb.designFor[p.id] = rb.designFor[p.id] || (near[0] && near[0].id);
+      }
+      const after = Object.assign({}, p, {design: rb.designFor[p.id] || p.design, brand: Object.assign({}, p.brand, {accent: (rb.kit.colors || [])[0] || p.brand.accent})});
+      for(const lid of piecesOf(p)){
+        for(const [side, P, kit] of [['before', p, p.brandAtOrder || null], ['after', after, rb.kit]]){
+          pkg = P; resolvePhotos(P); kitOverride = kit;
+          try {
+            const S = await spec(P.design); S.design = P.design;
+            const parts = partsFor(S, lid, P);
+            const box = $(`[data-rbp="${p.id}"] [data-lid="${lid}"] [data-side="${side}"]`);
+            const part = parts && (parts.find(x => /back/i.test(x.panel || x.label || '')) || parts[0]);   // the side with the contact card
+            if(part && box) await drawParts(box, P.design, [part], await dataFor(P.design, true));
+          } finally { kitOverride = undefined; }
+        }
+      }
+    }
+    pkg = keep;
+    $$('[data-swap]').forEach(b => b.onclick = () => { const [id, d] = b.dataset.swap.split(':'); rb.designFor[id] = d; rbReview(); });
+  }
+  function rbSend(){
+    $('#rbBody').innerHTML = `<h2>${RB_STEPS[4]}</h2><p>No charge for the update. You only pay your printer.</p>
+      <div class="opts"><button type="button" class="btn" value="both">Upload to my printer and download</button>
+      <button type="button" class="btn line" value="printer">Upload to my printer only</button><button type="button" class="btn line" value="download">Download only</button></div>
+      <p class="gray">Test page: the printer upload is a stand-in, and nothing is ordered at a printer or mail vendor without your yes there.</p>${rbNav('Done', true)}`;
+    let how = null;
+    $$('#rbBody .opts .btn').forEach(b => b.onclick = () => { how = b.value; $$('#rbBody .opts .btn').forEach(x => x.classList.toggle('line', x !== b)); });
+    rbWire(async () => {
+      if(!how){ await ask('<h2>Pick where it goes</h2><p>Choose the printer upload, a download, or both.</p>', [['OK', 'ok', 'line']]); return false; }
+      await rbFinish(rb.orders.filter(p => rb.picks.has(p.id)), how);
+      openHome(); return false;
+    });
+  }
+  async function rbFinish(list, how){
+    const k = Object.assign({}, rb.kit, {updatedAt: new Date().toISOString()});
+    saveKit(k);
+    if(rb.newLogin && me && sb){ const {error} = await sb.auth.updateUser({email: rb.newLogin}); if(error) console.warn(error.message); }
+    for(const p of list){
+      p.brandHistory = (p.brandHistory || []).concat([{brand: p.brandAtOrder || null, until: k.updatedAt}]);
+      p.brandAtOrder = k; p.rebrandedAt = k.updatedAt;
+      p.brand = Object.assign({}, p.brand, {accent: (k.colors || [])[0] || p.brand.accent});   // the new brokerage's colors; fonts stay
+      if(rb.designFor[p.id]){ p.design = rb.designFor[p.id]; p.refit = true; }   // a fold-over that won't fit gets one small writer pass (rebrand_refit)
+      p.updatedAt = k.updatedAt;
+      await store.save(p).catch(e => console.warn(e));
+    }
+    // the owner's daily report counts these (no alert)
+    if(list.length) store.event(list[0].id, 'rebrand', {orders: list.map(p => p.id), pieces: list.reduce((n, p) => n + piecesOf(p).length, 0), how, free: true});
+  }
+
   async function openPackage(p, where){
     pkg = p; lput('bd-current', p.id);
     resolvePhotos(p);
@@ -470,10 +665,12 @@
     arr.forEach(i => { const ph = pkg.photos[i]; P['p' + i] = {src: photoUrlNow(ph.url), tags: ph.desc || ''}; });
     const S = d.sample || {};
     const fonts = fontsFor(pkg, fs);
-    const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, {accent: pkg.brand.accent},
+    const kit = kitOverride !== undefined ? kitOverride : brandKit();
+    const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, kitBrand(kit), {accent: pkg.brand.accent},
       Object.keys(fonts).length ? {fonts} : {});
     const agent = Object.assign({}, SAMPLE_AGENT, profile ? {name: profile.display_name || SAMPLE_AGENT.name, phone: profile.cell || SAMPLE_AGENT.phone,
-      email: profile.preferred_email || SAMPLE_AGENT.email} : {}, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {});
+      email: profile.preferred_email || SAMPLE_AGENT.email} : {}, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {},
+      kit && kit.contact ? Object.fromEntries(Object.entries(kit.contact).filter(([, v]) => v)) : {});
     const written = final && pkg.copy[designId];
     const oh = pkg.openHouse && pkg.openHouse.date ? pkg.openHouse : null;
     // rough draft: real room headings and "what you'll get" lines, sized to each slot's real copy (preview-lines.json);
@@ -663,8 +860,12 @@
     const agent = Object.assign({}, SAMPLE_AGENT, {nar: true}, profile ? {name: profile.display_name || SAMPLE_AGENT.name, phone: profile.cell || SAMPLE_AGENT.phone,
       email: profile.preferred_email || SAMPLE_AGENT.email} : {}, {headshot: null});
     const logos = Object.fromEntries(['black', 'gold', 'white', 'forest', 'color', 'gold-on-dark'].map(k => [k, `/designs/samples/larkspur/AnyBrokerage_${k}.png`]));
+    // the agent's brand kit when saved (a brokerage switch rebrands these sets the same way); else the sample brand
+    const kit = kitOverride !== undefined ? kitOverride : brandKit();
+    const brand = kit && kit.logo ? {brokerage: kit.brokerage, address: kit.officeAddress || '', logo: kit.logo, logoKnockout: kit.logoOnDark || null, logos: {}}
+      : {brokerage: 'Any Brokerage', address: '1200 Heights Blvd, Houston, TX 77008', sample: true, logo: logos.black, logoKnockout: logos.white, logos};
     return {template: LIB, sample: true, fontBase: '/fonts/pool/', agent, listing: pkg.listing, photos: P, photoOrder: order, mailVendor: null,
-      brand: {brokerage: 'Any Brokerage', address: '1200 Heights Blvd, Houston, TX 77008', sample: true, logo: logos.black, logoKnockout: logos.white, logos},
+      brand,
       companion: {justListed: s.copy || {}, justSold: libSold(s.sold)}};
   }
   async function photoB64(url){
@@ -1158,6 +1359,7 @@
       <p class="fine"><b>Test checkout:</b> no card is charged. On the live site this step is Stripe.</p>`, [[`Pay ${money(c)} (test)`, 'pay'], ['Cancel', 'cancel', 'line']]);
     if(v !== 'pay') return false;
     pkg.paid = {at: new Date().toISOString(), cents: c, kind: pkg.order.kind, test: true};
+    pkg.brandAtOrder = brandKit();
     pkg.stage = 'ordered';
     store.event(pkg.id, 'order', {cents: c, kind: pkg.order.kind, piece: pkg.order.piece, test: true});
     save(true);

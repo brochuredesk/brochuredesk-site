@@ -39,12 +39,14 @@
 <!-- Agent home -->
 <section class="view" id="vHome" hidden>
   <h1 id="hello">Welcome back</h1>
+  <p class="switchline"><button type="button" class="link quiet" id="switchLine">Switch brokers? We'll update all of your pieces for free!</button></p>
   <div class="homegrid">
     <div class="card">
       <h2>New listing package</h2>
       <p>Paste your listing link (HAR, Matrix, Zillow, Realtor.com or your brokerage's page) and we'll lay out your set.</p>
       <button class="btn" type="button" data-go="start">Start a package</button>
     </div>
+    <div class="card wide note" id="switchNote" hidden></div>
     <div class="card wide">
       <h2>Pick up where you left off</h2>
       <div id="pickup" class="pickup"></div>
@@ -54,6 +56,15 @@
       <div id="orders" class="pickup"></div>
     </div>
   </div>
+</section>
+
+<!-- Brokerage switch: free rebrand of past orders (brief brokerage-switch-and-matrix-links-10-24; draft wording) -->
+<section class="view" id="vRebrand" hidden>
+  <p><button type="button" class="link" data-go="home">Back to Agent home</button></p>
+  <h1>Update your pieces for your new brokerage</h1>
+  <p class="lede">Free. You only pay your printer.</p>
+  <ol class="rsteps" id="rbSteps"></ol>
+  <div class="card" id="rbBody"></div>
 </section>
 
 <!-- 1. Paste the link, pick what they're buying -->
@@ -247,6 +258,6 @@
 <script src="/designs/shared/fontpicker.js"></script>
 <script src="/designs/announce/annlib.js?v=2"></script>
 <script src="preview-tools.js?v=4"></script>
-<script src="agent.js?v=13"></script>
+<script src="agent.js?v=15"></script>
 </body>
 </html>
