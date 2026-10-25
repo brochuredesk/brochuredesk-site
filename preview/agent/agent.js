@@ -513,7 +513,7 @@
       const h = (s.houses || {})['p' + i] || {};
       if(['plan', 'aerial', 'other'].includes(h.kind)) return;   // floor plans, maps and aerials never go in a photo spot
       const kind = {front: 'front exterior', side: 'side angle exterior', rear: 'rear exterior', yard: 'backyard'}[h.kind] || '';
-      P['p' + i] = {src: photoUrlNow(ph.url), tags: [kind, h.room, ph.desc].filter(Boolean).join(', '), room: h.room || '', house: h.house || undefined};
+      P['p' + i] = {src: photoUrlNow(ph.url), tags: [kind, h.room, ph.desc].filter(Boolean).join(', '), room: h.room || '', role: h.role || undefined, house: h.house || undefined};
       order.push('p' + i);
     });
     order.sort((a, b) => (P[b].house ? 1 : 0) - (P[a].house ? 1 : 0));   // whole-house exteriors first
@@ -539,7 +539,15 @@
     }
     const photos = [];
     for(const [i, ph] of pkg.photos.entries()) photos.push({id: 'p' + i, desc: ph.desc || '', data: await photoB64(photoUrlNow(ph.url))});
-    try { const j = await ai({action: 'houses', packageId: pkg.id, photos}); s.houses = j.photos; s.cost += j.cost || 0; s.housesNote = ''; }
+    // package-ai "tag-photos" (the one photo step): role, exterior, whole-house box. Kept here as kind / room / house.
+    const KIND = {front:'front', side:'side', back:'rear', patio:'yard', pool:'yard', yard:'yard', aerial:'aerial', floorplan:'plan', street:'other', view:'other', amenity:'other', other:'other'};
+    const ROOM = {front:'Front', side:'Side view', back:'Back of the house', aerial:'Aerial', living:'Living room', family:'Family room', kitchen:'Kitchen',
+      dining:'Dining', nook:'Breakfast nook', primary:'Primary bedroom', bedroom:'Bedroom', bath:'Bathroom', office:'Study', entry:'Entry', stairs:'Stairs',
+      laundry:'Laundry', garage:'Garage', patio:'Patio', pool:'Pool', yard:'Yard', view:'View', amenity:'Community', floorplan:'Floor plan', street:'Street', other:''};
+    try { const j = await ai({action: 'tag-photos', packageId: pkg.id, photos});
+      s.houses = Object.fromEntries((j.photos || []).map(t => [t.id, {kind: KIND[t.role] || 'interior', room: ROOM[t.role] || '', role: t.role,
+        house: t.house && ['front', 'side', 'back'].includes(t.role) ? t.house : null}]));
+      s.cost += j.cost || 0; s.housesNote = ''; }
     catch(e){ s.houses = {}; s.housesNote = "We couldn't read the photos this time, so crops can't check for the whole house yet."; }
   }
   async function writeLib(){
