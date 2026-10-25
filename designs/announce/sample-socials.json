@@ -1,0 +1,234 @@
+{
+ "brand": {
+  "brokerage": "Any Brokerage",
+  "address": "1200 Heights Blvd, Houston, TX 77008",
+  "sample": true,
+  "logo": "/designs/samples/larkspur/AnyBrokerage_black.png",
+  "logoKnockout": "/designs/samples/larkspur/AnyBrokerage_white.png",
+  "logos": {
+   "black": "/designs/samples/larkspur/AnyBrokerage_black.png",
+   "gold": "/designs/samples/larkspur/AnyBrokerage_gold.png",
+   "white": "/designs/samples/larkspur/AnyBrokerage_white.png",
+   "forest": "/designs/samples/larkspur/AnyBrokerage_forest.png",
+   "color": "/designs/samples/larkspur/AnyBrokerage_color.png",
+   "gold-on-dark": "/designs/samples/larkspur/AnyBrokerage_gold-on-dark.png"
+  }
+ },
+ "agent": {
+  "name": "Jordan Reyes",
+  "nar": true,
+  "phone": "832.555.0188",
+  "email": "jordan@anybrokerage.com",
+  "web": "jordanreyes.com",
+  "headshot": null
+ },
+ "listing": {
+  "address": "2614 Calder Street",
+  "neighborhood": "East End",
+  "city": "Houston",
+  "state": "Texas",
+  "zip": "77023",
+  "beds": 3,
+  "baths": 2,
+  "sqft": 1385,
+  "yearBuilt": 1940
+ },
+ "mailVendor": null,
+ "photos": {
+  "front": {
+   "src": "/designs/samples/larkspur/front.jpg",
+   "tags": "front exterior, 1940 bungalow",
+   "room": "Front",
+   "house": {
+    "left": 0.14,
+    "top": 0.05,
+    "right": 0.88,
+    "bottom": 0.74
+   }
+  },
+  "family": {
+   "src": "/designs/samples/larkspur/family.jpg",
+   "tags": "front exterior, side angle",
+   "room": "Front",
+   "house": {
+    "left": 0.2,
+    "top": 0.19,
+    "right": 0.83,
+    "bottom": 0.67
+   }
+  },
+  "kitchen": {
+   "src": "/designs/samples/larkspur/kitchen.jpg",
+   "tags": "kitchen",
+   "room": "Kitchen"
+  },
+  "living": {
+   "src": "/designs/samples/larkspur/living.jpg",
+   "tags": "living room, open to dining",
+   "room": "Living room"
+  },
+  "dining": {
+   "src": "/designs/samples/larkspur/dining.jpg",
+   "tags": "dining area",
+   "room": "Dining"
+  },
+  "nook": {
+   "src": "/designs/samples/larkspur/nook.jpg",
+   "tags": "breakfast nook",
+   "room": "Breakfast nook"
+  },
+  "primary": {
+   "src": "/designs/samples/larkspur/primary.jpg",
+   "tags": "primary bedroom",
+   "room": "Primary bedroom"
+  },
+  "study": {
+   "src": "/designs/samples/larkspur/study.jpg",
+   "tags": "bedroom three",
+   "room": "Bedroom"
+  },
+  "kitchen2": {
+   "src": "/designs/samples/larkspur/kitchen2.jpg",
+   "tags": "kitchen bar seating",
+   "room": "Kitchen bar"
+  },
+  "hall": {
+   "src": "/designs/samples/larkspur/hall.jpg",
+   "tags": "entry",
+   "room": "Entry"
+  },
+  "bedroom2": {
+   "src": "/designs/samples/larkspur/bedroom2.jpg",
+   "tags": "bedroom two",
+   "room": "Bedroom"
+  },
+  "office": {
+   "src": "/designs/samples/larkspur/office.jpg",
+   "tags": "primary bath",
+   "room": "Bathroom"
+  },
+  "lawn": {
+   "src": "/designs/samples/larkspur/lawn.jpg",
+   "tags": "back patio, backyard",
+   "room": "Back patio"
+  }
+ },
+ "photoOrder": [
+  "front",
+  "family",
+  "kitchen",
+  "living",
+  "dining",
+  "nook",
+  "primary",
+  "kitchen2",
+  "study",
+  "bedroom2",
+  "office",
+  "hall",
+  "lawn"
+ ],
+ "companion": {
+  "justListed": {
+   "lead": "A 1940 bungalow with new wiring, plumbing, roof and siding.",
+   "hook": "New roof, wiring and plumbing",
+   "hookTail": "in a 1940 bungalow",
+   "about": "This 1940 bungalow in Houston has a new roof, new siding, and new wiring and plumbing. The kitchen has white upper cabinets, dark lower cabinets, marble-look counters and a bar that seats three. The living and dining rooms are open to each other, with a breakfast nook off the kitchen. The primary bedroom has a vaulted ceiling, and the back patio is covered.",
+   "aboutShort": "New wiring, plumbing, roof and siding on a 1940 Houston bungalow. Marble-look kitchen counters, a vaulted primary bedroom and a covered back patio.",
+   "features": [
+    "New roof and siding",
+    "New wiring and plumbing",
+    "Open living and dining room",
+    "Kitchen bar that seats three",
+    "Marble-look counters, stainless appliances",
+    "Vaulted ceiling in the primary bedroom",
+    "Breakfast nook off the kitchen",
+    "Covered back patio"
+   ],
+   "featuresShort": [
+    "Built in 1940",
+    "3 bedrooms · 2 baths",
+    "1,385 square feet",
+    "New roof and siding",
+    "New wiring and plumbing",
+    "Marble-look counters",
+    "Vaulted primary bedroom",
+    "Covered back patio"
+   ],
+   "captions": {
+    "kitchen": "White uppers, dark lowers and marble-look counters",
+    "living": "Open to the dining area, with wood-look floors throughout",
+    "primary": "Vaulted ceiling, ceiling fan and a double-door closet",
+    "lawn": "Covered patio across the back of the house",
+    "nook": "Windows on two sides, next to the kitchen",
+    "office": "Dark vanity with a marble-look top and a lighted mirror",
+    "front": "New roof and siding, with a covered front porch",
+    "dining": "Between the kitchen bar and the living room",
+    "family": "New roof and siding, with a covered front porch",
+    "kitchen2": "Bar seating for three at the peninsula",
+    "study": "Third bedroom off the hall",
+    "bedroom2": "Second bedroom with a ceiling fan",
+    "hall": "Front entry into the living room"
+   },
+   "master": [
+    "This 1940 bungalow in Houston has a new roof, new siding, and new wiring and plumbing.",
+    "It has three bedrooms, two full baths and 1,385 square feet, all on one floor.",
+    "The front door opens to a living room that runs into the dining area, with wood-look floors throughout.",
+    "The kitchen has white upper cabinets, dark lower cabinets, marble-look counters, stainless appliances and a bar that seats three.",
+    "A breakfast nook with windows on two sides sits next to the kitchen.",
+    "The primary bedroom has a vaulted ceiling and a double-door closet.",
+    "The back patio is covered."
+   ],
+   "drop": [
+    3,
+    5,
+    6,
+    4,
+    7,
+    2
+   ],
+   "callLine": "Call or text for a private showing.",
+   "blurb": "A 1940 bungalow with a new roof, new siding, and new wiring and plumbing. Marble-look kitchen counters and a covered back patio."
+  },
+  "justSold": {
+   "headline": "Just Sold",
+   "side": null,
+   "days": null,
+   "offers": null,
+   "offersOk": false,
+   "overAsking": false,
+   "ctaHead": "Thinking about selling?",
+   "cta": "Curious what your home is worth in today's market? Let's set a time to talk.",
+   "ctaShort": "Call today to schedule a private home consultation.",
+   "ctaNext": "Your home could be next.",
+   "master": [
+    "I just helped sell 2614 Calder Street.",
+    "If you've wondered what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them.",
+    "I'll walk you through it in person, along with a plan for pricing, prep and marketing.",
+    "There's no cost and no obligation to list.",
+    "Call or text me any time."
+   ],
+   "drop": [
+    3,
+    4,
+    5
+   ],
+   "letter": "I just helped sell the home at 2614 Calder Street. If you've been wondering what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them. There's no cost and no obligation to list. When you're ready, call or text me.",
+   "offerList": [
+    "Go over recent sales near you",
+    "Walk through your house with you",
+    "Give you a price range and what it takes to get there",
+    "Tell you what's worth fixing and what isn't",
+    "You decide if and when to list"
+   ],
+   "listLabel": "Here's how I'd start",
+   "nohsLines": [
+    "Recent sales near you",
+    "A plan before you list",
+    "No obligation to list"
+   ],
+   "quote": null
+  }
+ },
+ "fontBase": "/fonts/pool/"
+}
