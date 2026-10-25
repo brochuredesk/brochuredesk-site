@@ -227,6 +227,8 @@
   // flood claims the listing doesn't make, prices, and sample text on a real agent's piece.
   AB.check = function(D, extra){
     const issues = [...(extra||[])];
+    // rough-draft preview lines never reach a paid or downloaded piece (10/25/2026)
+    if(D && D.preview) issues.push({slot:'copy', kind:'preview-text', detail:'rough-draft preview lines; the writer has not run'});
     const sample = /\b(avery morgan|any brokerage|your brokerage|your website|lorem|ipsum|placeholder|tbd|xx+)\b|555[.\-]01\d\d/i;
     const flood = AB.floodStated((D.listing||{}).description);
     document.querySelectorAll('[data-slot]').forEach(el=>{

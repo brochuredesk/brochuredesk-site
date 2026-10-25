@@ -181,3 +181,30 @@ dialog .opts .btn{text-align:left}
 .dset.picked{outline:3px solid #222;outline-offset:2px}
 #libSizeRow label{display:inline-flex;align-items:center;gap:4px;margin-left:10px}
 #libSizeRow input{width:auto;margin:0}
+
+/* photo picker and floor plan (after the lookup) */
+#photoPick,#planBox{margin:16px 0}
+.picker{display:grid;gap:10px}
+.pk-box{border:1.5px dashed var(--line);border-radius:10px;padding:12px;background:#fff}
+.pk-box[data-box=up]{border-color:var(--emerald);background:#f4f8f6}
+.pk-box.over{border-style:solid;box-shadow:0 0 0 3px rgba(31,77,63,.18)}
+.pk-box h3{display:flex;gap:8px;align-items:baseline}
+.pk-n{font-weight:400;color:var(--slate);font-size:13px}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;min-height:60px}
+.pk-ph{position:relative;padding:0;border:0;border-radius:6px;overflow:hidden;cursor:grab;background:#ddd;aspect-ratio:3/2}
+.pk-ph img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.pk-ph span{position:absolute;left:0;right:0;bottom:0;font-size:11px;font-weight:600;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));padding:10px 6px 3px;text-align:left}
+.pk-ph span:empty{display:none}
+.pk-ph:focus-visible{outline:3px solid var(--emerald);outline-offset:2px}
+.pk-ghost{position:fixed;width:96px;z-index:50;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.pk-msg{margin:0;font-weight:600;color:var(--red)}
+.pk-msg:empty{display:none}
+.pk-bounce{animation:pkb .45s}
+@keyframes pkb{0%,100%{transform:none}25%{transform:translateY(-8px)}60%{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.pk-bounce{animation:none;outline:3px solid var(--red)}}
+.planthumbs{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+.planthumbs img{max-height:150px;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px}
+.row.gap{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.planup{margin-top:10px}
+.dset.grayed{opacity:.5}
+.dset.grayed [data-why]{opacity:1}

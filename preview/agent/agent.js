@@ -8,7 +8,13 @@
   const SUPABASE_KEY = 'sb_publishable_mF60NaxAKLQV_pDLBoR2og_PzJ9fxxH';   // public browser key; access is enforced in the database
   const FN_MATRIX = SUPABASE_URL + '/functions/v1/matrix-listing';
   const FN_AI = SUPABASE_URL + '/functions/v1/package-ai';
-  const MAX_PHOTOS = 16, PHOTO_W = 900;
+  const MAX_PHOTOS = 16, PHOTO_W = 900, ALL_PHOTOS = 60;
+  // photo picker (brief preview-and-lookup-10-24): about 13 photos go in the package; the rest wait in the lower box
+  const PICK_CAP = 13;
+  const PICK_FULL = 'You need to remove an active photo to pull in a new photo.';   // the owner's wording; don't change without asking
+  const PICK_LABELS = {upper: 'In your package', lower: 'More listing photos'};     // draft wording
+  const PLAN_NOTE = "Your floor plan will be redrawn in this design's style.";      // draft wording (the owner's call)
+  const PT = window.PreviewTools;
   const FINE_PRINT = 'Information deemed reliable but not guaranteed.';
   const PRICE = {full: 2500, essentials: 2000, single: 1000};
   const KIND_LABEL = {full: 'Full package', essentials: 'The Essentials', single: 'Single piece'};
@@ -236,28 +242,40 @@
         try { j = await fetch(`${FN_MATRIX}?link=${encodeURIComponent(link)}`).then(r => r.json()); } catch(e) { throw {code: 'network'}; }
         if(!j.ok) throw {code: j.error};
       }
-      const cand = j.photos.concat(j.spares || []), want = Math.min(MAX_PHOTOS, j.photos.length), got = [];
-      stepTo('photos', 25, `Found ${j.totalPhotos || cand.length} photos, picking the best ${want}…`);
+      // every listing photo (the picker's lower box holds the ones we didn't pick); floor plan images stay out of photo spots
+      const fp = (j.listing && j.listing.floorPlan) || {found: false, source: null, files: [], stories: null};
+      const planUrls = new Set(fp.files.map(f => f.url)), seen = new Set(), cand = [];
+      for(const p of j.photos.concat(j.spares || [], (j.gallery || []).map(g => ({n: g.n, url: g.url, desc: g.caption || '', direct: g.direct}))))
+        if(p.url && !seen.has(p.url) && !planUrls.has(p.url) && PT.roomKey(p.room || p.desc) !== 'floor plan'){ seen.add(p.url); cand.push(p); }
+      cand.splice(ALL_PHOTOS);
+      const picked = new Set(j.photos.concat(j.spares || []).map(p => p.url)), want = cand.length, got = [];
+      stepTo('photos', 25, `Found ${j.totalPhotos || cand.length} photos, getting them all…`);
       let next = 0, done = 0;
       const worker = async () => {
-        while(next < cand.length && got.filter(Boolean).length < MAX_PHOTOS){
+        while(next < cand.length){
           const i = next++;
           try { const u = await loadPhoto(cand[i].url, link !== 'sample', cand[i].direct); got[i] = u ? cand[i] : null; } catch(e) { got[i] = null; }
           done++; if(done <= want) stepTo('photos', 25 + Math.round(55 * done / want), `Getting photo ${Math.min(done, want)} of ${want}…`);
         }
       };
       await Promise.all([worker(), worker(), worker(), worker()]);
-      const keep = got.filter(Boolean).slice(0, MAX_PHOTOS).sort((a, b) => a.n - b.n);
+      const keep = got.filter(Boolean);
       if(!keep.length) throw {code: 'unreadable'};
+      // the upper box: our picks in listing order (staged first, as the reader sorted them), up to the cap
+      const upper = keep.filter(p => picked.has(p.url)).slice(0, PICK_CAP).sort((a, b) => a.n - b.n);
+      if(upper.length < PICK_CAP) upper.push(...keep.filter(p => !upper.includes(p)).slice(0, PICK_CAP - upper.length));
       stepTo('details', 90, 'Filling in the details…');
       const l = j.listing;
       // the whole listing record is kept (description, every detail field, rooms, what conveys, every photo caption,
       // and price / schools in `withheld`, which package-ai never passes to the writer)
       lookup = {link, listing: Object.assign({}, l, {address: l.address, neighborhood: l.neighborhood || '', city: l.city || 'Houston', state: 'Texas', zip: l.zip || '',
         beds: l.beds, baths: l.baths, halfBaths: l.halfBaths || 0, sqft: l.sqft, yearBuilt: l.yearBuilt || l.year, stories: l.stories || null, description: l.description || ''}),
-        photos: keep.map(p => ({n: p.n, url: p.url, desc: p.desc || ''}))};
+        photos: keep.map(p => ({n: p.n, url: p.url, desc: p.desc || '', room: PT.roomKey(p.room || p.desc)})), upper: upper.map(p => p.url),
+        floorPlan: {source: fp.source, files: fp.files, stories: fp.stories, active: false, art: null, asked: null}, moves: 0, id: uuid(), tags: {}};
       stepTo('done', 100, `Found ${lookup.listing.address}: ${keep.length} photos. Pick what you'd like below.`);
       $('#toGallery').disabled = false;
+      drawPicker(); drawPlanBox(); if(fp.files.length) loadPlan(fp.files, fp.source);
+      if(link !== 'sample') tagRooms();
     } catch(e) {
       $('#linkErr').textContent = MSG[e && e.code] || MSG.network; stepTo('lookup', 0, '');
     } finally { $('#go').disabled = false; }
@@ -273,14 +291,86 @@
   $('#toGallery').onclick = () => {
     const kind = document.querySelector('input[name=kind]:checked').value;
     const now = new Date().toISOString();
-    pkg = {id: uuid(), createdAt: now, updatedAt: now, link: lookup.link, listing: lookup.listing, photos: lookup.photos,
+    const byUrl = Object.fromEntries(lookup.photos.map(p => [p.url, p])), fpl = lookup.floorPlan;
+    if(fpl.active && fpl.art && !lookup.listing.stories && fpl.art.length > 1) lookup.listing.stories = fpl.art.length;
+    pkg = {id: lookup.id, createdAt: now, updatedAt: now, link: lookup.link, listing: lookup.listing, photos: lookup.upper.map(u => byUrl[u]),
+      morePhotos: lookup.photos.filter(p => !lookup.upper.includes(p.url)), tags: lookup.tags,
+      floorPlan: {source: fpl.active ? fpl.source : null, files: fpl.files, stories: fpl.stories, active: !!(fpl.active && fpl.art), art: fpl.active ? fpl.art : null,
+        removed: !!fpl.removed},
       order: {kind, piece: kind === 'single' ? $('#singlePiece').value : null, size: document.querySelector('input[name=size]:checked').value},
       design: null, brand: {accent: COLORS[0], fonts: {}}, copyStyle: suggestStyle(lookup.listing), arrangements: {}, ohFlyer: null,
       stage: 'rough', copy: {}, approvals: {}, paid: null, delivery: {}, openHouse: {kind: 'public', date: '', start: '13:00', end: '16:00'}, edits: 0};
     lput('bd-current', pkg.id);
     save(true);
+    // measure (brief): how often agents move photos in the picker and remove the floor plan
+    store.event(pkg.id, 'photo-picker', {moves: lookup.moves, inPackage: pkg.photos.length, more: pkg.morePhotos.length});
+    if(fpl.removed) store.event(pkg.id, 'floor-plan-removed', {source: fpl.source});
     openGallery();
   };
+
+  // ---------- photo picker and floor plan (after the lookup) ----------
+  function drawPicker(){
+    $('#photoPick').hidden = false;
+    const photos = lookup.photos.map(p => ({key: p.url, src: photoUrlNow(p.url), room: p.room ? PT.heading(p.room) : ''}));
+    PT.picker($('#pickerRoot'), {photos, upper: lookup.upper, cap: PICK_CAP, full: PICK_FULL, labels: PICK_LABELS,
+      onChange: up => { lookup.upper = up; lookup.moves++; }});
+  }
+  // room types: captions first (free); one low-cost photo read for the photos with no usable caption, plus the
+  // exteriors (their whole-house box keeps every crop from cutting the house)
+  async function tagRooms(){
+    const ext = /exterior|aerial/;
+    const need = lookup.photos.filter(p => !p.room || ext.test(p.room));
+    if(!need.length) return;
+    try {
+      const photos = [];
+      for(const [i, p] of need.entries()) photos.push({id: 'u' + i, desc: p.desc || '', data: await photoB64(photoUrlNow(p.url))});
+      const j = await ai({action: 'tag-photos', packageId: lookup.id, photos});
+      for(const t of j.photos || []){ const p = need[+t.id.slice(1)]; if(!p) continue;
+        lookup.tags[p.url] = {role: t.role, house: t.house || null, exterior: !!t.exterior};
+        if(!p.room) p.room = PT.ROLE_ROOM[t.role] || ''; }
+      lookup.tagCost = j.cost || 0;
+      if(!$('#vStart').hidden) drawPicker();
+    } catch(e) { /* labels then come from the captions alone */ }
+  }
+  async function loadPlan(files, source){
+    const box = $('#planBody'); box.innerHTML = '<p class="fine">Reading your floor plan…</p>';
+    try {
+      const blobs = [];
+      for(const f of files.slice(0, 4)){
+        if(f.blob){ blobs.push(f.blob); continue; }
+        const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
+        blobs.push(await r.blob());
+      }
+      const art = await PT.cleanPlan(blobs, files.map(f => /\b(1st|first|ground|main)\b/i.test(f.label || '') ? 'First floor' : /\b(2nd|second|upper)\b/i.test(f.label || '') ? 'Second floor' : ''));
+      if(!art.length) throw new Error('plan');
+      Object.assign(lookup.floorPlan, {source, art, active: true, removed: false});
+    } catch(e) { Object.assign(lookup.floorPlan, {art: null, active: false, failed: true}); }
+    drawPlanBox();
+  }
+  function drawPlanBox(){
+    const F = lookup.floorPlan, box = $('#planBody'); $('#planBox').hidden = false;
+    const from = {documents: "the listing's documents", gallery: "the listing's floor plans", photo: "the listing photos", upload: 'your upload'}[F.source] || 'your listing';
+    const thumbs = () => `<div class="planthumbs">${F.art.map(a => `<img src="${esc(a.src)}" alt="Floor plan${a.label ? ', ' + esc(a.label) : ''}">`).join('')}</div>`;
+    if(F.active && F.art){
+      box.innerHTML = `<p>${F.source === 'upload' ? 'Your floor plan is in.' : `We found a floor plan in ${from}.`} It goes in your design.</p>${thumbs()}<p><button type="button" class="link" id="planOut">Remove the floor plan</button></p>`;
+      $('#planOut').onclick = () => { F.active = false; F.removed = true; drawPlanBox(); };
+    } else if(F.removed && F.art){
+      box.innerHTML = `<p>Floor plan removed. Your design uses its version without a floor plan.</p><p><button type="button" class="link" id="planBack">Put the floor plan back</button></p>`;
+      $('#planBack').onclick = () => { F.active = true; F.removed = false; drawPlanBox(); };
+    } else if(F.asked === 'no'){
+      box.innerHTML = `<p>No floor plan. Your design uses its version without one.</p><p><button type="button" class="link" id="planAsk">I have one after all</button></p>`;
+      $('#planAsk').onclick = () => { F.asked = null; drawPlanBox(); };
+    } else {
+      // the floor plan question (versions-and-floor-plan-ask brief; proposed wording, the owner's call)
+      box.innerHTML = `<p>${F.failed ? "We found a floor plan but couldn't open it." : "We didn't find a floor plan on this listing."} Do you have one?</p>
+        <div class="row gap"><button type="button" class="btn" id="planYes">Yes, upload it</button><button type="button" class="btn line" id="planNo">No floor plan</button></div>
+        <label class="planup" id="planUp" hidden>Floor plan (PDF, JPG or PNG; one file per floor is fine)<input type="file" id="planFile" accept="application/pdf,image/jpeg,image/png" multiple></label>`;
+      $('#planYes').onclick = () => { $('#planUp').hidden = false; $('#planFile').click(); };
+      $('#planNo').onclick = () => { F.asked = 'no'; drawPlanBox(); };
+      $('#planFile').onchange = e => { const fs = [...e.target.files].slice(0, 4); if(!fs.length) return;
+        F.files = fs.map(f => ({blob: f, label: f.name, kind: /pdf/.test(f.type) ? 'pdf' : 'image'})); loadPlan(F.files, 'upload'); };
+    }
+  }
   function suggestStyle(L){
     if(L.sqft >= 3800) return 'luxury';
     if(L.beds >= 4) return 'spread';
@@ -340,7 +430,7 @@
     if(lid === 'foldover'){ const f = by.foldover; if(!f) return null; return (f.panels || IVORY_PANELS).map(x => ({piece: f, panel: x.id, label: x.label})); }
     if(lid === 'open-house-flyer'){
       const oh = p && p.ohFlyer && p.ohFlyer.design === S.design && by[p.ohFlyer.piece];
-      const f = oh || by['open-house-flyer']; return f ? [{piece: f, label: oh ? f.title : 'Open House flyer'}] : null; }
+      const f = oh || by['open-house-flyer'] || S.pieces.find(x => x.variant === 'openhouse'); return f ? [{piece: f, label: oh ? f.title : 'Open House flyer'}] : null; }
     if(lid === 'postcard'){ const s = (p && p.order.size) || '6x11', f = by[`postcard-${s}-front`], b = by[`postcard-${s}-back`];
       return f && b ? [{piece: f, label: `${s.replace('x', ' x ')}, front`}, {piece: b, label: `${s.replace('x', ' x ')}, back`}] : null; }
     return null;
@@ -386,11 +476,58 @@
       email: profile.preferred_email || SAMPLE_AGENT.email} : {}, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {});
     const written = final && pkg.copy[designId];
     const oh = pkg.openHouse && pkg.openHouse.date ? pkg.openHouse : null;
-    return {template: designId, sample: true, brand, agent, listing: pkg.listing, mailVendor: null, photos: P,
+    // rough draft: real room headings and "what you'll get" lines, sized to each slot's real copy (preview-lines.json);
+    // the simple floor plan sits in the plan spot. Both are preview only: the templates' checks block them on any export.
+    const pre = written ? null : await previewCopy(designId, ids);
+    const fp = pkg.floorPlan, plan = !written && fp && fp.active && fp.art ? fp.art.map(a => ({src: a.src, tinted: a.tinted, label: a.label})) : null;
+    return Object.assign({template: designId, sample: true, brand, agent, listing: pkg.listing, mailVendor: null, photos: P,
       openHouse: final ? oh : null,
-      copy: written ? written.copy : draftCopy(ids),
-      companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : draftCompanion(ids),
-      copyPending: !written};
+      copy: written ? written.copy : pre.copy,
+      companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : pre.companion,
+      copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {});
+  }
+  // The design's own example copy gives the shape and the length of every slot. Photo sections get the room heading of
+  // the photo placed there and a line about that room; other text gets a line about what that part will say.
+  async function previewCopy(designId, ids){
+    await PT.load();
+    const ex = await example(designId), base = {copy: draftCopy(ids), companion: draftCompanion(ids)};
+    if(!ex || !ex.copy) return base;
+    const rest = ids.length > 1 ? ids.slice(1) : ids; let n = 0, seed = 0, first = true;
+    const roomOf = id => { const ph = pkg.photos[+String(id).slice(1)]; return (ph && ph.room) || 'room'; };
+    const at = (o, path) => path.reduce((v, k) => v == null ? v : v[k], o);
+    const KEEP = /^(location|stats|variant|footnote|planDisclosures|flyerPhotos|eyebrow|fineprint|stat\d)$/;
+    const TEXT = {kicker: 'kicker', title: 'headline', q: 'headline', heading: 'headline', intro: 'intro', summary: 'summary', notes: 'summary', body: 'feature',
+      a: 'feature', detail: 'feature', locationBody: 'location', locationTitle: 'heading:Location', nearbyTitle: 'heading:Nearby'};
+    function walk(v, path, group){
+      const key = path[path.length - 1], b = at(base, path);
+      if(typeof key === 'string' && KEEP.test(key)) return b !== undefined ? b : v;
+      if(Array.isArray(v)){
+        if(v.every(x => typeof x === 'string') && /photos$/i.test(key)) return b !== undefined ? b : [];
+        return v.map((x, i) => walk(x, path.concat(i), group));
+      }
+      if(v && typeof v === 'object'){
+        if('walls' in v || 'rooms' in v && 'w' in v) return null;   // the sample's drawn plan: never shown for another listing
+        // a photo's own fields take its room; any other object is a section that collects the rooms placed in it
+        const o = {}, g = {rooms: []};
+        if('photo' in v){ o.photo = first ? ids[0] : rest[n++ % rest.length]; first = false; g.room = roomOf(o.photo); if(group) group.rooms.push(g.room); }
+        for(const [k, x] of Object.entries(v)) if(k !== 'photo') o[k] = walk(x, path.concat(k), g);
+        // a section's kicker names the rooms in it (after its photos are placed)
+        if(typeof o.kicker === 'string' && g.rooms.length) o.kicker = [...new Set(g.rooms.map(PT.heading))].slice(0, 2).join(' + ');
+        return o;
+      }
+      if(typeof v !== 'string') return v;
+      const len = v.length, room = group && group.room;
+      if(room && key === 'caption') return '';   // the heading sits over the copy; a caption would only repeat it
+      if(room && /^(title|q|label|name)$/.test(key)) return PT.heading(room);
+      if(room && key === 'lead') return '';
+      if(room && /^(body|a|detail|notes)$/.test(key)) return PT.line(room, len, seed++);
+      const t = TEXT[key];
+      if(!t) return b !== undefined ? b : v.length < 24 ? v : PT.line('feature', len, seed++);
+      if(t.startsWith('heading:')) return t.slice(8);
+      if(t === 'kicker') return v;
+      return PT.line(t, len, seed++);
+    }
+    return {copy: walk(ex.copy, ['copy']), companion: Object.assign({fineprint: FINE_PRINT}, walk(ex.companion || {}, ['companion']))};
   }
 
   // ---------- drawing a part into a sheet ----------
@@ -429,7 +566,7 @@
       fr.title = pt.label;
       fr.onload = () => { const w = fr.contentWindow;
         Promise.resolve(w.brochureReady).then(() => fr.contentDocument.fonts ? fr.contentDocument.fonts.ready : 0)
-          .then(() => { fit(s); if(onReady) onReady(fr, s, pt); }); fit(s); };
+          .then(() => { if(d.preview) PT.fitPreview(fr.contentDocument); fit(s); if(onReady) onReady(fr, s, pt); }); fit(s); };
       fr.srcdoc = srcdoc(designId, html[pt.piece.file], d, pt.panel);
     });
   }
@@ -461,6 +598,12 @@
       drawParts(box, d.id, parts.map((pt, i) => Object.assign({}, pt, {label: pieceLabel(ps[i])})), await dataFor(d.id, false));
       box.querySelectorAll('figcaption').forEach((c, i) => c.textContent = pieceLabel(ps[i]));
     }
+    // plan-only designs (Room Proportions) are made for homes with a floor plan
+    const hasPlan = !!(pkg.floorPlan && pkg.floorPlan.active);
+    for(const {d} of list) if(d.planOnly && !hasPlan){
+      const el = $(`.dset[data-design="${d.id}"]`); el.classList.add('grayed'); el.querySelector('[data-use]').disabled = true;
+      el.querySelector('.row').insertAdjacentHTML('beforeend', `<button type="button" class="link" data-why="${d.id}">Why is this grayed out?</button>`); }
+    $$('[data-why]').forEach(b => b.onclick = () => ask('<h2>Made for a floor plan</h2><p>This design is built around the floor plan. Add your floor plan on the listing step to use it.</p>', [['OK', 'ok', 'line']]));
     $$('[data-use]').forEach(b => b.onclick = () => { pkg.design = b.dataset.use; save(); openRough(); });
     // the Just Listed / Just Sold library: pieces picked one by one (test)
     const lib = designs.find(d => d.library);
@@ -537,16 +680,23 @@
       s.houses = Object.fromEntries(pkg.photos.map((ph, i) => [ 'p' + i, SAMPLE_HOUSES[ph.url.split('/').pop()] || {kind: 'interior', room: '', house: null}]));
       return;
     }
-    const photos = [];
-    for(const [i, ph] of pkg.photos.entries()) photos.push({id: 'p' + i, desc: ph.desc || '', data: await photoB64(photoUrlNow(ph.url))});
     // package-ai "tag-photos" (the one photo step): role, exterior, whole-house box. Kept here as kind / room / house.
     const KIND = {front:'front', side:'side', back:'rear', patio:'yard', pool:'yard', yard:'yard', aerial:'aerial', floorplan:'plan', street:'other', view:'other', amenity:'other', other:'other'};
     const ROOM = {front:'Front', side:'Side view', back:'Back of the house', aerial:'Aerial', living:'Living room', family:'Family room', kitchen:'Kitchen',
       dining:'Dining', nook:'Breakfast nook', primary:'Primary bedroom', bedroom:'Bedroom', bath:'Bathroom', office:'Study', entry:'Entry', stairs:'Stairs',
       laundry:'Laundry', garage:'Garage', patio:'Patio', pool:'Pool', yard:'Yard', view:'View', amenity:'Community', floorplan:'Floor plan', street:'Street', other:''};
+    const fromTag = t => ({kind: KIND[t.role] || 'interior', room: ROOM[t.role] || '', role: t.role, house: t.house && ['front', 'side', 'back'].includes(t.role) ? t.house : null});
+    // photos read right after the lookup, and captioned interiors, need no second read
+    const known = {}, photos = [];
+    for(const [i, ph] of pkg.photos.entries()){
+      const t = (pkg.tags || {})[ph.url];
+      if(t) known['p' + i] = fromTag(t);
+      else if(ph.room && !/exterior|aerial/.test(ph.room)) known['p' + i] = {kind: 'interior', room: PT.heading(ph.room), house: null};
+      else photos.push({id: 'p' + i, desc: ph.desc || '', data: await photoB64(photoUrlNow(ph.url))});
+    }
+    if(!photos.length){ s.houses = known; return; }
     try { const j = await ai({action: 'tag-photos', packageId: pkg.id, photos});
-      s.houses = Object.fromEntries((j.photos || []).map(t => [t.id, {kind: KIND[t.role] || 'interior', room: ROOM[t.role] || '', role: t.role,
-        house: t.house && ['front', 'side', 'back'].includes(t.role) ? t.house : null}]));
+      s.houses = Object.assign(known, Object.fromEntries((j.photos || []).map(t => [t.id, fromTag(t)])));
       s.cost += j.cost || 0; s.housesNote = ''; }
     catch(e){ s.houses = {}; s.housesNote = "We couldn't read the photos this time, so crops can't check for the whole house yet."; }
   }
@@ -1029,6 +1179,8 @@
     const S = await spec(pkg.design); S.design = pkg.design;
     const pt = partsFor(S, lid, pkg)[0];
     const data = Object.assign(await dataFor(pkg.design, true), pt.piece.kind === 'foldover' ? {mode: 'proof'} : {mode: 'email', piece: pt.piece});
+    if(data.preview || data.planPreview || PT.isPreview(JSON.stringify([data.copy, data.companion]))){
+      await ask('<h2>Not ready to download</h2><p>This piece still has rough-draft text. Finalize the design first.</p>', [['OK', 'ok', 'line']]); return; }
     const html = srcdoc(pkg.design, await tpl(pkg.design, pt.piece.file), data, null, true)
       .replace('</head>', '<style>@media print{body{margin:0}.page{margin:0!important;box-shadow:none!important;break-after:page}}</style></head>');
     document.querySelectorAll('iframe.bd-print').forEach(f => f.remove());
