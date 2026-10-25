@@ -225,6 +225,11 @@
         <p class="gray" id="approveNote">Fixes are still allowed after you approve, so no worries if you catch something later.</p>
         <p class="fine" id="windowNote"></p>
       </div>
+      <div class="ctl" id="switchBox" hidden>
+        <h3>See it in another design</h3>
+        <div id="switchTiles" class="rb-colors"></div>
+        <p class="fine" id="swProgress" aria-live="polite"></p>
+      </div>
       <div class="ctl"><button class="link" type="button" id="backToRough">Back to the rough draft</button></div>
     </aside>
   </div>
@@ -257,7 +262,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="/designs/shared/fontpicker.js"></script>
 <script src="/designs/announce/annlib.js?v=2"></script>
+<script src="/designs/shared/master-fit.js?v=6"></script>
 <script src="preview-tools.js?v=4"></script>
-<script src="agent.js?v=16"></script>
+<script src="agent.js?v=18"></script>
 </body>
 </html>

@@ -681,7 +681,9 @@
       openHouse: final ? oh : null,
       copy: written ? written.copy : pre.copy,
       companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : pre.companion,
-      copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {});
+      copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {},
+      // the redrawn plan is saved as linework (rooms, walls, levels); each design restyles it in code, never a second redraw
+      written && pkg.plan ? {plan: pkg.plan} : {});
   }
   // The design's own example copy gives the shape and the length of every slot. Photo sections get the room heading of
   // the photo placed there and a line about that room; other text gets a line about what that part will say.
@@ -1157,9 +1159,11 @@
       const arr = arrangement(pkg, pkg.design);
       const body = {action: 'write', packageId: pkg.id, design: pkg.design, style: pkg.copyStyle, listing: pkg.listing,
         photos: Object.fromEntries(arr.map(i => ['p' + i, pkg.photos[i].desc || ''])),
+        allPhotos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, [p.room, p.desc].filter(Boolean).join(': ')])),
         example: ex, draft: {copy: d.copy, companion: d.companion}, pieces: piecesOf(pkg).map(pieceLabel)};
       const j = await ai(body);
       pkg.copy[pkg.design] = {copy: j.copy, companion: j.companion, writtenAt: new Date().toISOString(), cost: j.cost};
+      if(j.master) pkg.master = j.master;   // the master copy set: any other design fits from it (no rewrite)
       pkg.stage = 'final'; save(true);
       clearInterval(timer); $('#writeFill').style.width = '100%';
       openFinal(piecesOf(pkg)[0]);
@@ -1191,7 +1195,59 @@
     $('#finalPiece').innerHTML = ps.map(id => `<option value="${id}"${id === finalPiece ? ' selected' : ''}>${pieceLabel(id)}${pkg.approvals[id] ? ' (approved)' : ''}</option>`).join('');
     $('#finalTitle').textContent = `Proof: ${pkg.listing.address}`;
     $('#backToRough').hidden = !!pkg.paid;
-    ohFields(); approveBox(); await drawFinal();
+    ohFields(); approveBox(); switchTiles(); await drawFinal();
+  }
+
+  // ---------- see it in another design (brief master-copy-design-switch-10-24) ----------
+  // The master copy set fits the new design in code; only a spot no saved version fits gets one small rewrite. Photo
+  // picks and the agent's text edits carry over; the floor plan keeps its redrawn linework (restyled by the design).
+  async function switchTiles(){
+    const box = $('#switchTiles'); if(!box) return;
+    const l = (await eligible()).filter(({d}) => d.id !== pkg.design);
+    $('#switchBox').hidden = !l.length || !!pkg.paid;
+    box.innerHTML = l.map(({d}) => `<button type="button" class="btn line" data-switch="${d.id}">${esc(d.name)}</button>`).join('');
+    $$('[data-switch]').forEach(b => b.onclick = () => switchDesign(b.dataset.switch));
+  }
+  const allStrings = o => typeof o === 'string' ? [o] : o && typeof o === 'object' ? Object.values(o).flatMap(allStrings) : [];
+  async function switchDesign(id){
+    const say = t => { $('#swProgress').textContent = t; }, name = (designs.find(d => d.id === id) || {}).name || 'that design';
+    $$('[data-switch]').forEach(b => b.disabled = true);
+    try {
+      const from = pkg.design;
+      if(!pkg.arrangements[id]) pkg.arrangements[id] = arrangement(pkg, from).slice();   // the agent's photo picks carry over
+      if(!pkg.copy[id]){
+        if(!pkg.master){ say(`This package was written before designs could switch, so ${name} needs its own writing. Use Back to the rough draft and Finalize again.`); return; }
+        say(`Fitting your copy to ${name}…`);
+        await PT.load();
+        const ex = await example(id), ids = arrangement(pkg, id).map(i => 'p' + i);
+        const r = MasterFit.fit(pkg.master, ex, {ids, roomOf: pid => (pkg.photos[+pid.slice(1)] || {}).room || '', heading: PT.heading,
+          base: {copy: draftCopy(ids), companion: draftCompanion(ids)}});
+        // the agent's edits: the same saved text in the new design takes their version (refit when it won't fit)
+        const exLen = path => String(path.split('.').reduce((o, k) => o == null ? o : o[k], {copy: ex.copy, companion: ex.companion}) || '').length;
+        const walk = (o, p) => typeof o === 'string' ? [[p, o]] : o && typeof o === 'object' ? Object.entries(o).flatMap(([k, v]) => walk(v, p ? `${p}.${k}` : k)) : [];
+        for(const e of pkg.textEdits || []) for(const [p, t] of walk({copy: r.copy, companion: r.companion}, '')) if(t === e.before){
+          if(e.after.length <= exLen(p) * 1.06) MasterFit.place(r, p, e.after);
+          else r.refits.push({path: p, budget: exLen(p), label: 'your edit', key: 'edit', versions: [e.after]});
+        }
+        let cost = 0, flagged = [];
+        if(r.refits.length){
+          say(`Rewriting ${r.refits.length} ${r.refits.length === 1 ? 'spot' : 'spots'} to fit ${name}, then checking every line…`);
+          for(let i = 0; i < r.refits.length; i += 40){   // the function takes up to 40 spots a call
+            const j = await ai({action: 'refit', packageId: pkg.id, slots: r.refits.slice(i, i + 40), facts: pkg.master.facts, listing: pkg.listing,
+              photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(pkg.copy[from])});
+            for(const [p, t] of Object.entries(j.texts || {})) MasterFit.place(r, p, t);
+            cost += j.cost || 0; flagged = flagged.concat(j.flagged || []);
+          }
+        }
+        pkg.copy[id] = {copy: r.copy, companion: r.companion, writtenAt: new Date().toISOString(), fromMaster: true, refits: r.refits.length, cost, flagged};
+        store.event(pkg.id, 'design-switch', {from, to: id, refits: r.refits.length, flagged: flagged.length, cost});
+      }
+      pkg.design = id; save();
+      const fl = (pkg.copy[id].flagged || []).length;
+      say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`);
+      await switchTiles(); await drawFinal();
+    } catch(e) { say("We couldn't switch just now. Your proof is unchanged; try again."); }
+    finally { $$('[data-switch]').forEach(b => b.disabled = false); }
   }
   $('#finalPiece').onchange = e => { finalPiece = e.target.value; ohFields(); approveBox(); drawFinal(); };
   async function drawFinal(){
@@ -1307,8 +1363,11 @@
   $('#popShorten').onclick = () => aiSpot('shorten', {});
   $('#popSave').onclick = () => {
     const v = $('#popText').value.trim();
+    const before = getPath(pkg.copy[pkg.design], edit.path);
     setPath(pkg.copy[pkg.design], edit.path, v);
     pkg.edits = (pkg.edits || 0) + 1;
+    // kept for a design switch: the same text in the new design takes the agent's version (refit if it won't fit)
+    pkg.textEdits = (pkg.textEdits || []).filter(x => x.after !== before).concat([{before: (pkg.textEdits || []).find(x => x.after === before)?.before || before, after: v}]);
     edit.orig = null; pop.hidden = true; edit = null;
     save(); drawFinal();
   };
