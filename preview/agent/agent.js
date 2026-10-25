@@ -783,8 +783,8 @@
     $('#galleryLede').textContent = pkg.order.kind === 'single' ? `Every design's ${pieceLabel(pkg.order.piece).toLowerCase()}, with your photos.`
       : pkg.order.kind === 'essentials' ? 'Each design as its matching set, without the fold-over, with your photos.' : 'Each design as its whole matching set, with your photos.';
     // personalized designs: any already in the account come first; for now the offer
-    $('#personal').innerHTML = `<div class="offer"><h3>Want your own design?</h3><p>We'll build a design from your brand or a piece you love, saved to your account for every listing.</p>
-      <p><a href="mailto:support@brochuredesk.com?subject=${encodeURIComponent('Personalized design')}">Email support@brochuredesk.com</a></p></div>`;
+    $('#personal').innerHTML = `<div class="offer"><h3>Want your own design?</h3><p>We'll build a full matching set around your brand and keep it in your account.</p>
+      <p><a href="/preview/own-design/?as=agent">See how it works</a></p></div>`;
     const list = await eligible();
     $('#sets').innerHTML = list.map(({d}) => `<div class="dset" data-design="${d.id}"><div class="row"><h3>${esc(d.name)}${d.test ? '<span class="badge">test</span>' : ''}</h3>
       <button class="btn" type="button" data-use="${d.id}">Use this design</button></div><div class="minis${ps.length === 1 ? ' one' : ''}"></div></div>`).join('')
