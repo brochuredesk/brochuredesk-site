@@ -935,7 +935,7 @@
     const ids = Object.keys(libData().photos);
     const draft = Object.fromEntries(Object.keys(exJL).map(k => [k, Array.isArray(exJL[k]) ? [] : typeof exJL[k] === 'string' ? '' : exJL[k]]));
     draft.captions = ids.map(photo => ({photo, text: ''}));
-    // the place line prints city and state only; the writer may still use the neighborhood in the copy (optional, the owner 10/26/2026)
+    // the place line prints city and state only; the writer may still use the neighborhood in the copy (optional, owner 10/26/2026)
     const details = Object.fromEntries(Object.entries(pkg.listing.details || {}).map(([sec, f]) =>
       [sec, Object.fromEntries(Object.entries(f).filter(([k]) => !/legal/i.test(k)))]));
     const listing = Object.assign({}, pkg.listing, {details});
@@ -1316,7 +1316,7 @@
     } catch(e) { say("We couldn't switch just now. Your proof is unchanged; try again."); }
     finally { $$('[data-switch]').forEach(b => b.disabled = false); }
   }
-  // fill pass (the owner 10/26): every text box on the proof is filled to its last line, the last line at least 3/4 full.
+  // fill pass (owner 10/26): every text box on the proof is filled to its last line, the last line at least 3/4 full.
   // After the proof lays out, each box that stops short is measured (characters per line in its own font and width)
   // and goes back once for a rewrite with real detail from its photo and the listing; then the proof redraws.
   // how a text sits in its box on the proof: lines used, how full the last line is, and whether it runs over
@@ -1387,7 +1387,7 @@
     }
     save(); await drawFinal();
   }
-  // outside cross-check (Pangram AI-writing detector, the owner 10/26): the finished piece is read as a whole; any line inside a
+  // outside cross-check (Pangram AI-writing detector, owner 10/26): the finished piece is read as a whole; any line inside a
   // stretch it marks as AI-written goes back once for a rewrite at the same length. Skipped when the key isn't set.
   async function aiCheckPass(){
     const w = pkg.copy[pkg.design]; if(!w || w.aiCheck) return;

@@ -8,8 +8,9 @@
    Renderer (renderer/render.py): the page reads #brochure-data (with data.piece and data.mode) and draws itself.
    Site preview:   JLLib.mount(container, designHtmlText, data, {side:'back'}) returns a promise with the checks. */
 (function(){
-  const W0 = 864, H = 576, BLEED_PX = 12;            // 6 x 9 card: 9 x 6 in at 96 px/in; 0.125 in bleed
-  const ZONES = {postage:[736,16,112,131], address:[540,250,320,150], barcode:[408,516,456,60]};   // mail zones on the back
+  const W0 = 864, H = 576, BLEED_PX = 12;            // 6 x 9 card: 9 x 6 in at 96 px/in; 0.125 in bleed. 6 x 11 is 1056 px wide.
+  const WIDE = 1056;
+  const zones = dx => ({postage:[736+dx,16,112,131], address:[540+dx,250,320,150], barcode:[408+dx,516,456,60]});   // mail zones on the back
   const NUM = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
   const SUFFIX = /^(street|st|avenue|ave|drive|dr|lane|ln|road|rd|boulevard|blvd|court|ct|way|place|pl|circle|cir|trail|trl|parkway|pkwy|terrace|ter|loop|row|square|sq)\.?$/i;
   const STATES = {alabama:'AL',alaska:'AK',arizona:'AZ',arkansas:'AR',california:'CA',colorado:'CO',connecticut:'CT',delaware:'DE',florida:'FL',georgia:'GA',
@@ -89,6 +90,10 @@
     return {map, notes};
   }
   const rolesIn = tpls => { const out = []; tpls.forEach(t => t && (t.innerHTML.match(/\{\{photo:(\w+)\}\}/g) || []).forEach(m => { const r = m.slice(8, -2); if(out.indexOf(r) < 0) out.push(r); })); return out; };
+  function photoPicker(D, assigned){
+    const P = D.photos || {};
+    return {notes:assigned.notes, pick(role){ const id = assigned.map[role]; return id ? {id, src:P[id].src} : {id:null, src:''}; }};
+  }
   function logoFor(B, kind){
     if(kind === 'white') return B.logoKnockout || B.logoOnDark || B.logo || '';
     if(kind === 'goldondark') return B.logoOnDark || B.logoKnockout || B.logo || '';
@@ -170,7 +175,7 @@
   // ---------------------------------------------------------------- copy fitting and the layout rules
   function layout(card, D, front, did){
     const issues = [], notes = [];
-    const W = card.offsetWidth || W0;
+    const W = card.offsetWidth || W0, dx = W - W0;
     const scale = card.getBoundingClientRect().width / W || 1;
     const C0 = () => card.getBoundingClientRect();
     const R = el => { const c = C0(), r = el.getBoundingClientRect();
@@ -190,6 +195,10 @@
       outer: for(const d of (el.dataset.cap ? [0,-0.5,0.5,-1] : [0,-0.25,0.25,-0.5,0.5])){ el.style.fontSize = (fs0 + d) + 'px';
         for(const a of A){ el.textContent = a; const s = stat(el); if(s.n !== n) continue;
           if(!best || s.last > best.last) best = {a, d, last:s.last}; if(s.last >= min) break outer; } }
+      // a wider card (6 x 11) can run out of sentences: set the type up to 1 px larger, then plan a line or two fewer
+      if(!best && dx > 0) fallback: for(const n2 of [n, n - 1, n - 2]) for(const d of [0.75, 1, 0, 0.5]){ el.style.fontSize = (fs0 + d) + 'px';
+        for(const a of A){ el.textContent = a; const s = stat(el); if(s.n !== n2) continue;
+          if(!best || s.last > best.last) best = {a, d, last:s.last}; if(s.last >= min) break fallback; } }
       if(best){ el.style.fontSize = (fs0 + best.d) + 'px'; el.textContent = best.a; }
       else { el.style.fontSize = fs0 + 'px'; el.textContent = A[A.length - 1] || ''; issues.push({kind:'copy-fit', slot:el.dataset.cap ? 'copy.captions.' + el.dataset.cap : 'copy.pool', lines:n}); }
       if(best && best.last < min) notes.push({kind:'copy-short-last-line', slot:'copy.pool', last:+best.last.toFixed(2)});
@@ -253,6 +262,26 @@
         const lab = nm && nm.firstElementChild, hsEl = ng.find(isHs);
         if(lab && hsEl){ hsEl.style.alignSelf = 'flex-start'; hsEl.style.top = '0px'; const nat = R(hsEl).top; hsEl.style.top = (R(lab).top - nat) + 'px'; } }
     });
+    // Rule (10/25, M02, from the markup page): the divider and contact column sit closer to a short agent name: they move
+    // left by half the spare room between the end of the name and the divider. Long names leave no spare room.
+    card.querySelectorAll('.agent').forEach(a => { const cc = a.querySelector('#cc'), nm = a.querySelector('[data-nm]');
+      const dv = [...a.querySelectorAll('[data-mv="n"]')].find(e => !e.dataset.nm && !isHs(e) && !e.querySelector('svg'));
+      if(!cc || !nm || !dv || !cc.dataset.mv) return;
+      let right = -1e9; nm.querySelectorAll('div').forEach(d => { const g = document.createRange(); g.selectNodeContents(d); for(const q of g.getClientRects()) right = Math.max(right, RR(q).right); });
+      const gap = parseFloat(getComputedStyle(a).columnGap || getComputedStyle(a).gap) || 16, spare = R(dv).left - right - gap;
+      if(spare > 2){ const sh = Math.round(spare / 2); [dv, cc].forEach(e => { e.style.left = (parseFloat(e.style.left || 0) - sh) + 'px'; }); } });
+    // Disclaimer (approved 10/25): always the same two lines. Under the agent it steps down to fit its width; on the mail
+    // side it sits bottom-right, 4 px above the barcode strip, at the largest size (10.5 px down to 8 px = 6 pt) that fits
+    // between everything to its left and the right margin.
+    card.querySelectorAll('[data-k="disc"]:not([data-br])').forEach(q => { let fs = parseFloat(getComputedStyle(q).fontSize);
+      while(q.scrollWidth > q.clientWidth + 0.5 && fs > 8){ fs -= 0.25; q.style.fontSize = fs + 'px'; } });
+    card.querySelectorAll('[data-k="disc"][data-br]').forEach(q => {
+      const obs = [...card.querySelectorAll('img, *')].filter(e => e !== q && !e.closest('[data-z]') && !e.closest('[data-br]') && (e.tagName === 'IMG' || (e.children.length === 0 && e.textContent.trim())));
+      const fits = fs => { q.style.fontSize = fs + 'px'; const top = 512 - 2 * fs * 1.25 - 4; let left = 408 + dx;
+        obs.forEach(e => { const r = R(e); if(r.width < 2 || r.bottom < top || r.top > 514 || r.right > 780 + dx) return; left = Math.max(left, r.right + 20); });
+        return R(q).width <= W - 24 - left; };
+      let fs = 10.5; while(!fits(fs) && fs > 8) fs -= 0.25;
+      if(!fits(fs)) issues.push({kind:'disclaimer-does-not-fit', slot:'text'}); });
     card.querySelectorAll('[data-vrule]').forEach(r => { const a = card.querySelector('.agent'); if(!a) return; const nm = a.querySelector('[data-nm]'); let [t, b] = tight(nm);
       const hsEl = [...a.querySelectorAll('[data-mv="n"]')].find(isHs); if(hsEl){ const h = R(hsEl); t = Math.min(t, h.top); b = Math.max(b, h.bottom); }
       r.style.top = Math.round(t) + 'px'; r.style.height = Math.round(b - t) + 'px'; });
@@ -274,12 +303,20 @@
       const top = () => (dh - eh) * py / dh, need = hb.top - 0.025;
       if(top() > need + 0.0005){ py = Math.max(0, need * dh / Math.max(1, dh - eh)); im.style.objectPosition = (px * 100) + '% ' + (py * 100) + '%';
         if(top() > need + 0.0005) issues.push({kind:'roof-cut', slot:'photo.' + im.dataset.role}); else notes.push({kind:'roof-crop-fixed', slot:'photo.' + im.dataset.role}); }
+      // 6 x 11 (rule, 10/24): never cut off the top or the bottom of the house. The whole house has to fit the frame's height.
+      // (a little sky and ground around it when there's room; the house itself is the limit)
+      if(dx > 0){ const fv = eh / dh, room = fv - (hb.bottom - hb.top);
+        if(room < -0.002) issues.push({kind:'house-cut', slot:'photo.' + im.dataset.role, fits:+(fv / (hb.bottom - hb.top)).toFixed(2)});
+        else if(top() + fv < hb.bottom + Math.min(0.01, room / 3) - 0.0005){
+          const want = Math.max(0, Math.min(hb.top - Math.min(0.025, room * 2 / 3), 1 - fv));
+          py = Math.min(1, Math.max(0, want * dh / Math.max(1, dh - eh))); im.style.objectPosition = (px * 100) + '% ' + (py * 100) + '%';
+          notes.push({kind:'house-bottom-crop-fixed', slot:'photo.' + im.dataset.role}); } }
       const left = (dw - ew) * px / dw, right = left + ew / dw;
       if(hb.left < left - 0.01 || hb.right > right + 0.01) notes.push({kind:'house-sides-cropped', slot:'photo.' + im.dataset.role});
     });
 
     // ---- print checks
-    const Z = front ? {} : ZONES;
+    const Z = front ? {} : zones(dx);
     const hit = (r, z) => r.left < z[0] + z[2] && r.right > z[0] && r.top < z[1] + z[3] && r.bottom > z[1];
     const w = document.createTreeWalker(card, NodeFilter.SHOW_TEXT); let nd;
     while((nd = w.nextNode())){ if(!nd.textContent.trim()) continue; const p = nd.parentElement; if(p.closest('[data-z]')) continue;
@@ -305,7 +342,7 @@
     card.querySelectorAll('*').forEach(el => { if(el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).whiteSpace === 'nowrap' && el.clientWidth > 0)
       issues.push({kind:'overflow', slot:el.closest('[data-nf],[data-nm],[data-cl],[data-clb],[data-fitname]') ? 'agent.name' : 'text', text:el.textContent.trim().slice(0,30)}); });
     // Rule (Review Book 9): nothing sits under the address block (a band may touch its edge, or run full width behind it)
-    if(!front){ const A = {l:540, t:250, r:852, b:400};
+    if(!front){ const A = {l:540 + dx, t:250, r:852 + dx, b:400};
       card.querySelectorAll('*').forEach(el => { if(el.closest('[data-z]')) return; const cs = getComputedStyle(el);
         const vis = el.tagName === 'IMG' || (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'rgb(255, 255, 255)') || cs.backgroundImage !== 'none';
         if(!vis) return; const r = R(el); if(r.width < 2 || r.height < 2) return;
@@ -329,6 +366,175 @@
     return {issues, notes};
   }
 
+  // 6 x 11: the same design on the wider card. Fronts stretch evenly. On backs the mail side (postage, address block,
+  // barcode strip and anything above the address block) keeps its size and moves right; the design side grows from
+  // 528 to 720 px, so photos get wider and the seller pitch picks more sentences to fill its planned lines.
+  function widen(card, front){
+    const dx = WIDE - W0, kF = WIDE / W0, kL = (528 + dx) / 528;
+    const at = el => { const c = card.getBoundingClientRect(), r = el.getBoundingClientRect();
+      return {l:r.left - c.left, r:r.right - c.left, t:r.top - c.top, b:r.bottom - c.top}; };
+    const orig = new Map(front ? [] : [...card.children].filter(e => e.tagName === 'IMG').map(e => [e, at(e)]));
+    card.style.width = WIDE + 'px';
+    [...card.children].forEach(el => {
+      if(el.tagName === 'SCRIPT' || getComputedStyle(el).position !== 'absolute') return;
+      const cr = card.getBoundingClientRect(), er = el.getBoundingClientRect();   // (SVG has no offsetLeft)
+      const l = er.left - cr.left, w = er.width, t = er.top - cr.top, r = l + w, s = el.style;
+      if(s.right && s.right !== 'auto' && !s.left) return;   // pinned to the right edge: it stays there
+      let nl, nr;
+      if(front){ nl = l * kF; nr = r * kF;
+        // contact lines fit a set width (data-maxw): the block moves with the card but keeps its width
+        if(el.matches('[data-cl],[data-clb]') || el.querySelector('[data-cl],[data-clb]')){ if(l + w / 2 > W0 / 2) nl = nr - w; else nr = nl + w; } }
+      else if(el.hasAttribute('data-z') || l >= 528){ nl = l + dx; nr = r + dx; }
+      else if(r <= 532){ nl = l * kL; nr = (t >= 500 && Math.abs(r - 408) < 1) ? 408 + dx : Math.min(r * kL, r > 520 ? 528 + dx - 8 : 1e9); }
+      else { nl = l * kL; nr = r + dx; }
+      if(s.width === 'max-content'){ s.left = nl + 'px'; s.right = 'auto'; return; }   // sizes itself to its text (fonts load later)
+      // circles and other round shapes keep their size; only their center moves (an empty box filled later is not round)
+      const br = getComputedStyle(el).borderTopLeftRadius;
+      if(el.offsetHeight > 2 && w > 2 && (br.indexOf('%') >= 0 ? parseFloat(br) >= 40 : parseFloat(br) >= Math.min(w, el.offsetHeight) / 2 - 1)){ const c = (nl + nr) / 2; nl = c - w / 2; nr = c + w / 2; }
+      s.left = nl + 'px'; s.width = (nr - nl) + 'px'; s.right = 'auto'; s.boxSizing = 'border-box';
+      if(el.tagName.toLowerCase() === 'svg'){   // drawn frames and waves follow the new width
+        const nw = nr - nl; el.setAttribute('width', nw);
+        if(el.getAttribute('viewBox')) el.setAttribute('preserveAspectRatio', 'none');
+        else el.querySelectorAll('rect').forEach(rc => { const x = +rc.getAttribute('x'), rw = +rc.getAttribute('width');
+          if(x < 60 && x + rw > w - 60) rc.setAttribute('width', rw + nw - w); });
+      }
+    });
+    evenRows(orig);
+  }
+
+  // A back photo row that runs up to the photo under the return address keeps one even gap on the wider card: the
+  // 6 x 9 gaps stay as drawn and the row's photos share the new width (owner 10/25: no wider gap before the mail side).
+  function evenRows(orig){
+    const imgs = [...orig.keys()], O = e => orig.get(e), px = v => parseFloat(v);
+    const ov = (a, b) => Math.min(a.b, b.b) - Math.max(a.t, b.t) > 20;
+    const side = imgs.filter(e => O(e).l < 528), mail = imgs.filter(e => O(e).l >= 528);
+    const grp = new Map(side.map(e => [e, [e]]));
+    side.forEach(a => side.forEach(b => {                    // neighbors in a row, or stacked in one column
+      const A = O(a), B = O(b), g = B.l - A.r;
+      if(a === b || grp.get(a) === grp.get(b)) return;
+      if((ov(A, B) && g > -1 && g < 40) || (Math.abs(A.l - B.l) < 1 && Math.abs(A.r - B.r) < 1)){
+        const m = grp.get(a).concat(grp.get(b)); m.forEach(e => grp.set(e, m)); }
+    }));
+    const rows = [...new Set(grp.values())].map(row => {
+      const spans = [];
+      row.forEach(e => { const o = O(e); if(!spans.some(s => Math.abs(s.l - o.l) < 1)) spans.push({l:o.l, r:o.r}); });
+      spans.sort((a, b) => a.l - b.l);
+      return {row, spans, inner:spans.slice(1).map((s, i) => s.l - spans[i].r)};
+    });
+    const lay = ({row, spans, inner}, x1) => {               // the 6 x 9 gaps stay; the photos share the room left
+      const x0 = px(row.find(e => Math.abs(O(e).l - spans[0].l) < 1).style.left);
+      const room = x1 - x0 - inner.reduce((a, b) => a + b, 0), drawn = spans.reduce((a, s) => a + s.r - s.l, 0);
+      let x = x0;
+      spans.forEach((s, i) => { const w = (s.r - s.l) * room / drawn;
+        row.filter(e => Math.abs(O(e).l - s.l) < 1).forEach(e => { e.style.left = x + 'px'; e.style.width = w + 'px'; });
+        x += w + (inner[i] || 0); });
+    };
+    const ends = [];                                         // drawn right edge -> new right edge
+    rows.forEach(R => {
+      const last = R.spans[R.spans.length - 1];
+      const m = mail.find(e => R.row.some(r => ov(O(r), O(e))) && O(e).l - last.r > -1 && O(e).l - last.r < 40);
+      if(!m) return;
+      const g = O(m).l - last.r;
+      if(g > 12 || R.inner.some(i => Math.abs(i - g) > 0.5)) return;   // only rows drawn with one thin even gap
+      lay(R, px(m.style.left) - g); ends.push([last.r, px(m.style.left) - g]); R.done = 1;
+    });
+    rows.forEach(R => {                                      // a row drawn flush with one of those rows stays flush
+      if(R.done || R.spans.length < 2) return;
+      const hit = ends.find(([r]) => Math.abs(r - R.spans[R.spans.length - 1].r) < 1);
+      if(hit) lay(R, hit[1]);
+    });
+  }
+
+
+  // Each design can change its 6 x 11 sides after widen(): move or resize parts, add photos, set type sizes.
+  // roles: extra photo spots the 6 x 11 side adds (they are picked after the design's own spots, so nothing repeats).
+  // h.q('photo:front') finds a photo by its spot; h.q('Just Sold') finds the smallest part whose text contains the words.
+  function helpers(card, pick, v, issues){
+    const kids = () => [...card.querySelectorAll('*')];
+    const h = {
+      q(m, all){ let r;
+        if(/^photo:/.test(m)) r = kids().filter(e => e.tagName === 'IMG' && e.dataset.role === m.slice(6));
+        else if(/^logo/.test(m)) r = kids().filter(e => e.tagName === 'IMG' && e.dataset.logo);
+        else if(m === 'hs') r = kids().filter(e => e.hasAttribute('data-hs'));
+        else if(m === 'fill') r = kids().filter(e => e.classList.contains('fill'));   // the seller pitch (its words go in later)
+        else { const lo = m.toLowerCase(); r = kids().filter(e => (e.textContent || '').toLowerCase().indexOf(lo) >= 0);
+          r = r.filter(e => !r.some(o => o !== e && e.contains(o))); }
+        return all ? r : r[0]; },
+      // top-level part that holds el (what widen() placed)
+      top(el){ while(el && el.parentElement !== card) el = el.parentElement; return el; },
+      box(el, l, t, w, hh){ if(!el) return el; const s = el.style; if(l != null) s.left = l + 'px'; if(t != null) s.top = t + 'px';
+        if(w != null) s.width = w + 'px'; if(hh != null) s.height = hh + 'px'; s.right = 'auto'; if(t != null) s.bottom = 'auto'; s.boxSizing = 'border-box'; return el; },
+      css(el, o){ if(el) Object.assign(el.style, o); return el; },
+      rect(el){ const c = card.getBoundingClientRect(), r = el.getBoundingClientRect(), k = c.width / card.offsetWidth;
+        return {l:(r.left-c.left)/k, t:(r.top-c.top)/k, w:r.width/k, h:r.height/k, r:(r.right-c.left)/k, b:(r.bottom-c.top)/k}; },
+      // a new photo spot, styled like another photo on the card (corners, border); placed right after that photo
+      photo(role, l, t, w, hh, like){
+        const im = document.createElement('img'), p = pick.pick(role); im.alt = ''; im.dataset.role = role;
+        if(like) im.style.cssText = like.style.cssText;
+        im.style.position = 'absolute'; im.style.objectFit = 'cover'; im.style.objectPosition = 'center';
+        if(p.id){ im.dataset.photo = p.id; im.src = p.src; } else { im.dataset.missing = '1'; issues.push({kind:'missing-photo', slot:'photo.' + role}); }
+        if(like && like.parentElement) like.after(im); else card.appendChild(im);
+        return h.box(im, l, t, w, hh); },
+      text(s){ return s.replace(TOK, (m, k) => k in v ? v[k] : ''); },
+      parts(){ return [...card.children].filter(e => e.tagName !== 'SCRIPT'); },
+      // copy that has to fill its lines: the fitter picks the version that fills them best (same as the seller pitch)
+      fill(el, alts, lines, min){ el.classList.add('fill'); el.dataset.alts = JSON.stringify(alts.map(h.text)); el.dataset.lines = lines; el.dataset.min = min || 0.85; return el; },
+      v,
+    };
+    return h;
+  }
+  // 6 x 11 rule (10/24, as on the Just Sold library): the whole house fits its frame's height. A wider frame can't show the
+  // whole house from a 3:2 photo, so the frame narrows to the width that does, keeping the side on the card edge (or the
+  // outer side), and a room photo fills the freed space at the row's gap. Frames that would leave under 90 px stay and
+  // are reported (house-cut). Runs after the photos load; returns the new photos so the page waits for them too.
+  function houseFit(card, D, pick, side){
+    const W = card.offsetWidth, P = D.photos || {}, added = [], c = card.getBoundingClientRect(), k = c.width / W;
+    const R = el => { const r = el.getBoundingClientRect(); return {l:(r.left - c.left) / k, r:(r.right - c.left) / k, t:(r.top - c.top) / k, b:(r.bottom - c.top) / k}; };
+    let n = 0;
+    [...card.querySelectorAll('img[data-photo]')].forEach(im => {
+      const hb = (P[im.dataset.photo] || {}).house; if(!hb || !im.naturalWidth || im.parentElement !== card) return;
+      if(getComputedStyle(im).borderRadius.indexOf('50%') >= 0) return;
+      const ew = im.clientWidth, eh = im.clientHeight, nw = im.naturalWidth, nh = im.naturalHeight, hh = hb.bottom - hb.top;
+      if(eh / nh >= ew / nw) return;                          // the frame's height already shows the whole photo height
+      if(eh * nw / (nh * ew) >= hh) return;                   // the house already fits
+      const w2 = Math.floor(eh * nw / (nh * Math.min(1, hh + 0.03))), w1 = Math.floor(eh * nw / (nh * Math.min(1, hh + 0.01)));
+      const a = R(im), others = [...card.querySelectorAll('img[data-photo]')].filter(o => o !== im).map(o => ({o, q:R(o)}))
+        .filter(({q}) => Math.min(a.b, q.b) - Math.max(a.t, q.t) > 20);
+      if(a.l >= 528 + W - W0 - 1){ im.style.width = w1 + 'px'; return; }   // under the return address: keeps the address block's left edge
+      const keepRight = a.r >= W - 1 || (a.l > 1 && a.l + ew / 2 > W / 2);
+      const gapOf = q => keepRight ? a.l - q.r : q.l - a.r;
+      const nb = others.filter(({q}) => gapOf(q) >= -1 && gapOf(q) < 40);
+      const g = nb.length ? Math.max(4, Math.min(...nb.map(({q}) => gapOf(q)))) : 8, free = ew - w2 - g;
+      const shrink = w => { im.style.width = w + 'px'; if(keepRight) im.style.left = (a.l + ew - w) + 'px'; };
+      if(free < 90){
+        // the photo beside it (and anything stacked with it) takes the space, so the row keeps its gap
+        const beside = nb.filter(({q}) => q.t >= a.t - 2 && q.b <= a.b + 2);
+        if(beside.length && beside.length === nb.length){ const d = ew - w1; shrink(w1);
+          beside.forEach(({o, q}) => { if(keepRight) o.style.width = (q.r - q.l + d) + 'px'; else { o.style.left = (q.l - d) + 'px'; o.style.width = (q.r - q.l + d) + 'px'; } }); }
+        else if(!nb.length && ew - w1 <= 24) shrink(w1);          // a few px narrower, nothing beside it
+        return; }
+      const xl = keepRight ? a.l : a.l + w2 + g;
+      shrink(w2);
+      const role = 'x' + side[0] + (++n), p = pick.pick(role);
+      const x = document.createElement('img'); x.alt = ''; x.style.cssText = im.style.cssText; x.dataset.role = role;
+      Object.assign(x.style, {left:xl + 'px', top:a.t + 'px', width:free + 'px', height:eh + 'px', objectPosition:'center'});
+      if(p.id){ x.dataset.photo = p.id; x.src = p.src; } else x.dataset.missing = '1';
+      im.after(x); added.push(x);
+    });
+    return added;
+  }
+
+  // 6 x 11 changes to single designs, made after widen() (same shape as the Just Sold library's WIDE11)
+  const WIDE11 = {
+    M19: {back:{run(h){    // the wide top photo 6 px taller so the whole house fits its height (the tab and the text below keep their places)
+      h.box(h.q('photo:family'), null, null, null, 218); }}},
+    M40: {front:{run(h){   // three photo columns, the middle one narrow enough to show the whole house; the 8 px black edge stays 8 px
+      const col = (roles, l, w) => roles.forEach(r => h.box(h.q('photo:' + r), l, null, w));
+      col(['living'], 8, 333); col(['front', 'lawn'], 349, 300); col(['kitchen', 'primary'], 657, 391);
+      h.parts().filter(e => { const r = h.rect(e); return r.w < 14 && r.h > 100 && r.t >= 400; })
+        .forEach(e => { const r = h.rect(e); h.box(e, r.l < 100 ? 0 : 1048, null, 8); }); }}},
+  };
+
   // Page scripts from the approved front drawings, run after the contact lines are set
   const HOOKS = {
     // M28: the address's capital letters center top to bottom in the space above the facts line
@@ -337,7 +543,7 @@
       const ft = ink(f).top + 3, ar = ink(a), capH = ar.height * 0.72, capTop = ar.top + (ar.height - capH) / 2, want = ft / 2 - capH / 2;
       const p = a.parentElement; p.style.top = (parseFloat(p.style.top) + want - capTop) + 'px'; }],
     // M49: the block's widest line ends on the 24 px right margin; the logo shares the block's left edge
-    M49: [(card, R) => { const k = card.querySelector('#blk'); if(k) k.style.left = (840 - R(k).width) + 'px'; }],
+    M49: [(card, R) => { const k = card.querySelector('#blk'); if(k) k.style.left = (card.offsetWidth - 24 - R(k).width) + 'px'; }],
   };
 
   // Print file: the review marks in the mail area don't print (the white areas stay), and the art runs 1/8 in past the trim.
@@ -435,9 +641,15 @@
     const did = ((doc.title || '').match(/M\d\d/i) || [''])[0].toUpperCase();
     // photos are assigned across the whole card (front first, then back) so a photo never shows up twice
     const roles = rolesIn([chooseTemplate(doc, 'front', hs, long), chooseTemplate(doc, 'back', hs, long)]);
+    const wide0 = (opts.size || '6x9') === '6x11';
+    if(wide0) roles.push('xf1', 'xf2', 'xb1', 'xb2');   // room photos houseFit() may add on the wider card (front, back)
+    ['front', 'back'].forEach(s => (((wide0 && WIDE11[did]) || {})[s] || {}).roles && WIDE11[did][s].roles.forEach(r => { if(roles.indexOf(r) < 0) roles.push(r); }));
     const assigned = assignPhotos(D, roles);
     const filled = fill(card, D, v, assigned);
     host.appendChild(card);
+    const wide = (opts.size || '6x9') === '6x11', fix = wide ? (WIDE11[did] || {}) : {};
+    if(wide){ widen(card, side === 'front');
+      if(fix[side] && fix[side].run) fix[side].run(helpers(card, photoPicker(D, assigned), v, filled), {hs, long}); }
     const fonts = fontsOf(doc);
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
     const imgs = [...card.querySelectorAll('img')].filter(i => i.getAttribute('src'));
@@ -445,7 +657,9 @@
     const faces = new Set();
     [card, ...card.querySelectorAll('*')].forEach(el => { const cs = getComputedStyle(el);
       faces.add(`${cs.fontStyle} ${cs.fontWeight} 16px ${cs.fontFamily}`); });
-    return Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })))
+    const loaded = list => Promise.all(list.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
+    return loaded(imgs)
+      .then(() => wide ? loaded(houseFit(card, D, photoPicker(D, assigned), side)) : 0)
       .then(() => Promise.all([...faces].map(f => document.fonts.load(f).catch(() => null))))
       .then(() => document.fonts.ready)
       .then(() => { const edited = applyEdits(card, side, D.textEdits || {}, fonts);
@@ -480,9 +694,11 @@
     const page = document.createElement('div'); page.className = 'page' + (print ? ' bleed' : ''); page.dataset.page = side;
     pages.appendChild(page);
     const bleedPt = print ? 9 : 0;
-    window.pieceSize = {W:648 + 2 * bleedPt, H:432 + 2 * bleedPt, bleed:bleedPt};
+    const wide = D.piece.size === '6x11';
+    if(wide) page.classList.add('wide');
+    window.pieceSize = {W:(wide ? 792 : 648) + 2 * bleedPt, H:432 + 2 * bleedPt, bleed:bleedPt};
     window.photoPlacements = () => [...page.querySelectorAll('img[data-photo]')].map(im => ({src:im.getAttribute('src'), w:im.clientWidth / 96, h:im.clientHeight / 96}));
-    window.brochureReady = draw(document, page, D, side, {print}).then(r => {
+    window.brochureReady = draw(document, page, D, side, {print, size:D.piece.size}).then(r => {
       if(print) page.style.background = getComputedStyle(r.card).backgroundColor;
       window.proofNotes = r.notes;
       document.body.dataset.version = (r.variant.headshot ? 'headshot' : 'no-headshot') + (r.variant.longName ? '-long-name' : '');

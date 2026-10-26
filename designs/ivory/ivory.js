@@ -285,7 +285,7 @@
       if(size < 8 && !el.dataset.fine) issues.push({slot:name, kind:'type-too-small', size:+size.toFixed(1)});
       if(size < 6) issues.push({slot:name, kind:'fine-print-below-6pt', size:+size.toFixed(1)});
       // fill target (10/21/2026): a text block with data-fill="n" needs at least n lines, and when it stops at
-      // exactly n the last line runs at least 75% of the width (the owner 10/26: every box filled, last line at least 3/4). Short copy comes back to the writer to be filled out.
+      // exactly n the last line runs at least 75% of the width (owner 10/26: every box filled, last line at least 3/4). Short copy comes back to the writer to be filled out.
       const need = +el.dataset.fill || 0;
       if(need && el.textContent.trim()){
         const rg = document.createRange(); rg.selectNodeContents(el);

@@ -11,7 +11,7 @@
      companion.justListed  writer copy for Just Listed (see copy-example.json)
      companion.justSold    agent inputs + writer copy for Just Sold (see copy-example.json)
    Rules kept from the handoff (docs/briefs/approved-designs-handoff/briefs, the two approved-to-code docs):
-     no price, QR, photo numbers or "virtually staged" (the neighborhood may appear in the copy, the owner 10/26/2026); whole house in every front-of-house photo;
+     no price, QR, photo numbers or "virtually staged" (the neighborhood may appear in the copy, owner 10/26/2026); whole house in every front-of-house photo;
      no photo twice on one mailer; brokerage logo on every postcard front (except JL-M02, JL-M08); write-up cut to fit
      from one master; long agent names shrink to the 18 pt floor, then compact rows, then a hyphen break.
    Every check runs in window.brochureCheck() (the renderer collects it into checks.json). */
@@ -97,7 +97,7 @@
     A.FACTS_UP = up(`${A.beds} Bedrooms &nbsp;&middot;&nbsp; ${fb} &nbsp;&middot;&nbsp; ${A.sqft} Sq Ft`).replace(/&NBSP;/g,'&nbsp;').replace(/&MIDDOT;/g,'&middot;');
     A.FACTS_DOT = `${A.beds} Bedrooms &nbsp;&middot;&nbsp; ${fb} &nbsp;&middot;&nbsp; ${A.sqft} Sq Ft`;
     A.FACTS_SHORT = `${A.beds} BEDS &nbsp;&middot;&nbsp; ${A.baths}${A.halfBaths ? '.5' : ''} BATHS &nbsp;&middot;&nbsp; ${A.sqft} SQ FT`;
-    A.hood = String(L.neighborhood || '');   // the writer may use it in the copy (optional, the owner 10/26/2026)
+    A.hood = String(L.neighborhood || '');   // the writer may use it in the copy (optional, owner 10/26/2026)
     // agent
     const name = String(ag.name || '').trim();
     A.name = esc(name);

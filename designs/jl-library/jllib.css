@@ -6,3 +6,5 @@ html, body { margin: 0; padding: 0; background: #fff; }
 .page.bleed { width: 888px; height: 600px; }
 .page.bleed > .jl-card { position: absolute !important; left: 12px; top: 12px; overflow: visible !important; }
 .jl-card { position: relative; }
+.page.wide { width: 1056px; }
+.page.wide.bleed { width: 1080px; }

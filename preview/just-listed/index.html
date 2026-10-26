@@ -39,8 +39,10 @@
   .note{color:var(--muted);font-size:13.5px;margin:0 0 14px}
   .sides{display:grid;grid-template-columns:1fr;gap:22px;max-width:1000px}
   .side h3{margin:0 0 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .frame.wide{aspect-ratio:11/6}
   .frame{position:relative;width:100%;aspect-ratio:3/2;background:#ddd;border-radius:4px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)}
   .frame .host{position:absolute;left:0;top:0;width:864px;height:576px;transform-origin:0 0}
+  .frame.wide .host{width:1056px}
   .draft{background:#fff4d6;border-left:4px solid #d39b12;padding:6px 10px;font-size:13.5px;margin:0 0 12px;display:none}
   .checks{margin:8px 0 0;font-size:13.5px}
   .checks.ok{color:var(--ok)}
@@ -71,6 +73,7 @@
     header,main,#busy{display:none!important}
     #print{display:block}
     #print .page{position:relative;width:888px;height:600px;overflow:hidden}
+    #print .page.wide{width:1080px}
     #print .page > .jl-card{position:absolute!important;left:12px;top:12px;overflow:visible!important}
   }
 </style>
@@ -78,14 +81,13 @@
 <body>
 <header>
   <h1>Just Listed postcards · test page</h1>
-  <p>All approved 6 x 9 designs. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
+  <p>Every approved 6 x 9 design, plus first drafts at 6 x 11. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
 </header>
 <main>
   <aside>
     <div class="grp"><h2>Designs</h2><div class="list" id="list-main"></div></div>
     <fieldset><legend>Card size</legend>
-      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button></div>
-      <p class="note" style="margin:6px 0 0">6 x 11 comes later.</p>
+      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11 (draft)</button></div>
     </fieldset>
     <fieldset><legend>Agent</legend>
       <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
@@ -115,6 +117,7 @@
   <section class="view">
     <div class="vtitle"><h2 id="t-name"></h2><span id="t-sub"></span></div>
     <p class="note" id="t-note"></p>
+    <p class="draft" id="t-draft">6 x 11 is a first draft made from the approved 6 x 9 layout. It isn't approved yet.</p>
     <p class="note">Click any text on a card to change its wording, font, color or size. The print checks run on your changes.</p>
     <div class="sides">
       <div class="side" data-side="front"><h3>Front</h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
@@ -185,7 +188,7 @@
   const edits = {}, spotInfo = {};   // the agent's text changes, per card version
   const editKey = () => cur.id;
   const myEdits = () => edits[editKey()] || (edits[editKey()] = {});
-  function scaleFrames(){ document.querySelectorAll('.frame').forEach(f => { const h = f.querySelector('.host'); h.style.transform = `scale(${f.clientWidth / 864})`; }); }
+  function scaleFrames(){ document.querySelectorAll('.frame').forEach(f => { const h = f.querySelector('.host'); h.style.transform = `scale(${f.clientWidth / (size() === '6x11' ? 1056 : 864)})`; }); }
   window.addEventListener('resize', scaleFrames);
   function showChecks(box, r){
     const long = r.issues.some(c => c.kind === 'name-too-long');
@@ -200,10 +203,12 @@
     const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
     d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
     $('t-hs').textContent = d.agent.headshot ? '· with headshot' : '· no headshot';
+    $('t-draft').style.display = size() === '6x11' ? 'block' : 'none';
     getDesign(cur.file).then(t => Promise.all(['front','back'].map(side => {
       const el = document.querySelector(`.side[data-side="${side}"]`), host = el.querySelector('.host');
+      el.querySelector('.frame').classList.toggle('wide', size() === '6x11');
       host.style.transform = 'none';
-      return JLLib.mount(host, t, d, {side}).then(r => { if(my !== seq) return; spotInfo[side] = r; showChecks(el.querySelector('.checks'), r); });
+      return JLLib.mount(host, t, d, {side, size:size()}).then(r => { if(my !== seq) return; spotInfo[side] = r; showChecks(el.querySelector('.checks'), r); });
     }))).then(() => { if(my === seq){ scaleFrames(); $('busy').style.display = 'none'; } })
       .catch(e => { $('busy').textContent = 'Something went wrong: ' + e.message; });
   }
@@ -219,11 +224,11 @@
     $('busy').style.display = 'block'; $('busy').textContent = 'Getting the print file ready…';
     readForm(); const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
     d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
-    const box = $('print'); box.innerHTML = '<div class="page"></div>';
+    const wide = size() === '6x11', box = $('print'); box.innerHTML = '<div class="page' + (wide ? ' wide' : '') + '"></div>';
     let ps = document.getElementById('pagesize'); if(!ps){ ps = document.createElement('style'); ps.id = 'pagesize'; document.head.appendChild(ps); }
-    ps.textContent = '@media print{@page{size:9.25in 6.25in;margin:0}}';
+    ps.textContent = `@media print{@page{size:${wide ? '11.25in' : '9.25in'} 6.25in;margin:0}}`;
     box.style.display = 'block'; box.style.position = 'absolute'; box.style.left = '-10000px';
-    JLLib.mount(box.firstChild, html[cur.file], d, {side, print:true}).then(r => {
+    JLLib.mount(box.firstChild, html[cur.file], d, {side, print:true, size:size()}).then(r => {
       box.firstChild.style.background = getComputedStyle(r.card).backgroundColor;
       box.style.cssText = ''; $('busy').style.display = 'none'; $('busy').textContent = 'Drawing the cards…';
       document.title = `${cur.id} ${side} - ${d.listing.address}`;
@@ -263,6 +268,8 @@
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
   let t; document.querySelectorAll('aside input, aside textarea').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
   Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
+    const ok = id => s.pieces.filter(p => p.design === id && p.size === '6x9').every(p => p.approved);
+    if(!/[?&]all=1/.test(location.search)) s.designs = s.designs.filter(d => ok(d.id));
     spec = s; sample = fix(smp); data = JSON.parse(JSON.stringify(sample)); fillForm();
     for(const d of spec.designs){ const b = document.createElement('button'); b.type = 'button'; b.dataset.id = d.id; b.textContent = d.id.replace('M','');
       b.title = d.id + (d.title ? ' · ' + d.title : ''); b.onclick = () => pick(d.id);

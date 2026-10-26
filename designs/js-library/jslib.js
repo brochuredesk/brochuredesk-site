@@ -202,7 +202,7 @@
     // Roofline (rule, 10/24): never cut off the top of the house. Exterior photos with a known house box get recropped.
     card.querySelectorAll('img[data-photo]').forEach(im => {
       const P = (D.photos || {})[im.dataset.photo] || {}, hb = P.house; if(!hb || !im.naturalWidth) return;
-      if(getComputedStyle(im).borderRadius.indexOf('50%') >= 0) return;
+      if(getComputedStyle(im).borderRadius.indexOf('50%') >= 0){ roundFit(card, im, hb, issues, notes); return; }
       const ew = im.clientWidth, eh = im.clientHeight, s = Math.max(ew / im.naturalWidth, eh / im.naturalHeight);
       const dw = im.naturalWidth * s, dh = im.naturalHeight * s;
       const pos = getComputedStyle(im).objectPosition.split(' ');
@@ -249,14 +249,16 @@
         if(r.left < 12 || inkTop < 12 || r.right > W - 12 || inkBot > H - 12) issues.push({kind:'text-outside-safe-area', slot:'text', text:nd.textContent.trim().slice(0,30)});
         else if(r.left < 23 || inkTop < 14 || r.right > W - 23 || inkBot > 553) notes.push({kind:'text-near-trim', slot:'text', text:nd.textContent.trim().slice(0,30)});
       } }
-    card.querySelectorAll('img, [data-blk]').forEach(el => { if(el.closest('[data-z]')) return; const r = R(el);
+    // the blurred fill behind a round photo is clipped by its circle: measure the circle, not the oversized fill
+    const RC = el => R(el.dataset.backdrop ? el.parentElement : el);
+    card.querySelectorAll('img, [data-blk]').forEach(el => { if(el.closest('[data-z]')) return; const r = RC(el);
       for(const k in Z) if(hit(r, Z[k])) issues.push({kind:'image-in-mail-zone', slot:k}); });
     card.querySelectorAll('*').forEach(el => { if(el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).whiteSpace === 'nowrap' && el.clientWidth > 0)
       issues.push({kind:'overflow', slot:el.closest('[data-nf],[data-k="ret"]') ? 'agent.name' : 'text', text:el.textContent.trim().slice(0,30)}); });
     if(!front){ const A = {l:532 + dx, t:242, r:W, b:H};
       card.querySelectorAll('*').forEach(el => { if(el.closest('[data-z]')) return; const cs = getComputedStyle(el);
         const vis = el.tagName === 'IMG' || (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'rgb(255, 255, 255)') || cs.backgroundImage !== 'none';
-        if(!vis) return; const r = R(el); if(r.width < 2 || r.height < 2) return;
+        if(!vis) return; const r = RC(el); if(r.width < 2 || r.height < 2) return;
         if(r.left <= A.l && r.right >= A.r && r.top <= A.t && r.bottom >= Math.min(A.b, 408)) return;   // full-width bands behind the block
         if(r.left < A.r && r.right > A.l && r.top < Math.min(A.b, 408) && r.bottom > A.t) issues.push({kind:'touches-address-block', slot:(el.dataset.role || el.tagName.toLowerCase())}); }); }
     { const ims = [...card.querySelectorAll('img')].filter(i => !i.closest('[data-z]') && i.offsetWidth > 40 && !i.dataset.logo && !i.dataset.headshot).map(R);
@@ -296,11 +298,56 @@
     });
   }
 
+  // Round photo (JS-M04 option A, owner 10/25): the default crop zooms out until the whole house sits inside the circle
+  // and inside the card (at most 5% of the house box may fall outside, its empty corners); the circle's edges past the
+  // photo are filled with a soft, blurred copy of the same photo stretched to the circle's height. The house is centered in the visible part of the circle.
+  function roundFit(card, im, hb, issues, notes){
+    const cs = getComputedStyle(im), bw = parseFloat(cs.borderTopWidth) || 0, D0 = im.clientWidth;
+    if(!D0 || Math.abs(im.clientHeight - D0) > 1) return;
+    const c = card.getBoundingClientRect(), r = im.getBoundingClientRect(), k = c.width / card.offsetWidth;
+    const ox0 = (r.left - c.left) / k + bw, oy0 = (r.top - c.top) / k + bw, R0 = D0 / 2, W = card.offsetWidth, H = card.offsetHeight;
+    const nw = im.naturalWidth, nh = im.naturalHeight, cover = Math.max(D0 / nw, D0 / nh), contain = Math.min(D0 / nw, D0 / nh);
+    // the part of the circle that shows on the card: aim the house at its middle
+    const vx0 = Math.max(0, -ox0), vx1 = Math.min(D0, W - ox0), vy0 = Math.max(0, -oy0), vy1 = Math.min(D0, H - oy0);
+    const aimX = (vx0 + vx1) / 2, aimY = (vy0 + vy1) / 2;
+    const place = s => { const dw = nw * s, dh = nh * s, hx = (hb.left + hb.right) / 2 * dw, hy = (hb.top + hb.bottom) / 2 * dh;
+      const cl = (v, room) => room >= 0 ? Math.min(0, Math.max(-room, v)) : -room / 2;   // keep the photo over the frame when it can
+      return {dw, dh, x:cl(aimX - hx, dw - D0), y:cl(aimY - hy, dh - D0)}; };
+    const out = p => { let n = 0, tot = 0;
+      for(let i = 0; i <= 14; i++) for(let j = 0; j <= 14; j++){ tot++;
+        const fx = hb.left + .03 + (hb.right - hb.left - .06) * i / 14, fy = hb.top + .03 + (hb.bottom - hb.top - .06) * j / 14;
+        const x = p.x + fx * p.dw, y = p.y + fy * p.dh;
+        if(Math.hypot(x - R0, y - R0) > R0 || ox0 + x < 0 || ox0 + x > W || oy0 + y < 0 || oy0 + y > H) n++; }
+      return n / tot; };
+    let s = cover, p = place(s);
+    while(out(p) > 0.05 && s > contain * 0.6){ s *= 0.985; p = place(s); }
+    const cut = out(p);
+    if(cut > 0.05) issues.push({kind:'house-cut', slot:'photo.' + im.dataset.role, pct:Math.round(cut * 100)});
+    if(s >= cover){ return; }
+    // a frame that keeps the circle's place, border and size; the photo sits inside it at the new size
+    const f = document.createElement('div');
+    f.style.cssText = `position:absolute;left:${im.style.left};top:${im.style.top};width:${im.offsetWidth}px;height:${im.offsetHeight}px;` +
+      `border-radius:50%;overflow:hidden;box-sizing:border-box;border:${cs.borderTopWidth} solid ${cs.borderTopColor};background:${getComputedStyle(card).backgroundColor}`;
+    const bg = document.createElement('img'); bg.src = im.currentSrc || im.src; bg.alt = ''; bg.dataset.backdrop = '1';
+    // the same photo stretched to the frame's height behind it: sky carries on above the photo and the yard below it
+    bg.style.cssText = `position:absolute;left:${Math.min(p.x, 0) - 20}px;top:-20px;width:${Math.max(p.dw, D0) + 40}px;height:${D0 + 40}px;object-fit:fill;filter:blur(24px) saturate(1.1)`;
+    im.parentElement.insertBefore(f, im); f.appendChild(bg); f.appendChild(im);
+    im.style.cssText += `;left:${p.x}px;top:${p.y}px;width:${p.dw}px;height:${p.dh}px;border:0;border-radius:0;object-fit:fill;object-position:0 0`;
+    // the photo's own edges inside the circle fade into the fill behind them (12 px), so there is no hard line
+    const fade = (dir, on) => on ? `linear-gradient(${dir}, transparent 0, #000 12px, #000 calc(100% - 12px), transparent 100%)` : 'linear-gradient(#000, #000)';
+    im.style.webkitMaskImage = im.style.maskImage = `${fade('to bottom', p.dh < D0)}, ${fade('to right', p.dw < D0)}`;
+    im.style.webkitMaskComposite = 'source-in'; im.style.maskComposite = 'intersect';
+    notes.push({kind:'round-crop-zoomed-out', slot:'photo.' + im.dataset.role, zoom:+(s / cover).toFixed(2), outside:Math.round(cut * 100)});
+  }
+
   // 6 x 11: the same design on the wider card. Fronts stretch evenly. On backs the mail side (postage, address block,
   // barcode strip and anything above the address block) keeps its size and moves right; the design side grows from
   // 528 to 720 px, so photos get wider and the seller pitch picks more sentences to fill its planned lines.
   function widen(card, front){
     const dx = WIDE - W0, kF = WIDE / W0, kL = (528 + dx) / 528;
+    const at = el => { const c = card.getBoundingClientRect(), r = el.getBoundingClientRect();
+      return {l:r.left - c.left, r:r.right - c.left, t:r.top - c.top, b:r.bottom - c.top}; };
+    const orig = new Map(front ? [] : [...card.children].filter(e => e.tagName === 'IMG').map(e => [e, at(e)]));
     card.style.width = WIDE + 'px';
     [...card.children].forEach(el => {
       if(el.tagName === 'SCRIPT' || getComputedStyle(el).position !== 'absolute') return;
@@ -323,7 +370,52 @@
           if(x < 60 && x + rw > w - 60) rc.setAttribute('width', rw + nw - w); });
       }
     });
+    evenRows(orig);
   }
+
+  // A back photo row that runs up to the photo under the return address keeps one even gap on the wider card: the
+  // 6 x 9 gaps stay as drawn and the row's photos share the new width (owner 10/25: no wider gap before the mail side).
+  function evenRows(orig){
+    const imgs = [...orig.keys()], O = e => orig.get(e), px = v => parseFloat(v);
+    const ov = (a, b) => Math.min(a.b, b.b) - Math.max(a.t, b.t) > 20;
+    const side = imgs.filter(e => O(e).l < 528), mail = imgs.filter(e => O(e).l >= 528);
+    const grp = new Map(side.map(e => [e, [e]]));
+    side.forEach(a => side.forEach(b => {                    // neighbors in a row, or stacked in one column
+      const A = O(a), B = O(b), g = B.l - A.r;
+      if(a === b || grp.get(a) === grp.get(b)) return;
+      if((ov(A, B) && g > -1 && g < 40) || (Math.abs(A.l - B.l) < 1 && Math.abs(A.r - B.r) < 1)){
+        const m = grp.get(a).concat(grp.get(b)); m.forEach(e => grp.set(e, m)); }
+    }));
+    const rows = [...new Set(grp.values())].map(row => {
+      const spans = [];
+      row.forEach(e => { const o = O(e); if(!spans.some(s => Math.abs(s.l - o.l) < 1)) spans.push({l:o.l, r:o.r}); });
+      spans.sort((a, b) => a.l - b.l);
+      return {row, spans, inner:spans.slice(1).map((s, i) => s.l - spans[i].r)};
+    });
+    const lay = ({row, spans, inner}, x1) => {               // the 6 x 9 gaps stay; the photos share the room left
+      const x0 = px(row.find(e => Math.abs(O(e).l - spans[0].l) < 1).style.left);
+      const room = x1 - x0 - inner.reduce((a, b) => a + b, 0), drawn = spans.reduce((a, s) => a + s.r - s.l, 0);
+      let x = x0;
+      spans.forEach((s, i) => { const w = (s.r - s.l) * room / drawn;
+        row.filter(e => Math.abs(O(e).l - s.l) < 1).forEach(e => { e.style.left = x + 'px'; e.style.width = w + 'px'; });
+        x += w + (inner[i] || 0); });
+    };
+    const ends = [];                                         // drawn right edge -> new right edge
+    rows.forEach(R => {
+      const last = R.spans[R.spans.length - 1];
+      const m = mail.find(e => R.row.some(r => ov(O(r), O(e))) && O(e).l - last.r > -1 && O(e).l - last.r < 40);
+      if(!m) return;
+      const g = O(m).l - last.r;
+      if(g > 12 || R.inner.some(i => Math.abs(i - g) > 0.5)) return;   // only rows drawn with one thin even gap
+      lay(R, px(m.style.left) - g); ends.push([last.r, px(m.style.left) - g]); R.done = 1;
+    });
+    rows.forEach(R => {                                      // a row drawn flush with one of those rows stays flush
+      if(R.done || R.spans.length < 2) return;
+      const hit = ends.find(([r]) => Math.abs(r - R.spans[R.spans.length - 1].r) < 1);
+      if(hit) lay(R, hit[1]);
+    });
+  }
+
 
   // ---------------------------------------------------------------- 6 x 11 changes from the review (10/24/2026)
   // Each design can change its 6 x 11 sides after widen(): move or resize parts, add photos, set type sizes.
