@@ -285,14 +285,14 @@
       if(size < 8 && !el.dataset.fine) issues.push({slot:name, kind:'type-too-small', size:+size.toFixed(1)});
       if(size < 6) issues.push({slot:name, kind:'fine-print-below-6pt', size:+size.toFixed(1)});
       // fill target (10/21/2026): a text block with data-fill="n" needs at least n lines, and when it stops at
-      // exactly n the last line runs at least 60% of the width. Short copy comes back to the writer to be filled out.
+      // exactly n the last line runs at least 75% of the width (the owner 10/26: every box filled, last line at least 3/4). Short copy comes back to the writer to be filled out.
       const need = +el.dataset.fill || 0;
       if(need && el.textContent.trim()){
         const rg = document.createRange(); rg.selectNodeContents(el);
         const rows = []; [...rg.getClientRects()].forEach(r=>{ const row = rows.find(x=>Math.abs(x.top - r.top) < 2); if(row) row.right = Math.max(row.right, r.right); else rows.push({top:r.top, left:r.left, right:r.right}); });
         const box = el.getBoundingClientRect(), last = rows[rows.length-1];
         const lastFill = last ? (last.right - box.left) / box.width : 0;
-        if(rows.length < need || (rows.length === need && lastFill < 0.6))
+        if(rows.length < need || (rows.length === need && lastFill < 0.75))
           issues.push({slot:name, kind:'underfilled', lines:rows.length, need, lastLine:Math.round(lastFill*100)+'%', detail:`write it out to ${need} full lines`});
       }
     });

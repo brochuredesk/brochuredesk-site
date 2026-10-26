@@ -92,7 +92,7 @@
   .bot-feature-caption{top:245pt;width:240pt;font-size:8.2pt;line-height:10.5pt;height:10.5pt;white-space:nowrap}
   .bot-feature-title{top:262pt;width:240pt;font-size:15.5pt;line-height:19pt;height:19pt}
   .bot-feature-body{top:288pt;width:240pt;font-size:10.5pt;line-height:14pt;height:70pt}
-  .bot-tile-photo{top:374pt;width:240pt;height:144pt}
+  .bot-tile-photo{top:346pt;width:240pt;height:172pt}
   .bot-tile-title{top:522pt;width:240pt;font-size:14.5pt;line-height:18pt;height:18pt}
   .bot-tile-body{top:544pt;width:240pt;font-size:9.8pt;line-height:12.5pt;height:37.5pt}
 
@@ -202,7 +202,7 @@ Ivory.whenFonts(function(){
   if(V.stories >= 3 && stats.length < 5 && !stats.some(s=>/stor/i.test(s))) stats.push(`${V.stories} Stories`);
   let top = header(T.kicker, T.title, 'top');
   top += `<div class="factbar stats">` + stats.map((s,i)=>`<div class="stat" data-slot="top.stat${i}" data-lines="1">${esc(s)}</div>`).join('') + `</div>`;
-  top += slot('top-intro', T.intro, 'top.intro', 3).replace('data-lines=', 'data-fill="2" data-aim="3" data-lines=');
+  top += slot('top-intro', T.intro, 'top.intro', 3).replace('data-lines=', 'data-fill="3" data-lines=');   // three full lines (the owner 10/26)
   [24,402].forEach((x,i)=>{ const f=T.features[i]||{}; const st=`style="left:${x}pt"`;
     top += photo('top-feature-photo', f.photo, st)
         + `<div class="abs body top-feature-caption" ${st} data-slot="top.feature${i}.caption" data-lines="1">${esc(f.caption)}</div>`
@@ -224,16 +224,16 @@ Ivory.whenFonts(function(){
   [24,276,528].forEach((x,i)=>{ const f=B.features[i]||{};
     const st=`style="left:${x}pt"`;
     const ph = tall ? `style="left:${x}pt;height:262pt"` : st;
-    const dy = tall ? 118 : 0, lines = tall ? 8 : 5;
+    const dy = tall ? 118 : 0, lines = tall ? 8 : 3;   // three full lines under each photo; the bottom row sits right under them (the owner 10/26)
     bot += photo('bot-feature-photo', f.photo, ph)
         + `<div class="abs body bot-feature-caption" style="left:${x}pt;top:${245+dy}pt" data-slot="bottom.feature${i}.caption" data-lines="1">${esc(f.caption)}</div>`
         + `<div class="abs display bot-feature-title" style="left:${x}pt;top:${262+dy}pt" data-slot="bottom.feature${i}.title" data-lines="1">${esc(f.title)}</div>`
-        + `<div class="abs body bot-feature-body" style="left:${x}pt;top:${288+dy}pt;height:${lines*14}pt" data-slot="bottom.feature${i}.body" data-lines="${lines}" data-fill="3">${esc(f.body)}</div>`; });
+        + `<div class="abs body bot-feature-body" style="left:${x}pt;top:${288+dy}pt;height:${lines*14}pt" data-slot="bottom.feature${i}.body" data-lines="${lines}" data-fill="${lines}">${esc(f.body)}</div>`; });
   const bw = btiles.length === 2 ? 366 : 240;
   btiles.forEach((f,i)=>{ const x = 24 + i*(bw+12); const st=`style="left:${x}pt;width:${bw}pt"`;
     bot += photo('bot-tile-photo', f.photo, st)
         + `<div class="abs display bot-tile-title" ${st} data-slot="bottom.tile${i}.title" data-lines="1">${esc(f.title)}</div>`
-        + `<div class="abs body bot-tile-body" ${st} data-slot="bottom.tile${i}.body" data-lines="3" data-fill="2">${esc(f.body)}</div>`; });
+        + `<div class="abs body bot-tile-body" ${st} data-slot="bottom.tile${i}.body" data-lines="3" data-fill="3">${esc(f.body)}</div>`; });
 
   // ---- BACK ----
   // The back changes with the property type version (template readiness standard, section 8):

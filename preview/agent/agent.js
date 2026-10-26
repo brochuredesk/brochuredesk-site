@@ -1187,7 +1187,8 @@
       if(j.master) pkg.master = j.master;   // the master copy set: any other design fits from it (no rewrite)
       pkg.stage = 'final'; save(true);
       clearInterval(timer); $('#writeFill').style.width = '100%';
-      openFinal(piecesOf(pkg)[0]);
+      await openFinal(piecesOf(pkg)[0]);
+      await fillPass();
     } catch(e) {
       clearInterval(timer);
       pkg.stage = 'rough'; save();
@@ -1289,8 +1290,49 @@
       const fl = (pkg.copy[id].flagged || []).length;
       say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`);
       await switchTiles(); await drawFinal();
+      if(!pkg.copy[id].filled){ say(`Filling every box in ${name}…`); await fillPass(); say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`); }
     } catch(e) { say("We couldn't switch just now. Your proof is unchanged; try again."); }
     finally { $$('[data-switch]').forEach(b => b.disabled = false); }
+  }
+  // fill pass (the owner 10/26): every text box on the proof is filled to its last line, the last line at least 3/4 full.
+  // After the proof lays out, each box that stops short is measured (characters per line in its own font and width)
+  // and goes back once for a rewrite with real detail from its photo and the listing; then the proof redraws.
+  async function fillPass(){
+    const w = pkg.copy[pkg.design]; if(!w || w.filled) return;
+    for(let t = 0; t < 40 && !$$('#finalProof iframe').some(fr => fr.contentDocument && fr.contentDocument.querySelector('.bd-edit')); t++) await new Promise(r => setTimeout(r, 250));
+    const spots = [], seenPath = new Set();
+    for(const fr of $$('#finalProof iframe')){
+      const doc = fr.contentDocument; if(!doc) continue;
+      doc.querySelectorAll('[data-slot]').forEach(el => {
+        const lines = +el.dataset.lines || 0, need = +el.dataset.fill || lines, txt = norm(el.textContent);
+        if(lines < 2 || !txt || el.dataset.fine || FIXED.test(el.dataset.slot) || el.children.length || !el.getClientRects().length) return;
+        const rg = doc.createRange(); rg.selectNodeContents(el);
+        const rows = []; [...rg.getClientRects()].filter(q => q.width > .5).forEach(q => { const row = rows.find(x => Math.abs(x.top - q.top) < 2); if(row) row.right = Math.max(row.right, q.right); else rows.push({top: q.top, right: q.right}); });
+        const box = el.getBoundingClientRect(), last = rows.sort((a, b) => a.top - b.top)[rows.length - 1];
+        const lastFill = last ? Math.min(1, (last.right - box.left) / box.width) : 0;
+        if(rows.length > need || (rows.length === need && lastFill >= 0.75)) return;
+        const cpl = txt.length / Math.max(0.5, rows.length - 1 + lastFill);
+        const path = (findPath(txt) || '').replace(/\[(\d+)\]/g, '.$1');
+        if(!path || seenPath.has(path)) return; seenPath.add(path);
+        const item = path.split('.').slice(0, -1).reduce((o, k) => o == null ? o : o[k], w) || {};
+        const ph = /^p\d+$/.test(item.photo || '') ? pkg.photos[+item.photo.slice(1)] : null;
+        spots.push({path, budget: Math.floor(cpl * lines * 0.97), min: Math.ceil(cpl * (need - 0.2)), label: el.dataset.slot, key: '', versions: [txt],
+          photo: ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : '', img: ph ? ph.url : undefined,
+          ask: /\.a$/.test(path) ? getPath(w, path.replace(/\.a$/, '.q')) : undefined});
+      });
+    }
+    w.filled = {spots: spots.length, cost: 0, at: new Date().toISOString()};
+    if(spots.length){
+      try {
+        const j = await ai({action: 'refit', packageId: pkg.id, slots: spots.slice(0, 40), facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
+          photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(w.companion)});
+        for(const [p, t] of Object.entries(j.texts || {})) setPath(w, p, t);
+        w.filled.cost = j.cost || 0; w.filled.held = (j.flagged || []).length;
+        w.cost = (w.cost || 0) + (j.cost || 0);
+        store.event(pkg.id, 'fill-pass', {design: pkg.design, spots: spots.length, cost: j.cost || 0});
+      } catch(e) { console.error('fill pass', e); }
+    }
+    save(); await drawFinal();
   }
   $('#finalPiece').onchange = e => { finalPiece = e.target.value; ohFields(); approveBox(); drawFinal(); };
   async function drawFinal(){
