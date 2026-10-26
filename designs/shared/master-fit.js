@@ -14,16 +14,35 @@
    like stats and location), slack (default 1.06). Works in the browser (window.MasterFit) and in Node (tests). */
 (function(root){
   const KEEP = /^(location|stats|variant|footnote|planDisclosures|flyerPhotos|eyebrowFixed|fineprint|stat\d|noteCorner)$/;
+  // the room a design's example photo name asks for ("front", "patio", "primary-vanity", "lawn"...)
+  const HINTS = [[/front|cover|curb|street/, 'front exterior'], [/family|side|exterior|angle/, 'side exterior'], [/patio|deck|porch/, 'patio'],
+    [/lawn|yard|garden/, 'backyard'], [/pool/, 'pool'], [/garage/, 'garage'], [/primary-(vanity|shower|bath)|office/, 'primary bath'],
+    [/primary/, 'primary bedroom'], [/kitchen/, 'kitchen'], [/nook|breakfast/, 'breakfast area'], [/dining/, 'dining room'],
+    [/living/, 'living room'], [/bedroom|study/, 'bedroom'], [/bath|shower|vanity/, 'bathroom'], [/hall|entry|foyer/, 'entry'],
+    [/game|media/, 'game room'], [/laundry|utility/, 'laundry room']];
+  const hintOf = name => { const m = HINTS.find(([rx]) => rx.test(String(name || '').toLowerCase())); return m ? m[1] : ''; };
+  const near = {'front exterior': ['side exterior', 'back exterior'], 'side exterior': ['front exterior', 'back exterior'], patio: ['backyard', 'back exterior'],
+    backyard: ['patio', 'back exterior'], 'primary bath': ['bathroom'], bathroom: ['primary bath'], 'primary bedroom': ['bedroom'], bedroom: ['primary bedroom', 'study'],
+    'breakfast area': ['kitchen', 'dining room'], 'dining room': ['breakfast area', 'living room'], 'living room': ['family room'], entry: ['living room']};
   const at = (o, path) => path.reduce((v, k) => v == null ? v : v[k], o);
   const len = s => String(s || '').length;
 
   function fit(master, example, opts){
     opts = opts || {};
-    const ids = opts.ids || [], rest = ids.length > 1 ? ids.slice(1) : ids, slack = opts.slack || 1.06;
+    const ids = opts.ids || [], slack = opts.slack || 1.06;
     const roomOf = opts.roomOf || (() => ''), base = opts.base || {};
     const heading = opts.heading || (r => r ? r.charAt(0).toUpperCase() + r.slice(1) : '');
-    const refits = [], used = [], placed = new Set();
-    let n = 0, first = true;
+    const refits = [], used = [], placed = new Set(), taken = new Set();
+    // a photo spot gets a photo of the room it was drawn for (or the nearest kind), never one already placed until
+    // every photo is used once; then it falls back to the agent's order
+    const photoFor = name => {
+      const want = hintOf(name), free = ids.filter(id => !taken.has(id));
+      const pool = free.length ? free : ids;
+      const pickBy = room => room && pool.find(id => roomOf(id) === room);
+      const id = pickBy(want) || (near[want] || []).map(pickBy).find(Boolean) || pool[0];
+      taken.add(id); return id;
+    };
+    let first = true;
     const sectionFor = (photo, room) => (master.sections || []).find(s => (s.photos || []).includes(photo))
       || (master.sections || []).find(s => s.room && s.room === room) || null;
     // the longest saved version that fits the slot's budget; none fits: listed for a refit, short version meanwhile
@@ -68,7 +87,7 @@
         }
         const o = {}, g = {rooms: [], key};
         if('photo' in ex){
-          o.photo = first ? ids[0] : rest[n++ % rest.length]; first = false;
+          o.photo = first ? ids[0] : photoFor(ex.photo); if(first) taken.add(ids[0]); first = false;
           g.room = roomOf(o.photo); g.section = key === 'feature' ? null : sectionFor(o.photo, g.room);
           if(group) group.rooms.push(g.room);
         }
