@@ -1323,8 +1323,10 @@
     const rg = doc.createRange(); rg.selectNodeContents(el);
     const rows = []; [...rg.getClientRects()].filter(q => q.width > .5).forEach(q => { const row = rows.find(x => Math.abs(x.top - q.top) < 2); if(row) row.right = Math.max(row.right, q.right); else rows.push({top: q.top, right: q.right}); });
     const box = el.getBoundingClientRect(), last = rows.sort((a, b) => a.top - b.top)[rows.length - 1];
-    const over = el.scrollHeight > el.clientHeight + 1 || rows.length > (+el.dataset.lines || 99);
-    const r = {rows: rows.length, last: last ? Math.min(1, (last.right - box.left) / box.width) : 0, over};
+    const lastFill = last ? Math.min(1, (last.right - box.left) / box.width) : 0, lines = +el.dataset.lines || 99;
+    // a last line within 5% of the edge counts as running over: the print renderer sets type a hair wider than this preview
+    const over = el.scrollHeight > el.clientHeight + 1 || rows.length > lines || (rows.length === lines && lastFill > 0.95);
+    const r = {rows: rows.length, last: lastFill, over};
     el.textContent = keep; return r;
   }
   // of the versions a rewrite sent back, the one that fills its box (last line at least 3/4) without running over; else
@@ -1356,7 +1358,7 @@
         const rows = []; [...rg.getClientRects()].filter(q => q.width > .5).forEach(q => { const row = rows.find(x => Math.abs(x.top - q.top) < 2); if(row) row.right = Math.max(row.right, q.right); else rows.push({top: q.top, right: q.right}); });
         const box = el.getBoundingClientRect(), last = rows.sort((a, b) => a.top - b.top)[rows.length - 1];
         const lastFill = last ? Math.min(1, (last.right - box.left) / box.width) : 0;
-        const over = el.scrollHeight > el.clientHeight + 1 || rows.length > lines;   // running over goes back too, shorter
+        const over = el.scrollHeight > el.clientHeight + 1 || rows.length > lines || (rows.length === lines && lastFill > 0.95);   // running over (or within 5% of it) goes back too, shorter
         if(!over && (rows.length > need || (rows.length === need && lastFill >= 0.75))) return;
         const cpl = txt.length / Math.max(0.5, rows.length - 1 + lastFill);
         const path = (findPath(txt) || '').replace(/\[(\d+)\]/g, '.$1');
