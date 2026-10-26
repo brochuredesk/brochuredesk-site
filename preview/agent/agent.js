@@ -1181,10 +1181,16 @@
         photos: Object.fromEntries(arr.map(i => ['p' + i, pkg.photos[i].desc || ''])),
         allPhotos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, [p.room, p.desc].filter(Boolean).join(': ')])),
         photoUrls: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.url]).filter(([, u]) => /^https:\/\//.test(u || ''))),   // the writers see every photo
-        example: ex, draft: {copy: d.copy, companion: d.companion}, pieces: piecesOf(pkg).map(pieceLabel)};
+        example: ex, draft: {copy: d.copy, companion: d.companion}, pieces: piecesOf(pkg).map(pieceLabel), splitMaster: true};
       const j = await ai(body);
       pkg.copy[pkg.design] = {copy: j.copy, companion: j.companion, writtenAt: new Date().toISOString(), cost: j.cost};
-      if(j.master) pkg.master = j.master;   // the master copy set: any other design fits from it (no rewrite)
+      // the master copy set (any other design fits from it, no rewrite) is its own request: both in one ran past the server's time limit
+      try {
+        $('#writeStatus').textContent = 'Writing the copy every other design draws from…';
+        const m = await ai({action: 'master', packageId: pkg.id, style: pkg.copyStyle, listing: pkg.listing, allPhotos: body.allPhotos, photoUrls: body.photoUrls, written: {copy: j.copy, companion: j.companion}});
+        if(m.master) pkg.master = m.master;
+        pkg.copy[pkg.design].cost += m.cost || 0;
+      } catch(e) { console.error('master set', e); }
       pkg.stage = 'final'; save(true);
       clearInterval(timer); $('#writeFill').style.width = '100%';
       await openFinal(piecesOf(pkg)[0]);
