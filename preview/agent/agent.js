@@ -1225,8 +1225,8 @@
     $('#finalTitle').textContent = `Proof: ${pkg.listing.address}`;
     $('#backToRough').hidden = !!pkg.paid;
     ohFields(); approveBox(); switchTiles(); await drawFinal();
-    // a proof that hasn't had its fill pass yet (written before it existed, or interrupted) gets one now
-    const w = pkg.copy[pkg.design]; if(w && !w.filled && !pkg.paid && pkg.stage === 'final') await fillPass();
+    // a proof that hasn't had its fill pass or outside AI check yet (written before it existed, or interrupted) gets one now
+    const w = pkg.copy[pkg.design]; if(w && !pkg.paid && pkg.stage === 'final'){ if(!w.filled) await fillPass(); if(!w.aiCheck) await aiCheckPass(); }
   }
 
   // ---------- see it in another design (brief master-copy-design-switch-10-24) ----------
