@@ -95,7 +95,7 @@
       for(let i = 1; i <= Math.min(doc.numPages, 4); i++){
         const pg = await doc.getPage(i), v = pg.getViewport({scale: 1}), vp = pg.getViewport({scale: Math.min(4, 1800 / Math.max(v.width, v.height))});
         const c = canvas(vp.width, vp.height), g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
-        await pg.render({canvasContext: g, viewport: vp}).promise; out.push(c);
+        await pg.render({canvasContext: g, viewport: vp, intent: 'print'}).promise;   // print intent: no screen-refresh pacing, so it runs in a background tab too out.push(c);
       }
       return out;
     }
