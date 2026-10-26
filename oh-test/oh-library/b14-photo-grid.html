@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Photo Grid</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Photo Grid (from reference B14). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner: simple and straightforward; the gray tile should be the brand color of whoever is signed in. A two-column grid:
+  the house and two rooms down the left, the event on a tall tile of the agent's main color at the right with one more
+  room under it; the address and the agent below the grid. Every photo keeps 3:2, so the house is whole.
+  Type: IBM Plex Sans Condensed (event, address), Manrope (details).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .tile{position:absolute;background:var(--main)}
+  .tile~.on{color:var(--on-main)}
+  .eyebrow{font:600 9.5pt/12pt Manrope;letter-spacing:2.2pt;text-transform:uppercase;white-space:nowrap;opacity:.9}
+  .hl{font:700 40pt/40pt 'Plex Condensed';text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .date{font:700 30pt/34pt 'Plex Condensed';white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .time{font:400 20pt/26pt 'Plex Condensed';white-space:nowrap;overflow:hidden}
+  .ev{font:600 10pt/13pt Manrope;letter-spacing:.3pt}
+  .bar{position:absolute;height:1pt;background:currentColor;opacity:.5}
+  .addr{font:700 22pt/28pt 'Plex Condensed';white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .place{font:500 9.5pt/13pt Manrope;letter-spacing:1.2pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .facts{font:600 10pt/13pt Manrope;text-align:right;white-space:nowrap;overflow:hidden}
+  .hr{position:absolute;left:24pt;width:564pt;height:.9pt;background:var(--ink);opacity:.25}
+  .oh-agent-name{font-family:'Plex Condensed';font-weight:700}
+  .oh-agent{font-family:Manrope}
+  .fine{font:400 6.6pt/8pt Manrope;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Plex Condensed"', '400 10pt "Plex Condensed"', '600 10pt Manrope', '500 10pt Manrope'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id));
+  const pick = re => rooms.find(id => re.test(D.photos[id].tags||'') && !used.has(id));
+  const used = new Set();
+  const take = re => { const id = pick(re) || rooms.find(i => !used.has(i)); if(id) used.add(id); return id; };
+  const r1 = take(/kitchen/i), r2 = take(/living|family|great/i), r3 = take(/primary|bedroom|patio|\byard/i);
+  const X = 24, G = 10, CW = 277, RH = 185;
+  let h = '';
+  h += OHL.photo(D, hero, `left:${X}pt;top:24pt;width:${CW}pt;height:${RH}pt`);
+  h += OHL.photo(D, r1, `left:${X}pt;top:${24+RH+G}pt;width:${CW}pt;height:${RH}pt`);
+  h += OHL.photo(D, r2, `left:${X}pt;top:${24+2*(RH+G)}pt;width:${CW}pt;height:${RH}pt`);
+  h += OHL.photo(D, r3, `left:${X+CW+G}pt;top:${24+2*(RH+G)}pt;width:${CW}pt;height:${RH}pt`);
+  // the event tile
+  const tx = X + CW + G, ty = 24, th = 2*RH + G, P = 22, iw = CW - 2*P;
+  h += `<div class="tile" style="left:${tx}pt;top:${ty}pt;width:${CW}pt;height:${th}pt"></div>`;
+  let y = ty + 26;
+  const mid0 = h.length;
+  h += `<div class="abs on eyebrow" style="left:${tx+P}pt;top:${y}pt;width:${iw}pt;height:12pt">You're invited to a</div>`;
+  y += 20;
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs on hl" style="left:${tx+P}pt;top:${y + i*40}pt;width:${iw}pt;height:44pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  const hlTop = y;
+  y += lines.length*40 + 18;
+  h += `<div class="on bar" style="left:${tx+P}pt;top:${y}pt;width:40pt"></div>`;
+  y += 14;
+  if(E.weekday){ h += `<div class="abs on eyebrow" style="left:${tx+P}pt;top:${y}pt;width:${iw}pt;height:12pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`; y += 16; }
+  h += `<div class="abs on date" style="left:${tx+P}pt;top:${y}pt;width:${iw}pt;height:34pt" data-fit="30,24" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;
+  y += 36;
+  if(E.time) h += `<div class="abs on time" style="left:${tx+P}pt;top:${y}pt;width:${iw}pt;height:26pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 38;
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], tx+P, y, iw, 13, 6);
+  h += ev.html;
+  const issues = y + ev.h > ty + th - 16 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run off the tile'}] : [];
+  const shift = Math.max(0, (ty + th - 26 - (y + ev.h))/2);
+  h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0;color:var(--on-main)">` + h.slice(mid0) + `</div>`;
+  // address and agent under the grid
+  const ay = 24 + 3*RH + 2*G + 18;
+  h += `<div class="abs addr" style="left:${X}pt;top:${ay}pt;width:340pt;height:28pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:${X}pt;top:${ay+30}pt;width:340pt;height:13pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  Ivory.facts(L).slice(0, 3).forEach((t, i) => h += `<div class="abs facts" style="left:388pt;top:${ay+2+i*14}pt;width:200pt;height:13pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  const cy = 700;
+  h += `<div class="hr" style="top:${cy - 12}pt"></div>`;
+  h += OHL.contact(D, {x:X, y:cy, w:564, h:64, tone:'light', nameSize:18, phoneSize:13, lineSize:9.5, logoW:184, logoH:52});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:564pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 40, 26, hlTop, 1.0);   // tops are inside the shifted block
+  return f;
+});
+</script>
+</body>
+</html>

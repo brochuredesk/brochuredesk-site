@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Evening Panel</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Evening Panel (from reference B16). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner's B16 note: hold this one up as what a great flyer looks like, but make it work with every house and make
+  the date, time and address bigger. So the headline and the event sit on a solid dark panel of their own (any photo
+  works beside it), the house keeps its 3:2 shape at top right with a room photo under it, and the date is the
+  biggest type on the page. A light highlights band (facts with line icons) and a dark contact band close it.
+  Type: DM Serif Display (headline, date, address, facts), Manrope (labels, time, details).
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .eyebrow{font:600 9pt/12pt Manrope;letter-spacing:3pt;text-transform:uppercase;opacity:.85;white-space:nowrap}
+  .hl{font:400 44pt/48pt 'DM Serif Display';white-space:nowrap;overflow:hidden}
+  .box{position:absolute;border:.9pt solid var(--accent-on-dark)}
+  .wd{font:700 10pt/12pt Manrope;letter-spacing:2.6pt;text-transform:uppercase;color:var(--accent-on-dark);white-space:nowrap;overflow:hidden}
+  .date{font:400 36pt/40pt 'DM Serif Display';white-space:nowrap;overflow:hidden}
+  .time{font:700 18pt/22pt Manrope}
+  .ev{font:600 9.5pt/12.5pt Manrope;opacity:.92}
+  .ev-r{font:600 9.5pt/12.5pt Manrope;color:var(--accent-on-dark)}
+  .addr{font:400 23pt/26pt 'DM Serif Display'}
+  .kick{font:400 20pt/24pt 'DM Serif Display';color:var(--accent-on-dark)}
+  .place{font:600 8.8pt/11pt Manrope;letter-spacing:1.4pt;text-transform:uppercase;opacity:.8;white-space:nowrap;overflow:hidden}
+  .band{position:absolute;left:0;width:612pt;background:var(--paper);color:var(--ink)}
+  .band-h{font:700 9pt/12pt Manrope;letter-spacing:4pt;text-transform:uppercase;color:var(--main-on-paper);text-align:center;white-space:nowrap}
+  .fact{position:absolute;text-align:center;color:var(--ink)}
+  .fact svg{width:22pt;height:22pt;stroke:var(--main-on-paper);fill:none;stroke-width:1.5;display:block;margin:0 auto}
+  .fact .v{font:400 17pt/21pt 'DM Serif Display';white-space:nowrap;overflow:hidden;margin-top:5pt;height:21pt}
+  .fact .k{font:700 8.6pt/11pt Manrope;letter-spacing:1.6pt;text-transform:uppercase;opacity:.7;white-space:nowrap;overflow:hidden;height:11pt}
+  .vr{position:absolute;width:.8pt;background:var(--main-on-paper);opacity:.25}
+  .oh-agent-name{font-family:'DM Serif Display'}
+  .oh-agent{font-family:Manrope}
+  .fine{font:400 6.6pt/8pt Manrope;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+const ICON = OHL.ICON;
+OHL.start(['400 10pt "DM Serif Display"', '600 10pt Manrope', '700 10pt Manrope', '400 10pt Manrope'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'angled');
+  const room = OHL.photos(D).find(id => id !== hero && /kitchen|living/i.test(D.photos[id].tags||'')) || OHL.photos(D).find(id => id !== hero);
+  const PW = 280, X = 34, W = PW - X - 22;
+  let h = '';
+  // photos at right: the house at 3:2, a room under it
+  const rw = 612 - PW, hh = Math.round(rw/1.5);
+  h += OHL.photo(D, hero, `left:${PW}pt;top:0;width:${rw}pt;height:${hh}pt`);
+  h += OHL.photo(D, room, `left:${PW}pt;top:${hh+6}pt;width:${rw}pt;height:${548-hh-6}pt`);
+
+  // headline on the dark panel
+  const [l1, l2] = OHL.labelLines(E.label);
+  h += `<div class="abs eyebrow" style="left:${X}pt;top:40pt;width:${W}pt;height:12pt">You're invited</div>`;
+  h += `<div class="abs hl" id="hl1" style="left:${X-2}pt;top:56pt;width:${W+4}pt;height:48pt" data-slot="oh.label" data-lines="1">${esc(l1)}</div>`;
+  if(l2) h += `<div class="abs hl" id="hl2" style="left:${X-2}pt;top:104pt;width:${W+4}pt;height:48pt;color:var(--accent-on-dark)" data-slot="oh.label" data-lines="1">${esc(l2)}</div>`;
+  h += `<div class="abs" style="left:${X}pt;top:166pt;width:56pt;height:1.2pt;background:var(--accent-on-dark)"></div>`;
+
+  // date box: weekday, the date at 36 pt, the time (wraps to a second line rather than shrinking)
+  const bx = X, bw = W, pad = 14, iw = bw - 2*pad;
+  let y = 186 + pad;
+  let box = `<div class="abs wd" style="left:${bx+pad}pt;top:${y}pt;width:${iw}pt;height:12pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+  box += `<div class="abs date" style="left:${bx+pad}pt;top:${y+15}pt;width:${iw}pt;height:40pt" data-fit="36,28" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;
+  y += 64;
+  box += `<div class="abs" style="left:${bx+pad}pt;top:${y}pt;width:${iw}pt;height:.8pt;background:var(--accent-on-dark);opacity:.6"></div>`;
+  y += 10;
+  if(E.time){ const n = Ivory.linesNeeded('time', E.time, iw, 22);
+    box += `<div class="abs time" style="left:${bx+pad}pt;top:${y}pt;width:${iw}pt;height:${n*22+5}pt" data-slot="oh.time" data-lines="${n}">${esc(E.time)}</div>`; y += n*22 + 3; }
+  y += pad;
+  h += `<div class="box" style="left:${bx}pt;top:186pt;width:${bw}pt;height:${y-186}pt"></div>` + box;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev-r']], X, y + 14, W, 12.5, 4);
+  h += ev.html;
+
+  // address under the event; the writer's kicker (if any) closes the panel at the bottom, otherwise the
+  // address sits lower so the panel never shows a hole
+  const evEnd = y + 14 + ev.h, an = Ivory.linesNeeded('addr', L.address, W - 22, 26);
+  const addrH = an*26 + 20;
+  let kick = String((C.listing||{}).kicker || '').trim(), kn = kick ? Ivory.linesNeeded('kick', kick, W, 24) : 0;
+  if(kick && evEnd + 34 + addrH > 520 - kn*24 - 22){ kick = ''; kn = 0; }
+  const ay = kick ? Math.max(evEnd + 34, Math.round((evEnd + 520 - kn*24 - 28 - addrH)/2)) : Math.max(evEnd + 34, 520 - addrH - 30);
+  h += `<div class="abs" style="left:${X-2}pt;top:${ay+3}pt;width:18pt;height:18pt;color:var(--accent-on-dark)">${ICON.pin.replace('<svg','<svg style="width:18pt;height:18pt;stroke:currentColor;fill:none;stroke-width:1.6"')}</div>`;
+  h += `<div class="abs addr" style="left:${X+22}pt;top:${ay}pt;width:${W-22}pt;height:${an*26+6}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:${X+22}pt;top:${ay+an*26+4}pt;width:${W-22}pt;height:11pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  if(kick){
+    const ky = 520 - kn*24;
+    h += `<div class="abs" style="left:${X}pt;top:${ky-16}pt;width:${W}pt;height:.8pt;background:var(--on-dark);opacity:.25"></div>`;
+    h += `<div class="abs kick" style="left:${X}pt;top:${ky}pt;width:${W}pt;height:${kn*24+5}pt" data-slot="kicker" data-lines="${kn}">${esc(kick)}</div>`;
+  }
+  const issues = (ay + addrH > (kick ? 520 - kn*24 - 22 : 524)) ? [{slot:'oh.note', kind:'overflow', detail:'the event lines and address need more room on the panel'}] : [];
+
+  // highlights band
+  const by = 548, bh = 128;
+  h += `<div class="band" style="top:${by}pt;height:${bh}pt"></div>`;
+  h += `<div class="abs" style="left:60pt;top:${by+22}pt;width:150pt;height:.8pt;background:var(--main-on-paper);opacity:.4"></div><div class="abs" style="left:402pt;top:${by+22}pt;width:150pt;height:.8pt;background:var(--main-on-paper);opacity:.4"></div>`;
+  h += `<div class="abs band-h" style="left:210pt;top:${by+16}pt;width:192pt;height:12pt">Home highlights</div>`;
+  const facts = [];
+  if(L.beds) facts.push([ICON.bed, L.beds, L.beds == 1 ? 'Bedroom' : 'Bedrooms']);
+  if(L.baths) facts.push([ICON.bath, L.baths + (L.halfBaths ? ' / ' + L.halfBaths : ''), L.halfBaths ? 'Full / half baths' : (L.baths == 1 ? 'Full bath' : 'Full baths')]);
+  if(L.sqft) facts.push([ICON.area, Number(L.sqft).toLocaleString('en-US'), 'Square feet']);
+  if(L.neighborhood) facts.push([ICON.pin, L.neighborhood, L.city || '']);
+  const cw = 540 / facts.length;
+  facts.forEach(([ic, v, k], i) => {
+    h += `<div class="fact" style="left:${36+i*cw}pt;top:${by+44}pt;width:${cw}pt;height:70pt">${ic}<div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(k)}</div></div>`;
+    if(i) h += `<div class="vr" style="left:${36+i*cw}pt;top:${by+48}pt;height:58pt"></div>`;
+  });
+
+  // contact band
+  h += OHL.contact(D, {x:36, y:694, w:540, h:66, tone:'dark', nameSize:21, phoneSize:14, logoW:196, logoH:58});
+  h += `<div class="abs fine" style="left:36pt;top:774pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  // both headline lines end up the same size: each fits its width, then both take the smaller
+  f.after = () => {
+    const a = document.getElementById('hl1'), b = document.getElementById('hl2');
+    const s = Math.min(OHL.fit(a, 44, 24), b ? OHL.fit(b, 44, 24) : 99);
+    [a, b].filter(Boolean).forEach(el => el.style.fontSize = s+'pt');
+  };
+  return f;
+});
+</script>
+</body>
+</html>

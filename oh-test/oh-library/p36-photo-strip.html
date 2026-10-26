@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Photo Strip</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Photo Strip (from reference P36). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner liked the design, with the event wording at the top in one font (the reference switched to a script for
+  "house"). A strip of photos down the left (the house, then rooms) alternates with a text column at right: a date
+  tag in the accent color, the event wording in one serif, the address, the facts on a soft panel, the writer's
+  paragraph, and the agent with the logo.
+  Type: Spectral (headline, address), Jost (details).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .tag{position:absolute;background:var(--accent);color:var(--on-accent);text-align:center}
+  .tag .d{font:600 18pt/22pt Jost;white-space:nowrap;overflow:hidden}
+  .tag .t{font:500 18pt/22pt Jost;white-space:nowrap;overflow:hidden}
+  .tag .w{font:600 9pt/12pt Jost;letter-spacing:2.4pt;text-transform:uppercase;white-space:nowrap}
+  .hl{font:500 48pt/52pt Spectral;text-transform:uppercase;letter-spacing:1pt;white-space:nowrap;overflow:hidden}
+  .addr{font:500 17pt/22pt Spectral;text-transform:uppercase;letter-spacing:1.4pt}
+  .place{font:500 9.5pt/12pt Jost;letter-spacing:2pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .soft{position:absolute}
+  .f{font:500 10.5pt/14pt Jost;white-space:nowrap;overflow:hidden;text-align:center}
+  .body{font:400 10.5pt/15pt Jost}
+  .ev{font:600 10pt/13pt Jost}
+  .oh-agent-name{font-family:Spectral;font-weight:500}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['500 10pt Spectral', '600 10pt Jost', '500 10pt Jost', '400 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 3);
+  // the strip: house on top at its own shape, rooms below filling the column
+  const SX = 26, SW = 212, G = 8;
+  const fr = OHL.fitHero(D, hero, SW, Math.round(SW/1.5));
+  let h = OHL.photo(D, hero, `left:${SX + (SW - fr.w)/2}pt;top:26pt;width:${fr.w}pt;height:${fr.h}pt`);
+  const ry = 26 + fr.h + G, rh = (766 - ry - (rooms.length - 1)*G)/rooms.length;
+  rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${SX}pt;top:${ry + i*(rh + G)}pt;width:${SW}pt;height:${rh}pt`));
+  // the text column
+  const X = SX + SW + 26, W = 612 - X - 30;
+  h += `<div class="tag" style="left:${X + W - 200}pt;top:26pt;width:200pt;height:80pt"></div>`;
+  // the logo beside the date tag (the agent card below is too narrow for a logo end)
+  h += OHL.logo(D, 'light', `left:${X}pt;top:34pt;width:${W - 214}pt;height:64pt;justify-content:flex-start`);
+  if(E.weekday) h += `<div class="abs w" style="left:${X + W - 196}pt;top:32pt;width:192pt;height:12pt;text-align:center;font:600 9pt/12pt Jost;letter-spacing:2.4pt;text-transform:uppercase;color:var(--on-accent)" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+  h += `<div class="abs" style="left:${X + W - 196}pt;top:45pt;width:192pt;height:28pt;text-align:center;font:600 22pt/28pt Jost;white-space:nowrap;overflow:hidden;color:var(--on-accent)" data-fit="22,18" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;
+  if(E.time) h += `<div class="abs" style="left:${X + W - 196}pt;top:76pt;width:192pt;height:22pt;text-align:center;font:500 18pt/22pt Jost;white-space:nowrap;overflow:hidden;color:var(--on-accent)" data-fit="18,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:${X}pt;top:${120 + i*52}pt;width:${W}pt;height:56pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  let y = 120 + lines.length*52 + 18;
+  const an = Ivory.linesNeeded('addr', L.address, W, 22);
+  h += `<div class="abs addr" style="left:${X}pt;top:${y}pt;width:${W}pt;height:${an*22+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`; y += an*22 + 4;
+  h += `<div class="abs place" style="left:${X}pt;top:${y}pt;width:${W}pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join('  ·  '))}</div>`; y += 26;
+  const facts = Ivory.facts(L);
+  h += `<div class="soft" style="left:${X}pt;top:${y}pt;width:${W}pt;height:${facts.length*16 + 22}pt;background:${OHL.mix(k.main, '#f3ede4', .84)}"></div>`;
+  facts.forEach((t, i) => h += `<div class="abs f" style="left:${X}pt;top:${y + 11 + i*16}pt;width:${W}pt;height:16pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  y += facts.length*16 + 22 + 18;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, y, W, 13, 2);
+  h += ev.html; y += ev.h + (ev.h ? 12 : 0);
+  const body = String((C.listing||{}).body || '').trim(), bn = body ? Ivory.linesNeeded('body', body, W, 15) : 0;
+  const cy = 688;
+  if(bn && y + bn*15 <= cy - 18){ h += `<div class="abs body" style="left:${X}pt;top:${y}pt;width:${W}pt;height:${bn*15+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`; y += bn*15; }
+  const issues = y > cy - 8 ? [{slot:'oh.note', kind:'overflow', detail:'the column is too full'}] : [];
+  h += `<div class="abs" style="left:${X}pt;top:${cy - 10}pt;width:${W}pt;height:.8pt;background:var(--ink);opacity:.3"></div>`;
+  h += OHL.contact(D, {x:X, y:cy, w:W, h:84, logo:false, nameSize:18});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 48, 26, 120, 1.06);
+  return f;
+});
+</script>
+</body>
+</html>

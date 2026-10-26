@@ -1,9 +1,0 @@
-{
-  "design": "answer-book",
-  "name": "The Houston Answer Book",
-  "caption_style": "question",
-  "pieces": [
-    {"id": "foldover", "file": "foldover.html", "kind": "foldover", "panel": [612, 792], "fold": "vertical", "label": "11 x 17 fold-over brochure",
-     "panels": [{"id": "front", "label": "Cover"}, {"id": "back", "label": "Back"}, {"id": "left", "label": "Inside, left"}, {"id": "right", "label": "Inside, right"}]}
-  ]
-}

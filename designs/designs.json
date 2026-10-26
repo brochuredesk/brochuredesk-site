@@ -11,19 +11,5 @@
   "thumb": "/designs/announce/thumb.jpg",
   "test": true,
   "library": true
- },
- {
-  "id": "answer-book",
-  "name": "The Houston Answer Book",
-  "thumb": "/preview/img/answer-book.jpg",
-  "test": true,
-  "sample": {
-   "brokerage": "Any Brokerage",
-   "logo": "/designs/answer-book/sample-logo.png",
-   "web": "anybrokerage.com",
-   "qrLabel": "your website",
-   "agentWeb": "yourwebsite.com"
-  },
-  "fonts": true
  }
 ]

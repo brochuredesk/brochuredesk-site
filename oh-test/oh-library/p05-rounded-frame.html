@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Rounded Frame</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Rounded Frame (from reference P05). Trim 612 x 792 pt. Public or REALTOR(R).
+  Rounded outlines in the agent's main color frame each part: the event wording in a wide rounded box, the facts as a
+  row of pills, the house in a rounded frame, then a rounded box with the address and the date and time, and the agent
+  with the logo at the foot.
+  Type: Lexend.
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .rbox{position:absolute;border:1.6pt solid var(--main-on-paper);border-radius:18pt}
+  .pill{position:absolute;border:1.4pt solid var(--main-on-paper);border-radius:99pt;display:flex;align-items:center;justify-content:center;font:500 12pt/14pt Lexend;white-space:nowrap;overflow:hidden}
+  .hl{font:600 60pt/66pt Lexend;letter-spacing:-2pt;text-align:center;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .photo.round{border-radius:12pt}
+  .addr{font:600 17pt/21pt Lexend}
+  .place{font:400 9.5pt/12pt Lexend;white-space:nowrap;overflow:hidden}
+  .date{font:600 22pt/27pt Lexend;text-align:right;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .wd{font:600 9.5pt/12pt Lexend;letter-spacing:2.4pt;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:hidden}
+  .time{font:500 18pt/23pt Lexend;text-align:right;white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Lexend;text-align:center}
+  .oh-agent-name{font-family:Lexend;font-weight:600}
+  .oh-agent{font-family:Lexend}
+  .fine{font:400 6.6pt/8pt Lexend;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt Lexend', '500 10pt Lexend', '400 10pt Lexend'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const X = 36, W = 540;
+  let h = '';
+  h += `<div class="rbox" style="left:${X}pt;top:30pt;width:${W}pt;height:92pt"></div>`;
+  h += `<div class="abs hl" style="left:${X+16}pt;top:43pt;width:${W-32}pt;height:66pt" data-fit="60,28" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  // facts as pills
+  const f = [L.beds && `${L.beds} Bed${L.beds == 1 ? '' : 's'}`, L.sqft && `${Number(L.sqft).toLocaleString('en-US')} sq ft`, L.baths && `${L.baths}${L.halfBaths ? '.5' : ''} Bath${L.baths == 1 && !L.halfBaths ? '' : 's'}`].filter(Boolean);
+  const pw = (W - (f.length-1)*10)/f.length;
+  f.forEach((t, i) => h += `<div class="pill" style="left:${X + i*(pw+10)}pt;top:134pt;width:${pw}pt;height:30pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  // the house in a rounded frame
+  // the frame takes the height the address box and agent card leave
+  const evH0 = [E.note, E.refreshments].filter(Boolean).reduce((a, t) => a + Ivory.linesNeeded('ev', t, W - 40, 13)*13 + 2, 0) + ([E.note, E.refreshments].some(Boolean) ? 6 : 0);
+  const fy = 176, fh = 700 - 14 - (84 + evH0) - 12 - fy;
+  h += `<div class="rbox" style="left:${X}pt;top:${fy}pt;width:${W}pt;height:${fh}pt"></div>`;
+  const fr = OHL.fitHero(D, hero, W - 24, fh - 24);
+  h += OHL.photo(D, hero, `left:${X + 12 + (W - 24 - fr.w)/2}pt;top:${fy + 12}pt;width:${fr.w}pt;height:${fr.h}pt`, 'round');
+  // address and date
+  const ev = Ivory.eventLines([[E.note, 'oh.note', 'ev'], [E.refreshments, 'oh.refreshments', 'ev']], X + 20, 0, W - 40, 13, 2);
+  const by = fy + fh + 12, bh = 84 + (ev.h ? ev.h + 8 : 0);
+  h += `<div class="rbox" style="left:${X}pt;top:${by}pt;width:${W}pt;height:${bh}pt"></div>`;
+  const an = Ivory.linesNeeded('addr', L.address, 270, 21);
+  h += `<div class="abs addr" style="left:${X+20}pt;top:${by+14}pt;width:270pt;height:${an*21+4}pt;margin-top:8pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:${X+20}pt;top:${by+18+an*21}pt;width:270pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', '))}</div>`;
+  // weekday as a small label, the month and day large, then the time
+  if(E.weekday) h += `<div class="abs wd" style="left:${X+290}pt;top:${by+12}pt;width:${W-310}pt;height:12pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+  h += `<div class="abs date" style="left:${X+290}pt;top:${by+25}pt;width:${W-310}pt;height:27pt" data-fit="22,18" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${X+290}pt;top:${by+53}pt;width:${W-310}pt;height:23pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  if(ev.h) h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + by + 80}pt`);
+  const cy = Math.max(by + bh + 14, 700);
+  const issues = by + bh + 14 > 704 ? [{slot:'oh.note', kind:'overflow', detail:'the event box runs into the agent card'}] : [];
+  h += OHL.contact(D, {x:X, y:Math.min(cy, 704), w:W, h:62, tone:'light', nameSize:17, phoneSize:13, lineSize:9.5, logoW:176, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const fo = OHL.frame(D, h);
+  fo.issues = issues;
+  return fo;
+});
+</script>
+</body>
+</html>

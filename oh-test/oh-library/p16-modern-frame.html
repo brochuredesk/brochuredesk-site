@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Modern Frame</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Modern Frame (from reference P16), a more modern spin as the owner asked. Trim 612 x 792 pt. Public or REALTOR(R).
+  A deep frame of the agent's main color around the page with a thin accent line inside it; clean sans type in place of
+  the reference's banner and clip-art icons. The event wording, date, time and address at top, the house at its own
+  shape, the writer's paragraph under a short heading, a strip of four rooms, and the agent and logo.
+  Type: Hanken Grotesk.
+-->
+<style>
+  .sheet{background:var(--main)}
+  .inner{position:absolute;left:16pt;top:16pt;width:580pt;height:760pt;background:var(--paper)}
+  .line{position:absolute;left:22pt;top:22pt;width:568pt;height:748pt;border:1pt solid var(--accent);pointer-events:none}
+  .ink{color:var(--ink)}
+  .eyebrow{font:600 10pt/13pt 'Hanken Grotesk';letter-spacing:3pt;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--main-on-paper)}
+  .hl{font:700 46pt/50pt 'Hanken Grotesk';letter-spacing:-1pt;text-align:center;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .when{font:700 21pt/26pt 'Hanken Grotesk';text-align:center;white-space:nowrap;overflow:hidden}
+  .addr{font:500 14pt/18pt 'Hanken Grotesk';text-align:center;white-space:nowrap;overflow:hidden}
+  .k{font:700 11pt/14pt 'Hanken Grotesk';letter-spacing:2.6pt;text-transform:uppercase;text-align:center;color:var(--main-on-paper);white-space:nowrap}
+  .body{font:400 10.5pt/15pt 'Hanken Grotesk';text-align:center}
+  .ev{font:500 10pt/13pt 'Hanken Grotesk';text-align:center}
+  .oh-agent-name{font-family:'Hanken Grotesk';font-weight:700}
+  .oh-agent{font-family:'Hanken Grotesk'}
+  .fine{font:400 6.6pt/8pt 'Hanken Grotesk';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Hanken Grotesk"', '600 10pt "Hanken Grotesk"', '500 10pt "Hanken Grotesk"', '400 10pt "Hanken Grotesk"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 4);
+  const X = 40, W = 532;
+  let h = `<div class="inner"></div><div class="line"></div>`;
+  let y = 40;
+  h += `<div class="abs eyebrow" style="left:${X}pt;top:${y}pt;width:${W}pt;height:13pt">Please join us for a</div>`; y += 16;
+  h += `<div class="abs hl" style="left:${X}pt;top:${y}pt;width:${W}pt;height:50pt" data-fit="46,26" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`; y += 54;
+  h += `<div class="abs ink when" style="left:${X}pt;top:${y}pt;width:${W}pt;height:26pt" data-slot="oh.date" data-lines="1">${esc(E.long)}<span data-slot="oh.time" style="font-weight:500">${E.time ? '  ·  ' + esc(E.time) : ''}</span></div>`; y += 28;
+  h += `<div class="abs ink addr" style="left:${X}pt;top:${y}pt;width:${W}pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, L.neighborhood, L.city].filter(Boolean).join(', '))}</div>`; y += 24;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ink ev'],[E.refreshments,'oh.refreshments','ink ev']], X, y, W, 13, 2);
+  h += ev.html; y += ev.h + (ev.h ? 8 : 0);
+  // about this home, then rooms, then the agent; the house takes what is left
+  const body = String((C.listing||{}).body || '').trim();
+  const bn = body ? Ivory.linesNeeded('body', body, W - 40, 15) : 0;
+  const aboutH = body && bn <= 5 ? 22 + bn*15 + 12 : 0;
+  const stripH = 92, cy = 688;
+  const hy = y + 6, hh = cy - 14 - stripH - 12 - aboutH - hy;
+  const fr = OHL.fitHero(D, hero, W, Math.max(hh, 140));
+  h += OHL.photo(D, hero, `left:${X + (W - fr.w)/2}pt;top:${hy}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  y = hy + fr.h + 12;
+  if(aboutH){
+    h += `<div class="abs k" style="left:${X}pt;top:${y}pt;width:${W}pt;height:14pt">About this home</div>`;
+    h += `<div class="abs ink body" style="left:${X+20}pt;top:${y+20}pt;width:${W-40}pt;height:${bn*15+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`;
+    y += aboutH;
+  }
+  const sw = (W - 3*8)/4;
+  rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(sw+8)}pt;top:${y}pt;width:${sw}pt;height:${stripH}pt`));
+  y += stripH;
+  const issues = hh < 140 || y > cy - 6 ? [{slot:'oh.note', kind:'overflow', detail:'the page is too full; the house photo is squeezed'}] : [];
+  h += OHL.contact(D, {x:X, y:cy, w:W, h:60, tone:'light', nameSize:17, phoneSize:13, lineSize:9.5, logoW:170, logoH:48, color:'var(--ink)'});
+  h += `<div class="abs ink fine" style="left:${X}pt;top:762pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

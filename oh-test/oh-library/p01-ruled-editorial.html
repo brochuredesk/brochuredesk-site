@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Ruled Editorial</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Ruled Editorial (from reference P01). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: striking, but set the address more cleanly (the city in a different type), show the broker logo, the agent's
+  name and both times. Full-width rules divide the page like a magazine: the event wording huge on two lines, the street
+  in large type with the neighborhood and city below it in small spaced capitals, the house and a room, the writer's
+  short line, then the full date and the time from start to end, and the agent with the logo.
+  Type: Epilogue (headline, street, date), Hanken Grotesk (details).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .rule{position:absolute;left:30pt;width:552pt;height:1.2pt;background:var(--ink)}
+  .hl{font:600 104pt/96pt Epilogue;text-transform:uppercase;letter-spacing:-3pt;white-space:nowrap;overflow:hidden}
+  .join{font:500 15pt/18pt 'Hanken Grotesk';color:var(--main-on-paper)}
+  .street{font:600 23pt/26pt Epilogue;letter-spacing:-.3pt}
+  .city{font:600 9pt/12pt 'Hanken Grotesk';letter-spacing:2.4pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap;overflow:hidden}
+  .tag{font:400 12pt/16pt 'Hanken Grotesk'}
+  .date{font:600 34pt/38pt Epilogue;letter-spacing:-.8pt;white-space:nowrap;overflow:hidden}
+  .time{font:600 20pt/24pt 'Hanken Grotesk';white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .ev{font:500 10pt/13pt 'Hanken Grotesk'}
+  .oh-agent-name{font-family:Epilogue;font-weight:600}
+  .oh-agent{font-family:'Hanken Grotesk'}
+  .fine{font:400 6.6pt/8pt 'Hanken Grotesk';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt Epilogue', '400 10pt "Hanken Grotesk"', '500 10pt "Hanken Grotesk"', '600 10pt "Hanken Grotesk"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const room = OHL.photos(D).find(id => id !== hero && /living|kitchen/i.test(D.photos[id].tags||'')) || OHL.photos(D).find(id => id !== hero && !Ivory.fullHouse(D, id));
+  let h = '';
+  // the headline, two rules, a short "you're invited" beside the second line
+  const lines = OHL.labelLines(E.label, 2);
+  h += `<div class="rule" style="top:26pt"></div>`;
+  h += `<div class="abs hl" id="h0" style="left:26pt;top:30pt;width:556pt;height:100pt" data-slot="oh.label" data-lines="1">${esc(lines[0])}</div>`;
+  h += `<div class="rule" style="top:130pt"></div>`;
+  h += `<div class="abs join" style="left:30pt;top:156pt;width:70pt;height:40pt">You're<br>invited</div>`;
+  h += `<div class="abs hl" id="h1" style="left:104pt;top:134pt;width:478pt;height:100pt;text-align:right" data-slot="oh.label" data-lines="1">${esc(lines[1] || '')}</div>`;
+  h += `<div class="rule" style="top:236pt"></div>`;
+  // the house left, street and city right
+  // the photo row takes what the date row and agent row leave
+  const evH0 = [E.note, E.refreshments].filter(Boolean).reduce((a, t) => a + Ivory.linesNeeded('ev', t, 372, 13)*13 + 2, 0);
+  const y = 250, pw = 300, ph = 200;
+  const fr = OHL.fitHero(D, hero, pw, ph);
+  h += OHL.photo(D, hero, `left:${30 + (pw - fr.w)/2}pt;top:${y}pt;width:${fr.w}pt;height:${ph}pt`);
+  const rx = 350, rw = 232;
+  const sn = Ivory.linesNeeded('street', L.address, rw, 26);
+  h += `<div class="abs street" style="left:${rx}pt;top:${y}pt;width:${rw}pt;height:${sn*26+5}pt" data-slot="address" data-lines="${sn}">${esc(L.address)}</div>`;
+  h += `<div class="abs city" style="left:${rx}pt;top:${y + sn*26 + 6}pt;width:${rw}pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs city" style="left:${rx}pt;top:${y + sn*26 + 22}pt;width:${rw}pt;height:12pt;color:var(--ink);letter-spacing:1.4pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  // the room under the address, as tall as the space left beside the house allows (at least 70 pt)
+  const rt = y + sn*26 + 44, rhh = Math.min(120, y + ph - rt);
+  if(rhh >= 70) h += OHL.photo(D, room, `left:${rx}pt;top:${y + ph - rhh}pt;width:${rw}pt;height:${rhh}pt`);
+  // the date row sits just above the agent row; any room between gets a strip of three rooms
+  let dy = 690 - 18 - evH0 - 70;
+  const gap = dy - 16 - (y + ph + 14);
+  if(gap >= 76){
+    const others = OHL.photos(D).filter(id => id !== hero && id !== room && !Ivory.fullHouse(D, id)).slice(0, 3), sw = (552 - 20)/3, sh = Math.min(gap - 28, 150);
+    others.forEach((id, i) => h += OHL.photo(D, id, `left:${30 + i*(sw+10)}pt;top:${y + ph + 14 + 14}pt;width:${sw}pt;height:${sh}pt`));
+    dy = y + ph + 14 + 14 + sh + 30;
+  }
+  h += `<div class="rule" style="top:${dy - 16}pt"></div>`;
+  const tag = String((C.listing||{}).kicker || '').trim();
+  if(tag) h += `<div class="abs tag" style="left:30pt;top:${dy+4}pt;width:170pt;height:52pt" data-slot="kicker" data-lines="3">${esc(tag)}</div>`;
+  h += `<div class="abs date" style="left:210pt;top:${dy}pt;width:372pt;height:38pt;text-align:right" data-fit="34,24" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:210pt;top:${dy+40}pt;width:372pt;height:24pt;text-align:right" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  dy += 70;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 210, dy, 372, 13, 2, 'text-align:right');
+  h += ev.html; dy += ev.h;
+  const cy = 700;
+  const issues = dy > cy - 18 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the agent row'}] : [];
+  h += `<div class="rule" style="top:${cy - 10}pt"></div>`;
+  h += OHL.contact(D, {x:30, y:cy, w:552, h:62, tone:'light', nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:50});
+  h += `<div class="rule" style="top:770pt;height:.6pt;opacity:.4"></div>`;
+  h += `<div class="abs fine" style="left:30pt;top:776pt;width:552pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => { const a = document.getElementById('h0'), b = document.getElementById('h1'); const s = Math.min(OHL.fit(a, 104, 40), b.textContent ? OHL.fit(b, 104, 40) : 999); [a, b].forEach(el => el.style.fontSize = s + 'pt'); };
+  return f;
+});
+</script>
+</body>
+</html>

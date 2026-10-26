@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Twilight Frame</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Twilight Frame (from reference B01). Trim 612 x 792 pt. REALTOR(R) or public; refreshments as a text line only.
+  The page is the brand's dark color with one closed hairline frame drawn on top of everything, so it never depends
+  on where trees or rooflines fall in the photo. The frame's top line opens for the brokerage logo, knocked out
+  in white (the owner's B01 note). Event at the top in wide-tracked caps, the whole house below at its own 3:2 shape
+  (nothing cropped off the sides), address and agent on the dark band under it.
+  Type: Tenor Sans (label, agent), Spectral (date, address), Jost (time, details).
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .fr{position:absolute;background:var(--on-dark);opacity:.92}
+  .eyebrow{font:500 10pt/12pt Jost;letter-spacing:4.5pt;text-transform:uppercase;color:var(--accent-on-dark);text-align:center}
+  .label{font:400 30pt/40pt 'Tenor Sans';letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .date{font:500 34pt/44pt Spectral;text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:600 19pt/24pt Jost;letter-spacing:2pt;text-transform:uppercase;color:var(--accent-on-dark);text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10.5pt/13pt Jost;letter-spacing:.4pt;text-align:center;opacity:.9}
+  .address{font:500 25pt/32pt Spectral;text-align:center;white-space:nowrap;overflow:hidden}
+  .details{font:500 9pt/12pt Jost;letter-spacing:1.6pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;opacity:.82}
+  .fine{font:400 6.6pt/8pt Jost;text-align:center;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['400 10pt "Tenor Sans"', '500 10pt Spectral', '500 10pt Jost', '600 10pt Jost', '400 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, A = D.agent || {}, b = D.brand || {}, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const X = 46, W = 520;
+  let h = '';
+  // the house: full width at 3:2, nothing off the sides
+  // (it gives up ground at the foot for the agent card; never past the house box, then it narrows at its own shape)
+  const py = 262, fh = OHL.fitHero(D, hero, 612, 368, true), ph = fh.h;
+  h += OHL.photo(D, hero, `left:${(612 - fh.w)/2}pt;top:${py}pt;width:${fh.w}pt;height:${ph}pt`);
+  // a soft lift of the dark field into the sky, never down to the roof
+  h += `<div class="abs" style="left:0;top:${py}pt;width:612pt;height:22pt;background:linear-gradient(var(--dark),transparent);opacity:.75"></div>`;
+
+  // event
+  h += `<div class="abs eyebrow" style="left:${X}pt;top:72pt;width:${W}pt;height:12pt">You're invited</div>`;
+  h += `<div class="abs label" style="left:${X}pt;top:88pt;width:${W}pt;height:40pt" data-fit="30,20" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  h += `<div class="abs" style="left:266pt;top:139pt;width:80pt;height:1pt;background:var(--accent-on-dark)"></div>`;
+  h += `<div class="abs date" style="left:${X}pt;top:150pt;width:${W}pt;height:44pt" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  h += E.time ? `<div class="abs time" style="left:${X}pt;top:198pt;width:${W}pt;height:24pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>` : '';
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, 230, W, 13);
+  h += ev.html;
+  const issues = ev.h > 26 ? [{slot:'oh.note', kind:'overflow', detail:'event lines run into the photo'}] : [];
+
+  // address, details, agent
+  h += `<div class="abs address" style="left:${X}pt;top:640pt;width:${W}pt;height:32pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  const det = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') , Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  ');
+  h += `<div class="abs details" style="left:${X}pt;top:673pt;width:${W}pt;height:12pt" data-slot="place" data-lines="1">${esc(det)}</div>`;
+  h += OHL.contact(D, {x:X, y:694, w:W, h:62, logo:false, align:'center', field:'dark', nameSize:18, nameFont:"'Tenor Sans'", nameWeight:400, bodyFont:'Jost'});
+  h += `<div class="abs fine" style="left:${X}pt;top:762pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc([[A.designation, b.brokerage].filter(Boolean).join(', '), C.fineprint || 'Information deemed reliable but not guaranteed.'].filter(Boolean).join('  ·  '))}</div>`;
+
+  // the closed frame, drawn last so it sits on top of the photo; its top line opens for the logo
+  const fx = 20, fy = 30, fr = 592, fb = 776, t = 1.2, gap = 92;
+  h += `<div class="fr" style="left:${fx}pt;top:${fy}pt;width:${306-gap-fx}pt;height:${t}pt"></div>`;
+  h += `<div class="fr" style="left:${306+gap}pt;top:${fy}pt;width:${fr-306-gap}pt;height:${t}pt"></div>`;
+  h += `<div class="fr" style="left:${fx}pt;top:${fy}pt;width:${t}pt;height:${fb-fy}pt"></div>`;
+  h += `<div class="fr" style="left:${fr-t}pt;top:${fy}pt;width:${t}pt;height:${fb-fy}pt"></div>`;
+  h += `<div class="fr" style="left:${fx}pt;top:${fb-t}pt;width:${fr-fx}pt;height:${t}pt"></div>`;
+  h += OHL.logo(D, 'knockout', `left:${306-gap+12}pt;top:8pt;width:${2*gap-24}pt;height:46pt;justify-content:center`);
+
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

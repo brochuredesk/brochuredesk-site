@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Date Tab</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Date Tab (from reference P21). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: straightforward, clean. The reference led with a stock photo of keys; we only use the listing's own photos, so
+  the house leads instead, inside a thin frame with a dark date tab hanging over its top edge. The event wording sits
+  large in a light panel overlapping the photo's lower right (over lawn only; otherwise beside it). Three rooms,
+  then a features list in a dark label box, the address and the agent with the logo.
+  Type: Archivo.
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .frame{position:absolute;border:1pt solid var(--ink);opacity:.3}
+  .tab{position:absolute;background:var(--dark);color:var(--on-dark);font:700 20pt/32pt Archivo;letter-spacing:2.4pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;padding:0 12pt}
+  .panel{position:absolute;background:var(--paper);opacity:.94}
+  .hl{font:700 50pt/50pt Archivo;text-transform:uppercase;letter-spacing:-.5pt;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .time{font:700 18pt/23pt Archivo;white-space:nowrap;overflow:hidden}
+  .lbl{position:absolute;background:var(--dark);color:var(--on-dark);font:700 9pt/16pt Archivo;letter-spacing:1.6pt;text-transform:uppercase;padding:0 8pt;white-space:nowrap}
+  .f{font:400 10.5pt/15pt Archivo;white-space:nowrap;overflow:hidden}
+  .addr{font:700 15pt/19pt Archivo}
+  .place{font:400 10pt/13pt Archivo;white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Archivo}
+  .oh-agent-name{font-family:Archivo;font-weight:700}
+  .oh-agent{font-family:Archivo}
+  .fine{font:400 6.6pt/8pt Archivo;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt Archivo', '400 10pt Archivo'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 3);
+  const X = 36, W = 540;
+  let h = '';
+  // the house in a thin frame
+  const py = 40, fr = OHL.fitHero(D, hero, W - 16, 330);
+  h += `<div class="frame" style="left:${X}pt;top:${py - 8}pt;width:${W}pt;height:${fr.h + 16}pt"></div>`;
+  const px = X + 8 + (W - 16 - fr.w)/2;
+  h += OHL.photo(D, hero, `left:${px}pt;top:${py}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  // the date tab over the frame's top edge
+  h += `<div class="tab" style="left:${X + W/2 - 190}pt;top:${py - 24}pt;width:380pt;height:32pt" data-fit="20,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  // the headline panel: over the photo's lower right only when that corner holds no house
+  const pw = 300, phh = 132, pX = X + W - pw, pY = py + fr.h - phh + 26;
+  const box = OHL.houseInFrame(D, hero, fr.w, fr.h);
+  const over = !box || ((pX - px)/fr.w > box.right + .01) || ((pY - py)/fr.h > box.bottom + .01);
+  const panelY = over ? pY : py + fr.h + 14, panelX = over ? pX : X;
+  const lines = OHL.labelLines(E.label);
+  h += `<div class="panel" style="left:${panelX}pt;top:${panelY}pt;width:${pw}pt;height:${phh}pt"></div>`;
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:${panelX+(over?16:0)}pt;top:${panelY + 12 + i*48}pt;width:${pw-24}pt;height:52pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  if(E.time) h += `<div class="abs time" style="left:${panelX+(over?18:2)}pt;top:${panelY + 12 + lines.length*48 + 6}pt;width:${pw-28}pt;height:23pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  // rooms
+  let y = over ? Math.max(py + fr.h + 22, panelY + phh + 12) : panelY + phh + 12;
+  if(!over){ const rx2 = X + pw + 12, rw2 = (X + W - rx2 - 10)/2; rooms.slice(0, 2).forEach((id, i) => h += OHL.photo(D, id, `left:${rx2 + i*(rw2+10)}pt;top:${panelY + 8}pt;width:${rw2}pt;height:${phh - 8}pt`)); }
+  const rw = (over ? pX - X - 12 : W), rr = rooms.length, cw = (rw - (rr - 1)*10)/rr;
+  const rh = 104;
+  if(over){ rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(cw+10)}pt;top:${py + fr.h + 22}pt;width:${cw}pt;height:${rh}pt`)); y = Math.max(py + fr.h + 22 + rh + 16, panelY + phh + 14); }
+  // features and address
+  h += `<div class="lbl" style="left:${X}pt;top:${y}pt">Property features</div>`;
+  const facts = [...Ivory.facts(L), L.neighborhood && `In ${L.neighborhood}`].filter(Boolean);
+  facts.forEach((t, i) => h += `<div class="abs f" style="left:${X + (i%2)*130}pt;top:${y + 22 + Math.floor(i/2)*15}pt;width:126pt;height:15pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  const ax = X + 290, aw = W - 290;
+  const an = Ivory.linesNeeded('addr', L.address, aw, 19);
+  h += `<div class="abs addr" style="left:${ax}pt;top:${y}pt;width:${aw}pt;height:${an*19+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:${ax}pt;top:${y+an*19+4}pt;width:${aw}pt;height:13pt" data-slot="place" data-lines="1">${esc([L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : ''))}</div>`;
+  y += Math.max(22 + Math.ceil(facts.length/2)*15, an*19 + 20) + 10;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, y, W, 13, 2);
+  h += ev.html; y += ev.h;
+  const issues = y > 696 ? [{slot:'oh.note', kind:'overflow', detail:'the page is too full'}] : [];
+  h += OHL.contact(D, {x:X, y:Math.max(704, y + 8), w:W, h:62, tone:'light', nameSize:17, phoneSize:13, lineSize:9.5, logoW:176, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 50, 26, panelY + 12, 0.96);
+  return f;
+});
+</script>
+</body>
+</html>

@@ -833,7 +833,7 @@
     const lib = designs.find(d => d.library);
     $('#libEntry').hidden = !lib;
     if(lib) $('#libEntry').innerHTML = `<div class="offer"><h3>Just Listed and Just Sold library <span class="badge">test</span></h3>
-      <p>35 postcard and social designs. Pick any of them on their own, made from your listing.</p><p><button class="btn" type="button" id="toLib">Open the library</button></p></div>`;
+      <p>Every approved Just Listed and Just Sold social design. Pick any of them on their own, made from your listing.</p><p><button class="btn" type="button" id="toLib">Open the library</button></p></div>`;
     if(lib) $('#toLib').onclick = () => openLib();
     // the open house library shows only when an Open House flyer is in the order
     const oh = ps.includes('open-house-flyer');
@@ -854,8 +854,9 @@
   // call); Just Sold wording is the agent's picks plus the playbook (no AI). Photos are read once (Haiku) for each one's
   // room and the box around the whole house, so every crop keeps the whole house.
   const LIB = 'announce', PLAY = (window.ANN && ANN.PLAYBOOK) || {ctas: []};
-  const LIB_TABS = [{id: 'jl-mail', label: 'Just Listed postcards', card: 'listed', social: false}, {id: 'jl-social', label: 'Just Listed social', card: 'listed', social: true},
-    {id: 'js-mail', label: 'Just Sold postcards', card: 'sold', social: false}, {id: 'js-social', label: 'Just Sold social', card: 'sold', social: true}];
+  // the postcard tabs are off: this library's postcards are older builds that were never approved (the approved ones are the
+  // Just Listed and Just Sold libraries on /preview/just-listed/ and /preview/just-sold/); only the approved socials show
+  const LIB_TABS = [{id: 'jl-social', label: 'Just Listed social', card: 'listed', social: true}, {id: 'js-social', label: 'Just Sold social', card: 'sold', social: true}];
   // the sample listing's two exterior photos, measured by hand (same boxes as samples/announce/data.json)
   const SAMPLE_HOUSES = {'front.jpg': {kind: 'front', room: 'Front', house: {left: .14, top: .05, right: .88, bottom: .74}},
     'family.jpg': {kind: 'side', room: 'Front', house: {left: .2, top: .19, right: .83, bottom: .67}}};
@@ -866,7 +867,7 @@
     'outside-safe-zone': 'Something is too close to the trim', 'type-too-small': 'Some type is under 8 pt', 'fine-print-below-6pt': 'Fine print is under 6 pt',
     'low-contrast': 'Some text is hard to read on its color', 'story-safe-zone': 'Text sits under the Instagram/Facebook bars', 'outside-grid-crop': 'Address or name falls outside the grid crop',
     'banned-phrase': 'A phrase we don\'t allow', 'missing-copy': 'Some copy is missing'};
-  const libState = p => p.lib || (p.lib = {houses: null, housesNote: '', copy: null, cost: 0, tab: 'jl-mail', picks: [],
+  const libState = p => p.lib || (p.lib = {houses: null, housesNote: '', copy: null, cost: 0, tab: 'jl-social', picks: [],
     sold: {headline: 'Just Sold', side: '', days: '', offers: '', offersOk: false, cta: 3, own: ''}, ordered: null});
   function libSold(s){
     const t = (s.own || '').trim() || PLAY.ctas[s.cta] || PLAY.ctas[0] || '', q = t.indexOf('?');
@@ -983,7 +984,9 @@
     ['#lsDays', '#lsOffers', '#lsOwn'].forEach(q => $(q).onchange = upd);
   }
   async function libGrid(){
-    const s = libState(pkg), S = await spec(LIB), tab = LIB_TABS.find(t => t.id === s.tab);
+    const s = libState(pkg), S = await spec(LIB);
+    if(!LIB_TABS.some(t => t.id === s.tab)) s.tab = LIB_TABS[0].id;
+    const tab = LIB_TABS.find(t => t.id === s.tab);
     soldForm();
     $('#libTabs').innerHTML = LIB_TABS.map(t => `<button type="button" role="tab" aria-selected="${t.id === s.tab}" data-tab="${t.id}">${t.label}</button>`).join('');
     $$('[data-tab]').forEach(b => b.onclick = () => { s.tab = b.dataset.tab; save(); libGrid(); });

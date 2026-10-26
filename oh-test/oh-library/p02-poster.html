@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Poster</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Poster (from reference P02). Trim 612 x 792 pt. Public or REALTOR(R).
+  A bold poster on the brand's dark color: the agent's event wording stacked huge at top left, the date stacked big
+  at top right, the house at 3:2 inside a thin offset frame, then address on the left and the full date and time on
+  the right, both large. Agent and logo along the foot. No QR, no RSVP pill.
+  Type: Archivo 700 (headline, date, address), Archivo 400 (details).
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .hl{font:700 92pt/80pt Archivo;text-transform:uppercase;letter-spacing:-1.5pt;white-space:nowrap;overflow:hidden;color:var(--paper)}
+  .wd{font:700 12pt/15pt Archivo;letter-spacing:3pt;text-transform:uppercase;color:var(--accent-on-dark);text-align:right;white-space:nowrap;overflow:hidden}
+  .dd{font:700 50pt/54pt Archivo;text-transform:uppercase;letter-spacing:-.5pt;text-align:right;white-space:nowrap;overflow:hidden;color:var(--paper)}
+  .addr{font:700 24pt/30pt Archivo;letter-spacing:-.2pt}
+  .place{font:400 9.5pt/12pt Archivo;letter-spacing:1.6pt;text-transform:uppercase;opacity:.8;white-space:nowrap;overflow:hidden}
+  .facts{font:400 10.5pt/14pt Archivo;opacity:.9;white-space:nowrap;overflow:hidden}
+  .long{font:700 20pt/24pt Archivo;text-align:right;white-space:nowrap;overflow:hidden}
+  .time{font:700 22pt/27pt Archivo;color:var(--accent-on-dark);text-align:right;white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Archivo;text-align:right;opacity:.9}
+  .oh-agent-name{font-family:Archivo;font-weight:700}
+  .oh-agent{font-family:Archivo}
+  .fine{font:400 6.6pt/8pt Archivo;white-space:nowrap;opacity:.55}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt Archivo', '400 10pt Archivo'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  // headline stacked, the short date stacked at right
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" id="hl${i}" style="left:34pt;top:${34 + i*80}pt;width:390pt;height:84pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  if(E.weekday){
+    h += `<div class="abs wd" style="left:426pt;top:${34+80+10}pt;width:150pt;height:15pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+    h += `<div class="abs dd" style="left:406pt;top:${34+80+26}pt;width:170pt;height:54pt" data-fit="50,30" data-slot="oh.date" data-lines="1">${esc(E.monthShort + ' ' + E.day)}</div>`;
+  }
+  // the house, framed
+  // long special notes / refreshments: the photo gives up lawn at the bottom (the house-cut check guards it)
+  const evNeed = [[E.note,'ev'],[E.refreshments,'ev']].filter(l=>l[0]).reduce((a,l)=>a + Ivory.linesNeeded('ev', l[0], 250, 13)*13 + 2, 0);
+  // when the house leaves no ground to give, the whole photo gets smaller at 3:2 instead (nothing more is cropped)
+  const want = 360 - Math.min(48, Math.max(0, 62 + evNeed - (688 - (220 + 360 + 26))));
+  const minH = OHL.minFrameH(D, hero, 540, 360);
+  const py = 220, ph = want, pw = want >= minH ? 540 : Math.round(want*1.5), px = 36 + (540 - pw)/2;
+  h += `<div class="abs" style="left:${px-7}pt;top:${py-7}pt;width:${pw+14}pt;height:${ph+14}pt;border:.9pt solid var(--accent-on-dark);opacity:.8"></div>`;
+  h += OHL.photo(D, hero, `left:${px}pt;top:${py}pt;width:${pw}pt;height:${ph}pt`);
+
+  // address left, full date and time right
+  const y = py + ph + 26;
+  const an = Ivory.linesNeeded('addr', L.address, 280, 30);
+  h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:280pt;height:${an*30+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y+an*30+6}pt;width:280pt;height:12pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += `<div class="abs facts" style="left:36pt;top:${y+an*30+24}pt;width:280pt;height:14pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '   ·   '))}</div>`;
+  h += `<div class="abs long" style="left:326pt;top:${y}pt;width:250pt;height:24pt" data-fit="20,15" data-slot="oh.long" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:326pt;top:${y+28}pt;width:250pt;height:27pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 326, y + 62, 250, 13, 2);
+  h += ev.html;
+  const issues = (y + 62 + ev.h > 688) ? [{slot:'oh.note', kind:'overflow', detail:'event lines run into the contact row'}] : [];
+
+  h += `<div class="abs" style="left:36pt;top:694pt;width:540pt;height:.8pt;background:var(--on-dark);opacity:.3"></div>`;
+  h += OHL.contact(D, {x:36, y:706, w:540, h:60, tone:'dark', nameSize:17, phoneSize:13, lineSize:9.5, logoW:176, logoH:50});
+  h += `<div class="abs fine" style="left:36pt;top:776pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => {   // the headline takes the width the date leaves it, every line at one size
+    const dd = document.querySelector('.dd'), wd = document.querySelector('.wd');
+    let dw = 0;
+    if(dd){ const m = document.createElement('span'); m.className = 'dd'; m.style.cssText = `position:absolute;visibility:hidden;font-size:${dd.style.fontSize}`; m.textContent = dd.textContent; document.body.appendChild(m); dw = m.offsetWidth*72/96; m.remove(); }
+    const els = [...document.querySelectorAll('.hl')];
+    els.forEach(el => el.style.width = (576 - 34 - (dw ? dw + 26 : 0))+'pt');
+    let st = OHL.stack(els, 92, 40, 0, 0.88);
+    // the block sits centered above the photo frame; the date sits on the headline's last line
+    const top = Math.max(26, (206 - st.bottom)/2);
+    st = OHL.stack(els, 92, 40, top, 0.88);
+    if(dd){ dd.style.top = (st.bottom - 58)+'pt'; wd.style.top = (st.bottom - 74)+'pt'; }
+  };
+  return f;
+});
+</script>
+</body>
+</html>

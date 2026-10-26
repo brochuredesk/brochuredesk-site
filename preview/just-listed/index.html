@@ -81,13 +81,13 @@
 <body>
 <header>
   <h1>Just Listed postcards · test page</h1>
-  <p>Every approved 6 x 9 design, plus first drafts at 6 x 11. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
+  <p>Every approved design. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
 </header>
 <main>
   <aside>
     <div class="grp"><h2>Designs</h2><div class="list" id="list-main"></div></div>
     <fieldset><legend>Card size</legend>
-      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11 (draft)</button></div>
+      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11</button></div>
     </fieldset>
     <fieldset><legend>Agent</legend>
       <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
@@ -117,7 +117,7 @@
   <section class="view">
     <div class="vtitle"><h2 id="t-name"></h2><span id="t-sub"></span></div>
     <p class="note" id="t-note"></p>
-    <p class="draft" id="t-draft">6 x 11 is a first draft made from the approved 6 x 9 layout. It isn't approved yet.</p>
+    <p class="draft" id="t-draft">This design's 6 x 11 isn't approved yet.</p>
     <p class="note">Click any text on a card to change its wording, font, color or size. The print checks run on your changes.</p>
     <div class="sides">
       <div class="side" data-side="front"><h3>Front</h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
@@ -203,7 +203,7 @@
     const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
     d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
     $('t-hs').textContent = d.agent.headshot ? '· with headshot' : '· no headshot';
-    $('t-draft').style.display = size() === '6x11' ? 'block' : 'none';
+    $('t-draft').style.display = size() === '6x11' && (cur.no11 || /[?&]all=1/.test(location.search)) ? 'block' : 'none';
     getDesign(cur.file).then(t => Promise.all(['front','back'].map(side => {
       const el = document.querySelector(`.side[data-side="${side}"]`), host = el.querySelector('.host');
       el.querySelector('.frame').classList.toggle('wide', size() === '6x11');
@@ -214,6 +214,8 @@
   }
   function pick(id){
     cur = spec.designs.find(x => x.id === id);
+    const b11 = $('size').querySelector('[data-v="6x11"]');   // a design whose 6 x 11 isn't approved shows only its 6 x 9
+    if(b11){ b11.hidden = !!cur.no11; if(cur.no11 && size() === '6x11') $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === '6x9'))); }
     document.querySelectorAll('.list button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
     $('t-name').textContent = cur.id + (cur.title ? ' · ' + cur.title : '');
     $('t-sub').textContent = ''; $('t-note').textContent = '';
@@ -268,8 +270,10 @@
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
   let t; document.querySelectorAll('aside input, aside textarea').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
   Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
-    const ok = id => s.pieces.filter(p => p.design === id && p.size === '6x9').every(p => p.approved);
-    if(!/[?&]all=1/.test(location.search)) s.designs = s.designs.filter(d => ok(d.id));
+    const all = /[?&]all=1/.test(location.search), ok = (id, sz) => { const ps = s.pieces.filter(p => p.design === id && p.size === sz); return ps.length && ps.every(p => p.approved); };
+    if(!all) s.designs = s.designs.filter(d => ok(d.id, '6x9'));
+    if(!all && !s.designs.some(d => ok(d.id, '6x11'))){ const b = $('size').querySelector('[data-v="6x11"]'); if(b) b.remove(); }
+    else if(!all) s.designs.forEach(d => { d.no11 = !ok(d.id, '6x11'); });
     spec = s; sample = fix(smp); data = JSON.parse(JSON.stringify(sample)); fillForm();
     for(const d of spec.designs){ const b = document.createElement('button'); b.type = 'button'; b.dataset.id = d.id; b.textContent = d.id.replace('M','');
       b.title = d.id + (d.title ? ' · ' + d.title : ''); b.onclick = () => pick(d.id);

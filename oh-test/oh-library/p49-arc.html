@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Arc</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Arc (from reference P49). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner liked the look but worried about cutting off the house. Here the whole house sits across the top at nearly
+  its own shape; the curve is the photo's bottom edge, sweeping up toward the left across the lawn only (the mask
+  check proves it never touches the house). A tall serif headline and the address share the middle, a ruled
+  When row carries the date and time, and the agent sits on a block of the brand's main color at the foot
+  (the gray block in the reference, now the agent's own color).
+  Type: Spectral (headline, date), Jost (address, labels).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .hl{font:400 80pt/72pt Spectral;text-transform:uppercase;letter-spacing:-.5pt;color:var(--main-on-paper);white-space:nowrap;overflow:hidden}
+  .addr{font:600 19pt/24pt Jost;text-align:right}
+  .addr b{font-weight:600;color:var(--main-on-paper)}
+  .place{font:500 9.5pt/12pt Jost;letter-spacing:1.5pt;text-transform:uppercase;text-align:right;opacity:.75;white-space:nowrap;overflow:hidden}
+  .facts{font:400 10.5pt/14pt Jost;text-align:right;white-space:nowrap;overflow:hidden}
+  .rule{position:absolute;left:36pt;width:540pt;height:.9pt;background:var(--ink);opacity:.35}
+  .vr{position:absolute;width:.9pt;background:var(--ink);opacity:.35}
+  .when{font:600 15pt/20pt Jost;letter-spacing:2.5pt;text-transform:uppercase;color:var(--main-on-paper);text-align:center;white-space:nowrap}
+  .date{font:500 26pt/32pt Spectral;text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:600 20pt/26pt Jost;text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10pt/13pt Jost;text-align:center}
+  .blk{position:absolute;background:var(--main);color:var(--on-main)}
+  .oh-agent-name{font-family:Spectral;font-weight:500}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;opacity:.6;text-align:right}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['400 10pt Spectral', '500 10pt Spectral', '600 10pt Jost', '500 10pt Jost', '400 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  // the house across the top; the curve leaves the frame's full height at right and rises to 80% at left
+  const ph = 420, clear = 0.80, PX = 4/3, H = ph*PX, Wp = 612*PX;
+  const clip = `path('M0 0 H${Wp} V${H} C ${Wp*0.62} ${H} ${Wp*0.28} ${H*0.97} 0 ${H*clear} Z')`;
+  const curved = OHL.maskFits(D, hero, 612, ph, clear);   // no proof the curve misses the house: a straight edge
+  h += curved ? OHL.photo(D, hero, `left:0;top:0;width:612pt;height:${ph}pt;clip-path:${clip}`).replace('class="photo ', `data-clear="0,0,1,${clear}" class="photo `)
+              : OHL.photo(D, hero, `left:0;top:0;width:612pt;height:${ph}pt`);
+  // an accent hairline echoing the curve, just below it
+  if(curved) h += `<svg class="abs" style="left:0;top:0;width:612pt;height:${ph+12}pt" viewBox="0 0 ${Wp} ${H+16}"><path d="M0 ${H*clear+12} C ${Wp*0.28} ${H*0.97+12} ${Wp*0.62} ${H+12} ${Wp} ${H+12}" fill="none" stroke="var(--accent)" stroke-width="1.6"/></svg>`;
+
+  // headline left, address right
+  const lines = OHL.labelLines(E.label);
+  const top = 440 + (2 - lines.length) * 36;
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:32pt;top:${top + i*74}pt;width:310pt;height:78pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  const m = /^(\S+\s+)(.+?)(\s+\S+)?$/.exec(L.address) || [], num = m[1] || '', street = m[2] || L.address, suffix = m[3] || '';
+  const an = Ivory.linesNeeded('addr', L.address, 220, 24);
+  const ay = 512 - an*12;
+  h += `<div class="abs addr" style="left:356pt;top:${ay}pt;width:220pt;height:${an*24+5}pt" data-slot="address" data-lines="${an}">${esc(num)}<b>${esc(street)}</b>${esc(suffix)}</div>`;
+  h += `<div class="abs place" style="left:336pt;top:${ay+an*24+4}pt;width:240pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs facts" style="left:336pt;top:${ay+an*24+20}pt;width:240pt;height:14pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+
+  // When row
+  const ry = 590, rh = 58;
+  h += `<div class="rule" style="top:${ry}pt"></div><div class="rule" style="top:${ry+rh}pt"></div>`;
+  h += `<div class="vr" style="left:116pt;top:${ry+13}pt;height:${rh-26}pt"></div><div class="vr" style="left:360pt;top:${ry+13}pt;height:${rh-26}pt"></div>`;
+  h += `<div class="abs when" style="left:36pt;top:${ry+19}pt;width:80pt;height:20pt">When</div>`;
+  h += `<div class="abs date" style="left:122pt;top:${ry+13}pt;width:232pt;height:32pt" data-fit="26,19" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:366pt;top:${ry+16}pt;width:210pt;height:26pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 36, ry + rh + 6, 540, 13);
+  h += ev.html;
+  const issues = ev.h > 30 ? [{slot:'oh.note', kind:'overflow', detail:'event lines run into the agent block'}] : [];
+
+  // agent on the main-color block, logo on the paper
+  const by = 694;
+  h += `<div class="blk" style="left:0;top:${by}pt;width:350pt;height:${792-by}pt;border-top-right-radius:46pt"></div>`;
+  h += OHL.contact(D, {x:30, y:by+8, w:306, h:80, tone:'dark', logo:false, nameSize:19, color:'var(--on-main)'});
+  h += OHL.logo(D, 'light', `left:380pt;top:${by+10}pt;width:196pt;height:52pt;justify-content:flex-end`);
+  h += `<div class="abs fine" style="left:376pt;top:766pt;width:200pt;height:18pt" data-slot="fineprint" data-lines="2" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => {   // the headline block centered between the curve and the When row
+    const els = [...document.querySelectorAll('.hl')];
+    const st = OHL.stack(els, 80, 40, 0, 0.92), hgt = st.bottom;
+    els.forEach(el => el.style.top = (parseFloat(el.style.top) + 436 + (144 - hgt)/2)+'pt');
+  };
+  return f;
+});
+</script>
+</body>
+</html>

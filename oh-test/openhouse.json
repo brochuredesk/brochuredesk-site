@@ -1,0 +1,556 @@
+{
+ "approved": [
+  {
+   "design": "ivory",
+   "piece": "open-house-v1",
+   "file": "openhouse-v1.html",
+   "name": "Ivory Invitation",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v2",
+   "file": "openhouse-v2.html",
+   "name": "Ivory Date Band",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v3",
+   "file": "openhouse-v3.html",
+   "name": "Ivory Hero Panel",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v4",
+   "file": "openhouse-v4.html",
+   "name": "Ivory Calendar",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
+  },
+  {
+   "design": "ivory",
+   "piece": "open-house-v5",
+   "file": "openhouse-v5.html",
+   "name": "Ivory Editorial",
+   "own": true,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "margin",
+   "margin": 18,
+   "variant": "openhouse",
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b01-twilight-frame",
+   "file": "b01-twilight-frame.html",
+   "name": "Twilight Frame",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b16-evening-panel",
+   "file": "b16-evening-panel.html",
+   "name": "Evening Panel",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b10-luncheon-band",
+   "file": "b10-luncheon-band.html",
+   "name": "Luncheon Band",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": true
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p02-poster",
+   "file": "p02-poster.html",
+   "name": "Poster",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p17-angle",
+   "file": "p17-angle.html",
+   "name": "Angle",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p49-arc",
+   "file": "p49-arc.html",
+   "name": "Arc",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b02-gallery-line",
+   "file": "b02-gallery-line.html",
+   "name": "Gallery Line",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b11-lifted-photo",
+   "file": "b11-lifted-photo.html",
+   "name": "Lifted Photo",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b14-photo-grid",
+   "file": "b14-photo-grid.html",
+   "name": "Photo Grid",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b26-agent-preview",
+   "file": "b26-agent-preview.html",
+   "name": "Agent Preview",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b46a-arrow",
+   "file": "b46a-arrow.html",
+   "name": "Arrow",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b46b-chevron",
+   "file": "b46b-chevron.html",
+   "name": "Chevron",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p22-diagonal",
+   "file": "p22-diagonal.html",
+   "name": "Diagonal",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b08-night-fade",
+   "file": "b08-night-fade.html",
+   "name": "Night Fade",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-b13-tasting-table",
+   "file": "b13-tasting-table.html",
+   "name": "Tasting Table",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": true
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p01-ruled-editorial",
+   "file": "p01-ruled-editorial.html",
+   "name": "Ruled Editorial",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p04-soft-geometry",
+   "file": "p04-soft-geometry.html",
+   "name": "Soft Geometry",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p05-rounded-frame",
+   "file": "p05-rounded-frame.html",
+   "name": "Rounded Frame",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p13-logo-grid",
+   "file": "p13-logo-grid.html",
+   "name": "Logo Grid",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p16-modern-frame",
+   "file": "p16-modern-frame.html",
+   "name": "Modern Frame",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p19-color-grid",
+   "file": "p19-color-grid.html",
+   "name": "Color Grid",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p20-garden-serif",
+   "file": "p20-garden-serif.html",
+   "name": "Garden Serif",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p21-date-tab",
+   "file": "p21-date-tab.html",
+   "name": "Date Tab",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p36-photo-strip",
+   "file": "p36-photo-strip.html",
+   "name": "Photo Strip",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  }
+ ],
+ "candidates": []
+}

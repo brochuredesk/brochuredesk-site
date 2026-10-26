@@ -81,7 +81,7 @@
 <body>
 <header>
   <h1>Just Sold postcards · test page</h1>
-  <p>All 40 approved designs, 6 x 9, plus first drafts at 6 x 11. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
+  <p>Every approved design. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
 </header>
 <main>
   <aside>
@@ -89,7 +89,7 @@
     <div class="grp"><h2>Specialty</h2><div class="list" id="list-specialty"></div></div>
     <p class="note" style="margin-top:-6px">Specialty cards show a sale detail (days on market or number of offers) or a side label. • means the card needs that sale detail.</p>
     <fieldset><legend>Card size</legend>
-      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11 (draft)</button></div>
+      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11</button></div>
       <div id="plainbox" style="display:none"><label>Sale detail on this 6 x 11 specialty card</label>
       <div class="seg" id="plain"><button type="button" data-v="0" aria-pressed="true">Show it</button><button type="button" data-v="1">Leave it out</button></div></div>
     </fieldset>
@@ -116,7 +116,7 @@
     <div class="vtitle"><h2 id="t-name"></h2><span id="t-sub"></span></div>
     <p class="note" id="t-note"></p>
     <p class="note">Click any text on a card to change its wording, font, color or size. The print checks run on your changes.</p>
-    <p class="draft" id="t-draft">6 x 11 is a first draft made from the approved 6 x 9 layout. It isn't approved yet.</p>
+    <p class="draft" id="t-draft">This design's 6 x 11 isn't approved yet.</p>
     <div class="sides">
       <div class="side" data-side="front"><h3>Front</h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
         <div class="act"><button type="button" data-print="front">Download print PDF (front)</button></div></div>
@@ -194,7 +194,7 @@
   }
   function render(){
     if(!cur) return; const my = ++seq; $('busy').style.display = 'block';
-    $('t-draft').style.display = size() === '6x11' ? 'block' : 'none';
+    $('t-draft').style.display = size() === '6x11' && (cur.no11 || /[?&]all=1/.test(location.search)) ? 'block' : 'none';
     $('plainbox').style.display = cur.group === 'specialty' && size() === '6x11' ? 'block' : 'none';
     readForm();
     const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
@@ -209,6 +209,8 @@
   }
   function pick(id){
     cur = spec.designs.find(x => x.id === id);
+    const b11 = $('size').querySelector('[data-v="6x11"]');   // a design whose 6 x 11 isn't approved shows only its 6 x 9
+    if(b11){ b11.hidden = !!cur.no11; if(cur.no11 && size() === '6x11') $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === '6x9'))); }
     document.querySelectorAll('.list button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
     $('t-name').textContent = cur.id + (cur.title ? ' · ' + cur.title : '');
     $('t-sub').textContent = cur.group !== 'specialty' ? '' : cur.id === 'M35' ? 'Specialty card: keeps "Represented the seller."' : 'Specialty card for agents who want to show this sale detail.';
@@ -263,6 +265,10 @@
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
   let t; document.querySelectorAll('aside input').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
   Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
+    const all = /[?&]all=1/.test(location.search), ok = (id, sz) => { const ps = s.pieces.filter(p => p.design === id && p.size === sz); return ps.length && ps.every(p => p.approved); };
+    if(!all) s.designs = s.designs.filter(d => ok(d.id, '6x9'));
+    if(!all && !s.designs.some(d => ok(d.id, '6x11'))){ const b = $('size').querySelector('[data-v="6x11"]'); if(b) b.remove(); }
+    else if(!all) s.designs.forEach(d => { d.no11 = !ok(d.id, '6x11'); });
     spec = s; sample = fix(smp); data = JSON.parse(JSON.stringify(sample)); fillForm();
     for(const d of spec.designs){ const b = document.createElement('button'); b.type = 'button'; b.dataset.id = d.id; b.textContent = d.id.replace('M','');
       b.title = d.id + (d.title ? ' · ' + d.title : ''); if(d.needs.length) b.classList.add('needs'); b.onclick = () => pick(d.id);
