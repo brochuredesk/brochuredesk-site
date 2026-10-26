@@ -137,6 +137,12 @@ section.s.alt{background:var(--paper);border-block:1px solid var(--line)}
 .price ul{margin:0;padding-left:18px;color:var(--slate);font-size:15px;display:grid;gap:6px}
 .pricenote{margin-top:22px;font-size:14.5px;color:var(--slate)}
 
+/* own design teaser */
+section#own{padding-block:44px;border-top:1px solid var(--line)}
+.own{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center}
+@media (max-width:820px){.own{grid-template-columns:minmax(0,1fr)}}
+.own .btn{justify-self:start}
+
 /* teams */
 .teams{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center}
 @media (max-width:820px){.teams{grid-template-columns:minmax(0,1fr)}}
@@ -424,6 +430,13 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
     </div>
   </section>
 
+  <section class="s" id="own">
+    <div class="in own">
+      <div class="shead" style="margin:0"><h2>Want your own design?</h2><p>We'll build a full matching set around your brand and keep it in your account.</p></div>
+      <div><a class="btn" href="/preview/own-design/">See how it works</a></div>
+    </div>
+  </section>
+
   <section class="s alt" id="teams">
     <div class="in teams">
       <div class="shead" style="margin:0"><h2>Accounts for teams and brokers</h2><p>Sign in as a team or broker to order for your agents and see their past orders in one place. Each agent still has their own sign-in, with their name and contact card saved.</p></div>
@@ -439,7 +452,8 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
         <details><summary>What if my listing isn't live yet?</summary><p>Upload your photos, a PDF or screenshots of the draft listing, and a floor plan if you have one. We build from those.</p></details>
         <details><summary>Can I change the brochure after it's done?</summary><p>Yes. On your proof, click the photo or line you want changed and type what you want in plain English.</p></details>
         <details><summary>Do you redraw floor plans?</summary><p>Yes. Send the plan you have and we redraw it to match your design.</p></details>
-        <details><summary>Does the listing price go on the pieces?</summary><p>No. If the price changes, you'd have to reprint every flyer. To ask for an exception, or for a personalized design, email support@brochuredesk.com.</p></details>
+        <details><summary>Does the listing price go on the pieces?</summary><p>No. If the price changes, you'd have to reprint every flyer. To ask for an exception, email support@brochuredesk.com.</p></details>
+        <details><summary>Can I get my own design?</summary><p>Yes. <a href="/preview/own-design/">Send us your logo and a piece or two you like</a>, and we'll build a full matching set in your brand (fold-over, Open House flyer, postcards and social posts), saved to your account.</p></details>
       </div>
     </div>
   </section>

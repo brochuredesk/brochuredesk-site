@@ -388,6 +388,11 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       </div>
       <aside>
         <div class="pack"><div class="n">3</div><p>packages left in your 5-pack. Use them on any listing, any time.</p><a class="btn" href="#">Buy another 5-pack</a></div>
+        <div class="card" id="designTeaser">
+          <h3>Want your own design?</h3>
+          <p>We'll build a full matching set around your brand and keep it in your account.</p>
+          <div class="row" style="margin-top:12px"><button class="btn line" type="button" id="openDesign">See how it works</button></div>
+        </div>
         <div class="card">
           <h3>Your contact card</h3>
           <p>This goes on the back of every piece, under the <span data-k="org">team</span> brand.</p>
@@ -407,6 +412,16 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         </div>
       </aside>
     </div>
+  </main>
+
+  <!-- Personalized design request (own-design.js is loaded the first time this opens) -->
+  <main class="wrap" id="designMain" hidden>
+    <section class="hello">
+      <p><button class="btn line" type="button" id="designBack">Back to your home</button></p>
+      <h1>Want your own design?</h1>
+      <p>We'll build a full matching set around your brand and keep it in your account.</p>
+    </section>
+    <div id="designRoot" style="padding-bottom:64px"></div>
   </main>
 
   <!-- First-sign-in intake and the profile page share one form -->
@@ -585,7 +600,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       $('pfSave').textContent = 'Save changes'; $('pfCancel').hidden = false;
     }
     preview();
-    $('homeMain').hidden = true; $('profileMain').hidden = false;
+    $('homeMain').hidden = true; $('designMain').hidden = true; $('profileMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
   }
 
@@ -789,13 +804,43 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     tx.append(document.createElement('br'), p.preferred_email || me.email);
     c.append(tx);
     document.title = `${team.name} Print Marketing`;
-    $('profileMain').hidden = true; $('homeMain').hidden = false;
+    $('profileMain').hidden = true; $('designMain').hidden = true; $('homeMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
   }
   ['bdHome','lockHome'].forEach(id => $(id).addEventListener('click', e => { e.preventDefault(); if (me) enterHome(false); }));
   $('acctBtn').addEventListener('click', () => openProfile('edit'));
   $('editCard').addEventListener('click', () => openProfile('edit'));
   $('openProfile').addEventListener('click', () => openProfile('edit'));
+
+  // ---------- own design request ----------
+  let designLoaded = null;
+  function loadOwnDesign(){
+    if (window.OwnDesign) return Promise.resolve();
+    if (!designLoaded) designLoaded = new Promise((ok, no) => {
+      const s = document.createElement('script');
+      s.src = '/preview/own-design.js?v=1'; s.onload = ok; s.onerror = () => { designLoaded = null; no(); };
+      document.head.appendChild(s);
+    });
+    return designLoaded;
+  }
+  async function openDesign(){
+    const b = team.brand || {};
+    const { data: s } = await sb.auth.getSession();
+    try { await loadOwnDesign(); } catch (e) { return; }
+    const p = profile || {};
+    window.OwnDesign.mount($('designRoot'), {
+      mode: 'portal',
+      org: { name: team.name, kind: b.kind === 'brokerage' ? 'brokerage' : 'team', logoSvg: b.logoColor, colors: [b.primary, b.deep].filter(Boolean) },
+      person: { name: p.display_name || '', preferred: p.greeting_name || '', email: p.preferred_email || me.email, brokerage: team.name },
+      logo: b.logoColor ? { svg: b.logoColor } : null,
+      accessToken: s.session ? s.session.access_token : null,
+      portal: code
+    });
+    $('homeMain').hidden = true; $('profileMain').hidden = true; $('designMain').hidden = false;
+    show('vHome'); window.scrollTo(0,0);
+  }
+  $('openDesign').addEventListener('click', openDesign);
+  $('designBack').addEventListener('click', () => enterHome(false));
 
   async function tryEnter(){
     const { data, error } = await sb.rpc('my_team', { p_code: code });
