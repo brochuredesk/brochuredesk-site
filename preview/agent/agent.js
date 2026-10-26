@@ -1393,7 +1393,8 @@
       .filter(x => x.text.length > 2 && !/(^|\.)(kicker|stats|location|eyebrow|label|big|kind)(\.|$)/.test(x.path));
     try {
       const j = await ai({action: 'ai-check', packageId: pkg.id, texts: lines});
-      w.aiCheck = {prediction: j.prediction || '', fractionAi: j.fractionAi || 0, skipped: j.skipped || '', flagged: (j.flagged || []).length, cost: j.cost || 0};
+      w.aiCheck = {prediction: j.prediction || '', fractionAi: j.fractionAi || 0, skipped: j.skipped || '', error: j.error || '', flagged: (j.flagged || []).length, cost: j.cost || 0};
+      if(j.error) console.warn('ai check', j.error);
       w.cost = (w.cost || 0) + (j.cost || 0);
       if((j.flagged || []).length){
         const slots = j.flagged.slice(0, 40).map(path => {
