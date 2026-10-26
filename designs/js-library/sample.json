@@ -1,0 +1,106 @@
+{
+ "brand": {
+  "brokerage": "Any Brokerage",
+  "logo": "/designs/samples/larkspur/AnyBrokerage_black.png",
+  "logoOnDark": "/designs/samples/larkspur/AnyBrokerage_gold-on-dark.png",
+  "logoKnockout": "/designs/samples/larkspur/AnyBrokerage_white.png",
+  "returnAddress": [
+   "1200 Heights Blvd",
+   "Houston, TX 77008"
+  ]
+ },
+ "agent": {
+  "name": "Jordan Reyes",
+  "designation": "REALTOR\u00ae",
+  "phone": "832.555.0188",
+  "email": "jordan@anybrokerage.com",
+  "web": "jordanreyes.com",
+  "headshot": null
+ },
+ "listing": {
+  "address": "2614 Calder Street",
+  "city": "Houston",
+  "state": "Texas",
+  "zip": "77023",
+  "beds": 3,
+  "baths": 2,
+  "yearBuilt": 1940,
+  "stories": 1
+ },
+ "sold": {
+  "daysOnMarket": 6,
+  "offers": 5
+ },
+ "photos": {
+  "front": {
+   "src": "/designs/samples/larkspur/front.jpg",
+   "tags": "front exterior, 1940 bungalow, new siding",
+   "house": {
+    "left": 0.12,
+    "top": 0.045,
+    "right": 0.9,
+    "bottom": 0.73
+   }
+  },
+  "kitchen": {
+   "src": "/designs/samples/larkspur/kitchen.jpg",
+   "tags": "kitchen, new cabinets"
+  },
+  "living": {
+   "src": "/designs/samples/larkspur/living.jpg",
+   "tags": "living room, open to dining"
+  },
+  "dining": {
+   "src": "/designs/samples/larkspur/dining.jpg",
+   "tags": "dining area"
+  },
+  "nook": {
+   "src": "/designs/samples/larkspur/nook.jpg",
+   "tags": "breakfast nook"
+  },
+  "primary": {
+   "src": "/designs/samples/larkspur/primary.jpg",
+   "tags": "primary bedroom"
+  },
+  "study": {
+   "src": "/designs/samples/larkspur/study.jpg",
+   "tags": "bedroom three"
+  },
+  "kitchen2": {
+   "src": "/designs/samples/larkspur/kitchen2.jpg",
+   "tags": "kitchen bar seating"
+  },
+  "family": {
+   "src": "/designs/samples/larkspur/family.jpg",
+   "tags": "front exterior, side angle",
+   "house": {
+    "left": 0.19,
+    "top": 0.2,
+    "right": 0.84,
+    "bottom": 0.67
+   }
+  },
+  "hall": {
+   "src": "/designs/samples/larkspur/hall.jpg",
+   "tags": "entry"
+  },
+  "bedroom2": {
+   "src": "/designs/samples/larkspur/bedroom2.jpg",
+   "tags": "bedroom two"
+  },
+  "office": {
+   "src": "/designs/samples/larkspur/office.jpg",
+   "tags": "primary bath"
+  },
+  "lawn": {
+   "src": "/designs/samples/larkspur/lawn.jpg",
+   "tags": "backyard",
+   "house": {
+    "left": 0.0,
+    "top": 0.29,
+    "right": 1.0,
+    "bottom": 0.7
+   }
+  }
+ }
+}

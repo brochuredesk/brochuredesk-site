@@ -5,15 +5,16 @@
 <title>BrochureDesk · Just Listed / Just Sold library</title>
 <!--
   One page for every design in the announcement library. data.piece (from pieces.json) says which:
-    design  JL-M01 ... JS-S06
+    design  JL-M01 ... JS-S50
     size    6x9 | 6x11 (postcards, side front | back) or post | story (social)
   annlib.js builds the page, fits the copy, adds bleed in print mode and runs the checks (window.brochureCheck).
+  The social posts and stories (approved 10/24/2026) are socials-data.js (built by scripts/build_socials.py) drawn by socials.js.
 -->
 <script src="annlib.js"></script>
 <script src="jl-mail.js"></script>
-<script src="jl-social.js"></script>
 <script src="js-mail.js"></script>
-<script src="js-social.js"></script>
+<script src="socials-data.js"></script>
+<script src="socials.js"></script>
 </head>
 <body>
 <script id="brochure-data" type="application/json">{}</script>

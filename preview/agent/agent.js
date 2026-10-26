@@ -488,6 +488,12 @@
     const now = new Date().toISOString();
     const byUrl = Object.fromEntries(lookup.photos.map(p => [p.url, p])), fpl = lookup.floorPlan;
     if(fpl.active && fpl.art && !lookup.listing.stories && fpl.art.length > 1) lookup.listing.stories = fpl.art.length;
+    const ROLE_OF = {'front exterior': 'front', 'side exterior': 'side', 'back exterior': 'back', 'living room': 'living', 'family room': 'family', kitchen: 'kitchen',
+      'dining room': 'dining', 'breakfast area': 'nook', 'primary bedroom': 'primary', bedroom: 'bedroom', 'primary bath': 'bath', bathroom: 'bath', study: 'office',
+      entry: 'entry', stairs: 'stairs', 'laundry room': 'laundry', garage: 'garage', patio: 'patio', pool: 'pool', backyard: 'yard', aerial: 'aerial', view: 'view', community: 'amenity'};
+    for(const p of lookup.photos){ const t = lookup.tags[p.url];
+      if(t) Object.assign(p, {role: t.role, exterior: t.exterior, house: t.house || undefined});
+      else if(p.room && ROLE_OF[p.room] && !/exterior|aerial/.test(p.room)) Object.assign(p, {role: ROLE_OF[p.room], exterior: false}); }
     pkg = {id: lookup.id, createdAt: now, updatedAt: now, link: lookup.link, listing: lookup.listing, photos: lookup.upper.map(u => byUrl[u]),
       morePhotos: lookup.photos.filter(p => !lookup.upper.includes(p.url)), tags: lookup.tags,
       floorPlan: {source: fpl.active ? fpl.source : null, files: fpl.files, stories: fpl.stories, active: !!(fpl.active && fpl.art), art: fpl.active ? fpl.art : null,
@@ -501,6 +507,7 @@
     store.event(pkg.id, 'photo-picker', {moves: lookup.moves, inPackage: pkg.photos.length, more: pkg.morePhotos.length});
     if(fpl.removed) store.event(pkg.id, 'floor-plan-removed', {source: fpl.source});
     openGallery();
+    tagPhotos();
   };
 
   // ---------- photo picker and floor plan (after the lookup) ----------
@@ -565,6 +572,19 @@
       $('#planFile').onchange = e => { const fs = [...e.target.files].slice(0, 4); if(!fs.length) return;
         F.files = fs.map(f => ({blob: f, label: f.name, kind: /pdf/.test(f.type) ? 'pdf' : 'image'})); loadPlan(F.files, 'upload'); };
     }
+  }
+  // Label what each photo shows (front of the house, kitchen, primary bedroom...) once per listing, in the background,
+  // so every design can fill its photo spots on its own and keep the whole roof in exterior shots. Costs about a cent.
+  async function tagPhotos(){
+    const p = pkg; if(!p || p.photoTags) return;
+    // photos the lookup already read, or whose caption names the room, aren't read again (one paid read per photo at most)
+    const list = p.photos.map((ph, i) => ({id: 'p' + i, url: ph.url, desc: ph.desc || '', done: !!ph.role})).filter(x => !x.done && /^https:\/\//.test(x.url)).map(({done, ...x}) => x);
+    if(!list.length) return;
+    try {
+      const j = await ai({action: 'tag-photos', packageId: p.id, photos: list});
+      (j.photos || []).forEach(t => { const ph = p.photos[+t.id.slice(1)]; if(ph) Object.assign(ph, {role: t.role, exterior: t.exterior, house: t.house, note: t.note}); });
+      p.photoTags = true; if(p === pkg) save();
+    } catch(e) { /* labels are a helper: designs still fill from the MLS captions without them */ }
   }
   function suggestStyle(L){
     if(L.sqft >= 3800) return 'luxury';
@@ -662,13 +682,13 @@
     const d = designs.find(x => x.id === designId) || {}, fs = await fontSpec(designId);
     const arr = arrangement(pkg, designId), ids = arr.map(i => 'p' + i);
     const P = {};
-    arr.forEach(i => { const ph = pkg.photos[i]; P['p' + i] = {src: photoUrlNow(ph.url), tags: ph.desc || ''}; });
+    arr.forEach(i => { const ph = pkg.photos[i]; P['p' + i] = {src: photoUrlNow(ph.url), tags: [ph.desc || '', ph.note || ''].filter(Boolean).join(', '), role: ph.role, exterior: ph.exterior, house: ph.house, fullHouse: ph.house ? true : undefined}; });
     const S = d.sample || {};
     const fonts = fontsFor(pkg, fs);
     const kit = kitOverride !== undefined ? kitOverride : brandKit();
     const brand = Object.assign({}, SAMPLE_BRAND, S.brokerage ? {brokerage: S.brokerage, logo: S.logo, web: S.web} : {}, kitBrand(kit), {accent: pkg.brand.accent},
       Object.keys(fonts).length ? {fonts} : {});
-    const agent = Object.assign({}, SAMPLE_AGENT, profile ? {name: profile.display_name || SAMPLE_AGENT.name, phone: profile.cell || SAMPLE_AGENT.phone,
+    const agent = Object.assign({}, SAMPLE_AGENT, profile ? {name: profile.display_name || SAMPLE_AGENT.name, mailerName: profile.mailer_name || null, phone: profile.cell || SAMPLE_AGENT.phone,
       email: profile.preferred_email || SAMPLE_AGENT.email} : {}, S.qrLabel ? {qrLabel: S.qrLabel, web: S.agentWeb || SAMPLE_AGENT.web} : {},
       kit && kit.contact ? Object.fromEntries(Object.entries(kit.contact).filter(([, v]) => v)) : {});
     const written = final && pkg.copy[designId];

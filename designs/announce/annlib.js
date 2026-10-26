@@ -2,7 +2,7 @@
    Postcards (6x9 and 6x11, front and back) and social posts/stories ported from the approved designs in
    docs/briefs/approved-designs-handoff/ (the Python there is the design spec; this is the template system version).
 
-   card.html loads this file and the four design files (jl-mail.js, jl-social.js, js-mail.js, js-social.js).
+   card.html loads this file, the two postcard design files (jl-mail.js, js-mail.js) and the socials (socials-data.js, socials.js).
    Each design registers itself with ANN.design(id, spec) and builds its HTML from data only:
      listing   address, city, state, zip, beds, baths, sqft, yearBuilt
      agent     name, nar (REALTOR(R) toggle), phone, email, web, headshot (url or null)
@@ -51,19 +51,17 @@
   // Just Sold wording from the brief's playbook (just-sold-library-build.md). The agent picks a headline and a CTA or types
   // their own; anything left empty falls back to these. No AI writes Just Sold copy: it sells the agent, not the house.
   A.PLAYBOOK = {
-    ctaHead: 'Thinking about selling?', ctaNext: 'Your home could be next.', ctaShort: 'Call or text for a free home value estimate.',
-    cta: 'Call or text me for a free home value estimate and a plan for your home.',
-    ctas: ['Thinking about selling? Call or text for a free home value estimate.', 'Your home could be next.',
-      "Curious what your home would sell for? Let's talk.",
-      'Are you thinking about selling your home? Contact me for a free home evaluation and consultation.',
-      'Has selling your home crossed your mind? Call me for a free, no-obligation consultation.',
-      "I'm ready to help sell yours.", 'This home sold. Is yours next?', 'Looking to buy or sell? I can help with both.'],
-    master: ['I just helped sell {address}.', "If you've wondered what your home would sell for today, I'd be glad to put together a free estimate based on recent sales near you.",
-      "I'll walk you through it in person, along with a plan for pricing, prep and marketing.", "There's no cost and no pressure to list.", 'Call or text me any time.'],
+    ctaHead: 'Thinking about selling?', ctaNext: 'Your home could be next.', ctaShort: 'Call today to schedule a private home consultation.',
+    cta: "Curious what your home is worth in today's market? Let's set a time to talk.",
+    ctas: ["Thinking about selling? Let's talk.", 'Call today to schedule a private home consultation.',
+      "Curious what your home is worth in today's market? Let's set a time to talk.", 'Yours could be next.',
+      'Your home could be next.', "I'm ready to help sell yours.", 'This home sold. Is yours next?', 'Looking to buy or sell? I can help with both.'],
+    master: ['I just helped sell {address}.', "If you've wondered what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them.",
+      "I'll walk you through it in person, along with a plan for pricing, prep and marketing.", "There's no cost and no obligation to list.", 'Call or text me any time.'],
     drop: [3, 4, 5],
-    letter: "I just helped sell the home at {address}. If you've been wondering what your home would sell for today, I'd be glad to put together a free estimate and walk you through it. There's no cost and no pressure to list. When you're ready, call or text me.",
+    letter: "I just helped sell the home at {address}. If you've been wondering what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them. There's no cost and no obligation to list. When you're ready, call or text me.",
     offerList: ['Go over recent sales near you', 'Walk through your house with you', 'Give you a price range and what it takes to get there', "Tell you what's worth fixing and what isn't", 'You decide if and when to list'],
-    listLabel: "Here's how I'd start", nohsLines: ['Free home value estimate', 'Recent sales near you', 'No pressure to list']
+    listLabel: "How I'd start", nohsLines: ['Recent sales near you', 'A plan before you list', 'No obligation to list']
   };
   function soldDefaults(js, addr){
     const out = Object.assign({}, js), fill = v => typeof v === 'string' ? v.replace(/\{address\}/g, addr) : Array.isArray(v) ? v.map(fill) : v;
@@ -190,7 +188,8 @@
   }
   // A.ph(role, x, y, w, h, style, pos): a photo slot. A role whose house won't fit the slot takes the angled exterior if
   // that fits; social slots fall back to an interior (owner note 10/21). pos ("50% 30%") only for interiors.
-  A.ph = (role, x, y, w, h, st, pos) => {
+  // keep (socials): use the design's pos for a front-of-house photo too, when the whole house stays in frame with it
+  A.ph = (role, x, y, w, h, st, pos, keep) => {
     let id = A.resolve(role);
     if(id && A.isHouse(id) && !A.houseFits(id, w, h)){
       const alt = A.order().find(q => q !== id && !A.used.has(q) && A.isHouse(q) && A.houseFits(q, w, h));
@@ -203,6 +202,11 @@
     const [cw, ch] = w / h >= PA ? [w, w / PA] : [h * PA, h];
     let [fx, fy] = housePos(id, w, h);
     if(pos && !p.house){ const m = String(pos).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/); if(m){ fx = +m[1] / 100; fy = +m[2] / 100; } else if(pos === 'center'){ fx = fy = .5; } }
+    if(pos && p.house && keep){
+      const m = String(pos).match(/(-?[\d.]+)%\s+(-?[\d.]+)%/), H = p.house, vx = w / cw, vy = h / ch;
+      if(m){ const px = +m[1] / 100, py = +m[2] / 100, l = px * (1 - vx), t = py * (1 - vy);
+        if(H.left >= l + .01 && H.right <= l + vx - .01 && H.top >= t + .01 && H.bottom <= t + vy - .01){ fx = px; fy = py; } }
+    }
     const ox = -(cw - w) * fx, oy = -(ch - h) * fy;
     const hb = p.house ? ` data-house="${p.house.left},${p.house.top},${p.house.right},${p.house.bottom}"` : '';
     return `<div class="a ph" data-photo="${esc(id)}"${hb} data-cw="${r1(cw)}" data-ch="${r1(ch)}" data-ox="${r1(ox)}" data-oy="${r1(oy)}" ` +
@@ -222,6 +226,7 @@
     if(kind === 'white' || kind === 'gold-on-dark') return b.logoKnockout || b.logoOnDark || null;
     return b.logo || null;
   };
+  A.logoSrc = logoSrc;
   A.logo = (kind, x, y, h, st) => {
     const src = logoSrc(kind);
     if(!src){ A.issues.push({slot: 'logo.' + kind, kind: 'logo-version-missing', detail: 'this spot needs the ' + kind + ' version of the logo'}); return ''; }
@@ -534,12 +539,20 @@
   function fixContrast(){
     for(const e of leaves()){
       let m = measureContrast(e); if(!m || m.c >= m.need) continue;
-      const toward = lum(m.bg) > .4 ? {r: 0, g: 0, b: 0} : {r: 255, g: 255, b: 255}, f0 = rgba(getComputedStyle(e).color);
-      for(let k = 0.05; k <= 1.001 && m && m.c < m.need; k += 0.05){
-        const c = {r: f0.r + (toward.r - f0.r) * k, g: f0.g + (toward.g - f0.g) * k, b: f0.b + (toward.b - f0.b) * k};
-        e.style.color = `rgba(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)},${f0.a})`; m = measureContrast(e);
+      const f0 = rgba(getComputedStyle(e).color), css0 = e.style.color;
+      // away from the background first (dark text darker, light text lighter), then the other way; the smallest change that reads
+      const dirs = lum(f0) < lum(m.bg) ? [{r: 0, g: 0, b: 0}, {r: 255, g: 255, b: 255}] : [{r: 255, g: 255, b: 255}, {r: 0, g: 0, b: 0}];
+      let done = false;
+      for(const t of dirs){
+        for(let k = 0.05; k <= 1.001; k += 0.05){
+          const c = {r: f0.r + (t.r - f0.r) * k, g: f0.g + (t.g - f0.g) * k, b: f0.b + (t.b - f0.b) * k};
+          e.style.color = `rgba(${Math.round(c.r)},${Math.round(c.g)},${Math.round(c.b)},${f0.a})`; m = measureContrast(e);
+          if(m && m.c >= m.need){ done = true; break; }
+        }
+        if(done) break;
+        e.style.color = css0;
       }
-      A.notes.push({slot: e.textContent.trim().slice(0, 32), note: 'color adjusted for 4.5:1 contrast'});
+      if(done) A.notes.push({slot: e.textContent.trim().slice(0, 32), note: 'color adjusted for 4.5:1 contrast'});
     }
   }
   function logosInSafeZone(){
@@ -561,8 +574,8 @@
     /must[- ]see/i, /won'?t last/i, /oasis/i, /sanctuary/i, /retreat/i, /charm/i, /cozy/i, /perfect for/i, /ideal for/i,
     /entertain/i, /elevate/i, /seamless/i, /breathtaking/i, /—/, /rebuilt/i, /all-new/i, /pergola/i, /move-in ready/i, /turnkey/i,
     /\bgem\b/i, /haven/i, /whimsical/i, /curated/i, /thoughtfully/i, /meticulous/i, /perfect match/i, /happy buyer/i,
-    /global luxury/i, /\$\s?\d/, /sold for/i, /sold at/i, /listed at/i, /\bDRE\b/, /unlock/i, /journey/i, /hassle/i, /navigate/i,
-    /virtually staged/i, /\bQR\b/i, /\bphoto\s*#?\d/i, /\b(list|asking|sale|sales|sold|offer) price\b/i, /lorem/i, /\bTBD\b/, /\bxx+\b/i];
+    /global luxury/i, /\$\s?\d/, /sold for/i, /sold at/i, /listed at/i, /\bDRE\b/, /unlock/i, /journey/i, /hassle/i, /navigate/i, /no[\s-]+pressure/i,
+    /virtually staged/i, /private showing\./i, /\bQR\b/i, /\bphoto\s*#?\d/i, /\b(list|asking|sale|sales|sold|offer) price\b/i, /lorem/i, /\bTBD\b/, /\bxx+\b/i];
   const rgba = s => { const m = String(s).match(/rgba?\(([^)]+)\)/); if(!m) return null; const v = m[1].split(',').map(parseFloat); return {r: v[0], g: v[1], b: v[2], a: v.length > 3 ? v[3] : 1}; };
   const lum = c => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }; return .2126 * f(c.r) + .7152 * f(c.g) + .0722 * f(c.b); };
   const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
@@ -691,8 +704,16 @@
     }
     // contrast: text on a solid color reads at 4.5:1 (3:1 for large type); text over photos is the design's own shade
     for(const e of L){ const m = measureContrast(e); if(m && m.c < m.need - 0.05) add(slotOf(e), 'low-contrast', {ratio: r1(m.c), need: m.need}); }
+    if(A.social && spec.own) socialChecks(add, pg);
     // copy: banned phrases, price, neighborhood name, placeholders
     const vis = L.map(e => e.textContent).join(' \n ');
+    // Just Sold sells the agent: never a free estimate, never the sold home's features (owner rules 10/24/2026)
+    if(A.card === 'sold'){
+      const m = vis.match(/free (home value |home )?(estimate|evaluation)|when you call/i);
+      if(m) add('copy', 'banned-phrase', {text: m[0]});
+      const f = A.social && spec.own && vis.match(/\b(roof|wiring|plumbing|siding|counters?|patio|pool|remodel\w*|updated|bedrooms?|baths?|sq\.? ?ft|square feet)\b/i);
+      if(f) add('copy', 'sold-home-features', {text: f[0]});
+    }
     for(const re of BANNED){ const m = vis.match(re); if(m) add('copy', 'banned-phrase', {text: vis.slice(Math.max(0, m.index - 30), m.index + m[0].length + 30).replace(/\s+/g, ' ')}); }
     if(A.hood && new RegExp('\\b' + A.hood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(vis)) add('copy', 'neighborhood-name', {detail: A.hood});
     if(A.print){
@@ -701,6 +722,87 @@
       if((A.D.brand || {}).sample) add('brand', 'sample-branding-on-paid-piece');
     }
     return out;
+  }
+
+  // the artwork inside a logo image (object-fit: contain), relative to the page
+  A.logoArt = (lg, pg) => {
+    const b = lg.getBoundingClientRect(), nw = lg.naturalWidth || b.width, nh = lg.naturalHeight || b.height;
+    const k = Math.min(b.width / nw, b.height / nh), w = nw * k, h = nh * k, op = getComputedStyle(lg).objectPosition.split(' ').map(parseFloat);
+    const l = b.left + (b.width - w) * (op[0] / 100), t = b.top + (b.height - h) * ((op[1] == null ? 50 : op[1]) / 100);
+    return {l: l - pg.left, t: t - pg.top, r: l + w - pg.left, b: t + h - pg.top, w, h};
+  };
+  // the 10/24 socials (socials.js): text never touches other text, 30 px from every edge, stories keep text, logo and
+  // agent out of the top and bottom 250 px, logo 70 px or taller and centered on the contact block where the design
+  // centers it, photos side by side line up top and bottom
+  function socialChecks(add, pg){
+    const W = A.W, H = A.H, story = A.size === 'story', lines = [];
+    document.querySelectorAll('.pg [data-slot]').forEach(b => {
+      const tw = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n;
+      while((n = tw.nextNode())){
+        if(!n.textContent.trim() || !n.parentElement.getClientRects().length) continue;
+        const g = document.createRange(); g.selectNodeContents(n);
+        for(const q of g.getClientRects()){
+          if(q.width < 2 || q.height < 2) continue;
+          lines.push({b: b.dataset.slot, x: q.left - pg.left, y: q.top - pg.top + q.height * .18, w: q.width, h: q.height * .64, t: n.textContent.trim().slice(0, 40)});
+        }
+      }
+    });
+    const seen = new Set();
+    for(let i = 0; i < lines.length; i++){
+      const a = lines[i];
+      if(a.x < 29.5 || a.x + a.w > W - 29.5 || a.y < 29.5 || a.y + a.h > H - 29.5) add(a.t, 'too-close-to-edge', {detail: 'text within 30 px of the edge'});
+      for(let j = i + 1; j < lines.length; j++){
+        const b = lines[j]; if(a.b === b.b) continue;
+        if(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h){
+          const k = a.t + '|' + b.t; if(!seen.has(k)){ seen.add(k); add(a.t, 'text-overlap', {text: a.t, other: b.t}); }
+        }
+      }
+    }
+    const R = e => { const r = e.getBoundingClientRect(); return {l: r.left - pg.left, t: r.top - pg.top, r: r.right - pg.left, b: r.bottom - pg.top, w: r.width, h: r.height}; };
+    // text never runs into a box, band, photo, logo or headshot it didn't sit on in the approved layout (4 px clear)
+    if(A.sv){
+      const hit = (a, o, g) => a.l < o.r + g && o.l < a.r + g && a.t < o.b + g && o.t < a.b + g;
+      const shapes = [...document.querySelectorAll('.pg > div:not([data-slot]), .pg img.logo, .pg img.hs')].filter(e => {
+        const cs = getComputedStyle(e), bg = cs.backgroundColor;
+        return e.offsetWidth > 4 && e.offsetHeight > 4 && cs.transform === 'none' && cs.clipPath === 'none' && (e.tagName === 'IMG' || (bg && !/rgba\(\d+, \d+, \d+, 0\)|transparent/.test(bg)) || cs.backgroundImage !== 'none');
+      }).map(e => e.tagName === 'IMG' && e.classList.contains('logo') ? Object.assign(A.logoArt(e, pg), {img: 1}) : R(e));
+      document.querySelectorAll('.pg [data-slot]').forEach(b => {
+        const q = A.sv.blocks[+b.dataset.slot]; if(!q) return;
+        const s = {l: q[0], t: q[1], r: q[0] + q[2], b: q[1] + q[3]};
+        const tw = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n; const ls = [];
+        while((n = tw.nextNode())){
+          if(!n.textContent.trim() || !n.parentElement.getClientRects().length) continue;
+          const g = document.createRange(); g.selectNodeContents(n);
+          for(const x of g.getClientRects()) if(x.width >= 2) ls.push({l: x.left - pg.left, t: x.top - pg.top, r: x.right - pg.left, b: x.bottom - pg.top, tx: n.textContent.trim().slice(0, 40)});
+        }
+        for(const o of shapes){
+          if(hit(s, o, 4) || (o.l <= s.l && o.r >= s.r && o.t <= s.t && o.b >= s.b)) continue;   // the design put it there
+          const x = ls.find(a => hit(a, o, o.img ? 2 : 3)); if(x) add(x.tx, 'text-runs-into-box', {text: x.tx});
+        }
+      });
+    }
+    for(const lg of document.querySelectorAll('.pg img.logo')){
+      const r = A.logoArt(lg, pg);
+      if(r.h < 69.5) add('logo', 'logo-under-70px', {size: Math.round(r.h)});
+      if(story && (r.t < 250 || r.b > H - 250)) add('logo', 'story-safe-zone', {detail: 'logo in the top or bottom 250 px'});
+      if(r.l < 29.5 || r.r > W - 29.5 || r.t < 29.5 || r.b > H - 29.5) add('logo', 'too-close-to-edge');
+    }
+    for(const hs of document.querySelectorAll('.pg img.hs')){
+      const r = R(hs); if(story && (r.t < 250 || r.b > H - 250)) add('agent.headshot', 'story-safe-zone', {detail: 'headshot in the top or bottom 250 px'});
+    }
+    const v = A.sv, lg = document.querySelector('.pg img.logo');
+    if(v && v.logoWithContact && lg){
+      const rs = v.agent.map(i => document.querySelector(`.pg [data-slot="${i}"]`)).filter(Boolean).map(e => { const g = document.createRange(); g.selectNodeContents(e); const q = g.getBoundingClientRect(); return {t: q.top - pg.top, b: q.bottom - pg.top}; });
+      const r = R(lg), c = (Math.min(...rs.map(x => x.t)) + Math.max(...rs.map(x => x.b))) / 2;
+      if(rs.length && Math.abs(r.t + r.h / 2 - c) > 6) add('logo', 'logo-not-centered', {detail: 'logo not centered top to bottom with the contact block', off: Math.round(r.t + r.h / 2 - c)});
+    }
+    const ps = [...document.querySelectorAll('.pg > .ph[data-photo]')].filter(e => e.dataset.photo && getComputedStyle(e).transform === 'none').map(e => Object.assign(R(e), {id: e.dataset.photo}));
+    for(let i = 0; i < ps.length; i++) for(let j = i + 1; j < ps.length; j++){
+      const a = ps[i], b = ps[j], ov = Math.min(a.b, b.b) - Math.max(a.t, b.t);
+      if(a.l < b.r - 1 && b.l < a.r - 1) continue;   // one above the other, not a row
+      if(ov < .6 * a.h || ov < .6 * b.h || Math.min(a.h, b.h) < .85 * Math.max(a.h, b.h)) continue;   // a stack beside a big photo isn't a row
+      if(Math.abs(a.t - b.t) > 2 || Math.abs(a.b - b.b) > 2) add(a.id + ' / ' + b.id, 'photos-not-aligned', {detail: 'photos in a row line up top and bottom'});
+    }
   }
 
   // ---------- page ----------
@@ -725,7 +827,8 @@
     // each photo's own shape (MLS photos are 3:2, 4:3 or anything else); the whole-house placement depends on it
     const sizes = Object.values(D.photos || {}).filter(p => p.src && !(p.w && p.h)).map(p => new Promise(res => {
       const i = new Image(); i.onload = () => { p.w = i.naturalWidth; p.h = i.naturalHeight; res(); }; i.onerror = () => res(); i.src = p.src; }));
-    const loads = sizes.concat(Object.entries(FONTS).flatMap(([f, ws]) => ws.map(w => document.fonts.load(`${w} 20px '${f}'`).catch(() => null))));
+    const loads = sizes.concat(Object.entries(FONTS).flatMap(([f, ws]) => ws.map(w => document.fonts.load(`${w} 20px '${f}'`).catch(() => null))))
+      .concat(spec.prepare ? [spec.prepare(D)] : []);
     window.brochureReady = Promise.all(loads).then(() => {
       A.LSCALE = spec.lscale || 1;
       let r;
@@ -738,8 +841,11 @@
         (A.print ? `<style>@page{size:${PW}px ${PH}px;margin:0}@media print{body{background:none}}</style>` : '');
       window.pieceSize = {W: PW * 0.75, H: PH * 0.75, bleed: b * 0.75};
       return preload().then(() => document.fonts.ready).then(() => {
-        typeFloor(); fitWidths(); fitAddrLines(); fitAddresses(); fitWriteups(); fitCards(); bumpCTA(); fitWriteups(); fixContrast(); logosInSafeZone();
-        if(spec.after) spec.after(A);
+        // designs that fit their own copy (spec.own: the 10/24 socials) skip the postcard fitting passes
+        if(!spec.own){ typeFloor(); fitWidths(); fitAddrLines(); fitAddresses(); fitWriteups(); fitCards(); bumpCTA(); fitWriteups(); }
+        if(spec.own && spec.after) spec.after(A);   // own fitting first, so contrast is judged at the fitted size
+        fixContrast(); logosInSafeZone();
+        if(!spec.own && spec.after) spec.after(A);
         // checks run when asked (after the host has sized this page's frame; a page inside a small frame can't measure
         // what's on screen) on the trim-size render; print only adds bleed
         const baseIssues = A.issues.slice(), baseNotes = A.notes.length;

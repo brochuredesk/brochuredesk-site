@@ -16,28 +16,9 @@
           log(row)   {event: 'switch'|'reset'|'update'|'download', from, to, where}, for the switch counts
           download(pkg, flyer)  both files (print-at-home and email) from the renderer; printer(pkg, flyer) the upload panel
    Skin: the host page sets --oh-accent, --oh-ink, --oh-paper, --oh-line, --oh-font (a team page passes its team colors).
-   Wording on buttons and headings is a draft; the owner's call. */
+   Wording on buttons and headings is a draft. */
 (function(){
   const LIMITS = {refreshments: 50, note: 70};   // same as pipeline/openhouse.py
-  // refreshment types (pipeline/openhouse.REFRESHMENT_TYPES); "" = none served, so nothing about refreshments shows
-  const RTYPES = [['', 'No'], ['luncheon', 'Yes, a luncheon'], ['happy-hour', 'Yes, happy hour'], ['breakfast', 'Yes, breakfast'], ['sweets', 'Yes, sweets and coffee'], ['other', 'Yes, something else']];
-  let FOOD = [];   // the food photo library (published as food/library.json)
-  // favorites: saved on the account, marked in every list and moved to the front. init({favorites: {pieces, food},
-  // onFavorite({kind, item, on, favorites})}) — the app saves them (pipeline/openhouse.set_favorite) and logs each change.
-  const FAV = {pieces: new Set(), food: new Set()};
-  let onFav = null;
-  const HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2 0 3.6 1.1 5.1 3 1.5-1.9 3.1-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>';
-  const favBtn = (kind, item, name) => { const on = FAV[kind].has(item);
-    return `<button type="button" class="oh-fav${on ? ' on' : ''}" data-fk="${kind}" data-fi="${esc(item)}" aria-pressed="${on}" aria-label="${on ? 'Remove' : 'Save'} ${esc(name)} ${on ? 'from' : 'to'} favorites" title="${on ? 'In your favorites' : 'Save to favorites'}">${HEART}</button>`; };
-  function toggleFav(kind, item, name){
-    const on = !FAV[kind].has(item);
-    FAV[kind].delete(item); if(on) FAV[kind] = new Set([item, ...FAV[kind]]);   // newest first, like the account record
-    document.querySelectorAll(`.oh-fav[data-fk="${kind}"]`).forEach(b => { if(b.dataset.fi !== item) return;
-      b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.title = on ? 'In your favorites' : 'Save to favorites';
-      b.setAttribute('aria-label', `${on ? 'Remove' : 'Save'} ${name || 'this'} ${on ? 'from' : 'to'} favorites`); });
-    onFav && onFav({kind, item, on, favorites: {pieces: [...FAV.pieces], food: [...FAV.food]}});
-    document.dispatchEvent(new CustomEvent('oh-favorites'));
-  }
   const KINDS = {public: 'Public', broker: 'Broker', realtor: 'REALTOR®'};
   let CFG = {base: '/designs/', test: false}, LIST = [], SPEC = {};
   const tplCache = {}, fontCache = {};
@@ -47,13 +28,7 @@
 
   async function init(cfg){
     CFG = Object.assign(CFG, cfg || {});
-    const f = (cfg || {}).favorites || {};
-    FAV.pieces = new Set(f.pieces || []); FAV.food = new Set(f.food || []); onFav = (cfg || {}).onFavorite || null;
-    if(!document.__ohFav){ document.__ohFav = true;   // one click handler for every heart on the page
-      document.addEventListener('click', ev => { const b = ev.target.closest('.oh-fav'); if(!b) return;
-        ev.preventDefault(); ev.stopPropagation(); toggleFav(b.dataset.fk, b.dataset.fi, b.dataset.name); }, true); }
     SPEC = await fetch(CFG.base + 'openhouse.json').then(r => r.json());
-    FOOD = await fetch(CFG.base + 'food/library.json').then(r => r.ok ? r.json() : {photos: []}).then(j => j.photos || []).catch(() => []);
     LIST = SPEC.approved.map(e => Object.assign({}, e, {test: false}))
       .concat(CFG.test ? SPEC.candidates.map(e => Object.assign({}, e, {test: true})) : []);
     injectStyle();
@@ -68,7 +43,7 @@
     const d = pkg.data || {};
     return LIST.filter(e => !e.needsFloorPlan || completePlan(d))
       .map(e => Object.assign({}, e, {recommended: e.own && e.design === pkg.design}))
-      .sort((a, b) => (b.recommended - a.recommended) || (FAV.pieces.has(key(b)) - FAV.pieces.has(key(a))) || (a.test - b.test) || ((a.design !== pkg.design) - (b.design !== pkg.design)) || a.name.localeCompare(b.name));
+      .sort((a, b) => (b.recommended - a.recommended) || (a.test - b.test) || ((a.design !== pkg.design) - (b.design !== pkg.design)) || a.name.localeCompare(b.name));
   }
   function current(pkg){
     const opts = options(pkg), pick = pkg.openHouseFlyer;
@@ -95,7 +70,7 @@
     d.brand = d.brand || {}; delete d.brand.fonts;
     if(f.fonts) d.brand.fonts = f.fonts;
     d.mode = 'email';
-    d.piece = {id: e.piece, file: e.file, variant: 'openhouse', trim: e.trim, print: e.print, margin: e.margin, qr: e.qr};   // qr false: library flyers carry no QR
+    d.piece = {id: e.piece, file: e.file, variant: 'openhouse', trim: e.trim, print: e.print, margin: e.margin};
     return {data: d, fontNote: f.note};
   }
 
@@ -170,7 +145,7 @@
     if(!cur){ el.innerHTML = '<p class="oh-note">No Open House design is ready for this listing yet.</p>'; return; }
     const rec = cur.recommended, more = options(pkg).length > 1;
     el.innerHTML = `<div class="oh-card">
-        <p class="oh-badge${rec ? '' : ' alt'}">${rec ? 'Recommended with your design' : `You picked the ${esc(cur.name)} flyer`}${cur.test ? ' <span class="oh-test">test</span>' : ''} ${favBtn('pieces', key(cur), cur.name)}</p>
+        <p class="oh-badge${rec ? '' : ' alt'}">${rec ? 'Recommended with your design' : `You picked the ${esc(cur.name)} flyer`}${cur.test ? ' <span class="oh-test">test</span>' : ''}</p>
         <div class="oh-box oh-proofbox"></div>
         <p class="oh-fontnote" hidden></p>
         <p class="oh-links">${more ? '<button type="button" class="oh-link" data-a="sheet">See other Open House designs</button>' : ''}
@@ -188,25 +163,18 @@
     hooks = hooks || {};
     const cur = current(pkg), dlg = document.createElement('dialog');
     dlg.className = 'oh-sheet';
-    dlg.innerHTML = `<div class="oh-sheet-head"><h2>Open House designs</h2><label class="oh-favonly"><input type="checkbox"> Favorites only</label><button type="button" class="oh-x" aria-label="Close">×</button></div>
+    dlg.innerHTML = `<div class="oh-sheet-head"><h2>Open House designs</h2><button type="button" class="oh-x" aria-label="Close">×</button></div>
       <p class="oh-sub">Each one is drawn with your photos, address and contact card. Pick one and it goes with this listing. The rest of your package stays the same.</p>
-      <div class="oh-grid">${options(pkg).map(e => `<div class="oh-optwrap" data-k="${esc(key(e))}"><button type="button" class="oh-opt${cur && key(cur) === key(e) ? ' on' : ''}" data-k="${esc(key(e))}">
+      <div class="oh-grid">${options(pkg).map(e => `<button type="button" class="oh-opt${cur && key(cur) === key(e) ? ' on' : ''}" data-k="${esc(key(e))}">
           <div class="oh-box"></div><span class="oh-name">${esc(e.name)}${e.test ? ' <span class="oh-test">test</span>' : ''}</span>
           ${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}${cur && key(cur) === key(e) ? '<span class="oh-cur">Your flyer now</span>' : ''}
-          <span class="oh-why" hidden></span></button>${favBtn('pieces', key(e), e.name)}</div>`).join('')}</div>
-      <p class="oh-note oh-favnone" hidden>No favorites yet. Tap the heart on any design to save it here for next time.</p>`;
+          <span class="oh-why" hidden></span></button>`).join('')}</div>`;
     document.body.appendChild(dlg);
     const opts = Object.fromEntries(options(pkg).map(e => [key(e), e]));
     dlg.querySelectorAll('.oh-opt').forEach(b => draw(b.querySelector('.oh-box'), pkg, opts[b.dataset.k]).ready.then(r => {
       if(r && r.issues.length){ b.disabled = true; const w = b.querySelector('.oh-why'); w.textContent = "This design doesn't fit this listing's details."; w.hidden = false; }
     }));
-    const only = dlg.querySelector('.oh-favonly input');
-    const filter = () => { let n = 0; dlg.querySelectorAll('.oh-optwrap').forEach(w => { const show = !only.checked || FAV.pieces.has(w.dataset.k); w.hidden = !show; n += show; });
-      dlg.querySelector('.oh-favnone').hidden = n > 0; };
-    only.onchange = filter;
-    const onFavChange = () => only.checked && filter();
-    document.addEventListener('oh-favorites', onFavChange);
-    const close = () => { document.removeEventListener('oh-favorites', onFavChange); dlg.close(); dlg.remove(); };
+    const close = () => { dlg.close(); dlg.remove(); };
     dlg.querySelector('.oh-x').onclick = close;
     dlg.addEventListener('cancel', close);
     dlg.querySelector('.oh-grid').onclick = ev => {
@@ -214,42 +182,6 @@
       choose(pkg, opts[b.dataset.k], 'proof', hooks); close(); hooks.onChoose && hooks.onChoose(current(pkg));
     };
     dlg.showModal();
-  }
-
-  // ---------- My favorites (account page) ----------
-  // Grouped by category like pipeline/openhouse.favorites_by_category. Open House flyers are drawn live with the agent's
-  // latest listing (pkg); other pieces show their design's preview image; food photos by refreshment type.
-  // A piece favorite is 'design/category' ('ivory/just-listed'); an Open House flyer is 'design/piece'.
-  const PIECE_LABELS = {'brochure': 'Brochures', 'listing-flyer': 'Listing flyers', 'oh-public': 'Open house flyers: public',
-    'oh-realtor': 'Open house flyers: REALTOR®', 'oh-refreshments': 'Open house flyers: with refreshments',
-    'oh-package': 'Open house flyers that come with a design', 'just-listed': 'Just Listed cards', 'just-sold': 'Just Sold cards', 'social': 'Social media posts'};
-  const FOOD_LABELS = {'luncheon': 'Food photos: luncheon', 'happy-hour': 'Food photos: happy hour', 'breakfast': 'Food photos: breakfast',
-    'sweets': 'Food photos: sweets and coffee', 'other': 'Food photos: something else'};
-  async function mountFavorites(el, pkg){
-    const designs = await fetch(CFG.base + 'designs.json').then(r => r.ok ? r.json() : []).catch(() => []);
-    const dmap = Object.fromEntries(designs.map(d => [d.id, d]));
-    const ohCat = e => !e.audience ? 'oh-package' : e.refreshments ? 'oh-refreshments' : 'oh-' + e.audience;
-    const render = () => {
-      const groups = {};
-      [...FAV.pieces].forEach(k => {
-        const e = LIST.find(x => key(x) === k);
-        if(e){ (groups[ohCat(e)] = groups[ohCat(e)] || []).push({kind: 'oh', e}); return; }
-        const [d, cat] = k.split('/');
-        if(dmap[d] && PIECE_LABELS[cat] && !cat.startsWith('oh-')) (groups[cat] = groups[cat] || []).push({kind: 'piece', k, d: dmap[d]});
-      });
-      [...FAV.food].forEach(id => { const p = FOOD.find(x => x.id === id); if(p) (groups['food-' + p.type] = groups['food-' + p.type] || []).push({kind: 'food', p}); });
-      const order = [...Object.keys(PIECE_LABELS), ...Object.keys(FOOD_LABELS).map(t => 'food-' + t)];
-      const label = g => PIECE_LABELS[g] || FOOD_LABELS[g.slice(5)];
-      const cards = order.filter(g => groups[g]).map(g => `<section class="oh-favgroup"><h3>${esc(label(g))} <span>${groups[g].length}</span></h3><div class="oh-grid small">${groups[g].map(it =>
-        it.kind === 'oh' ? `<div class="oh-optwrap"><div class="oh-opt oh-favcard" data-k="${esc(key(it.e))}"><div class="oh-box"></div><span class="oh-name">${esc(it.e.name)}</span></div>${favBtn('pieces', key(it.e), it.e.name)}</div>`
-        : it.kind === 'piece' ? `<div class="oh-optwrap"><div class="oh-opt oh-favcard"><img class="oh-favimg" src="${esc(it.d.thumb || '')}" alt="" loading="lazy"><span class="oh-name">${esc(it.d.name)}</span></div>${favBtn('pieces', it.k, it.d.name)}</div>`
-        : `<div class="oh-foodwrap"><div class="oh-foodopt oh-favcard"><img src="${CFG.base}food/thumbs/${esc(it.p.id)}.jpg" alt="${esc(it.p.group)}" loading="lazy"><span>${esc(it.p.group)}</span></div>${favBtn('food', it.p.id, it.p.group)}</div>`).join('')}</div></section>`).join('');
-      el.innerHTML = `<div class="oh-favs">${cards || '<p class="oh-note">No favorites yet. Tap the heart on any design or food photo while you browse, and it will be here, sorted by kind, the next time you look.</p>'}</div>`;
-      if(pkg) el.querySelectorAll('.oh-favcard[data-k]').forEach(c => draw(c.querySelector('.oh-box'), pkg, LIST.find(x => key(x) === c.dataset.k)));
-    };
-    render();
-    // removing a favorite here takes it off the page; saving one elsewhere on the page adds it
-    document.addEventListener('oh-favorites', () => el.isConnected && render());
   }
 
   // ---------- the Update open house flyer page ----------
@@ -267,9 +199,7 @@
         <div class="oh-row two"><label>Starts<input type="time" name="start" value="${esc(O.start || '')}" step="900"></label>
           <label>Ends<input type="time" name="end" value="${esc(O.end || '')}" step="900"></label></div>
         <div class="oh-extra">
-          <label>Are refreshments being served?<select name="rtype">${RTYPES.map(([v, t]) => `<option value="${v}"${(O.refreshmentType || '') === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
-          <label class="oh-rtext">What you're serving <span class="oh-opt-l">optional</span><input type="text" name="refreshments" maxlength="${LIMITS.refreshments}" value="${esc(O.refreshments || '')}" placeholder="Catered lunch and iced tea"></label>
-          <fieldset class="oh-food" hidden><legend>Pick a food photo <span class="oh-opt-l">for flyers that show one</span></legend><div class="oh-foodgrid"></div></fieldset>
+          <label>Refreshments <span class="oh-opt-l">optional</span><input type="text" name="refreshments" maxlength="${LIMITS.refreshments}" value="${esc(O.refreshments || '')}" placeholder="Lunch and iced tea"></label>
           <label>Special notes <span class="oh-opt-l">optional</span><input type="text" name="note" maxlength="${LIMITS.note}" value="${esc(O.note || '')}" placeholder="RSVP, door prize, co-op terms"></label>
           <p class="oh-hint">Left blank, a line simply doesn't appear on the flyer.</p></div>
         <div class="oh-actions"><button type="submit" class="oh-btn">Download flyer</button>
@@ -286,47 +216,18 @@
       if(f.end.value) ev.end = f.end.value;
       if(kind !== 'public'){
         const r = f.refreshments.value.replace(/\s+/g, ' ').trim(), n = f.note.value.replace(/\s+/g, ' ').trim();
-        if(f.rtype.value) ev.refreshmentType = f.rtype.value;
-        if(r && f.rtype.value) ev.refreshments = r.slice(0, LIMITS.refreshments);
+        if(r) ev.refreshments = r.slice(0, LIMITS.refreshments);
         if(n) ev.note = n.slice(0, LIMITS.note);
-        if(f.rtype.value && foodPick) ev.foodPhoto = foodPick;
       }
       return ev;
     };
-    // the food photo: the agent's pick, else the type's first photo; drawn from the published food library
-    let foodPick = O.foodPhoto || '';
-    const foodFor = ev => {
-      if(!ev.refreshmentType || !FOOD.length) return null;
-      const p = FOOD.find(x => x.id === ev.foodPhoto) || FOOD.find(x => x.type === ev.refreshmentType) || FOOD[0];
-      return {src: `${CFG.base}food/${p.file}`, tags: p.tags, w: p.w, h: p.h};
-    };
-    const live = () => { const ev = read(), photos = Object.assign({}, (pkg.data || {}).photos), fd = foodFor(ev);
-      if(fd) photos.food = fd; else delete photos.food;
-      return Object.assign({}, pkg, {data: Object.assign({}, pkg.data, {openHouse: ev, photos})}); };
-    const foodGrid = () => {
-      const f = form.elements, t = f.rtype.value, box = el.querySelector('.oh-food');
-      el.querySelector('.oh-rtext').hidden = !t;
-      box.hidden = !t || !FOOD.length;
-      if(box.hidden) return;
-      // the type's photos (and the current pick) first; the rest behind "See all food photos"
-      const cur = foodFor(read()), isCur = p => cur && cur.src.endsWith(p.file);
-      const fav = p => FAV.food.has(p.id);
-      const list = (showAllFood ? [...FOOD] : FOOD.filter(p => p.type === t || isCur(p) || fav(p)))
-        .sort((a, b) => (fav(b) - fav(a)) || ((a.type !== t) - (b.type !== t)));
-      box.querySelector('.oh-foodgrid').innerHTML = list.map(p => `<div class="oh-foodwrap"><button type="button" class="oh-foodopt${cur && cur.src.endsWith(p.file) ? ' on' : ''}" data-id="${esc(p.id)}" aria-pressed="${cur && cur.src.endsWith(p.file)}" title="${esc(p.group)}"><img src="${CFG.base}food/thumbs/${esc(p.id)}.jpg" alt="${esc(p.group)}" loading="lazy"><span>${esc(p.group)}</span></button>${favBtn('food', p.id, p.group)}</div>`).join('')
-        + (showAllFood || list.length >= FOOD.length ? '' : `<button type="button" class="oh-foodmore">See all food photos (${FOOD.length})</button>`);
-    };
-    let showAllFood = false;
-    el.querySelector('.oh-food').onclick = ev => {
-      if(ev.target.closest('.oh-foodmore')){ showAllFood = true; foodGrid(); return; }
-      const b = ev.target.closest('.oh-foodopt'); if(!b) return; foodPick = b.dataset.id; foodGrid(); redraw(); };
+    const live = () => Object.assign({}, pkg, {data: Object.assign({}, pkg.data, {openHouse: read()})});
     let timer = 0;
     function redraw(){
       const p = live();
       el.querySelector('.oh-extra').hidden = form.elements.kind.value === 'public';
-      foodGrid();
       const badge = el.querySelector('.oh-main .oh-badge');
-      badge.innerHTML = (shown.recommended ? 'Recommended with your design' : `${esc(shown.name)}${shown.test ? ' <span class="oh-test">test</span>' : ''}`) + ' ' + favBtn('pieces', key(shown), shown.name);
+      badge.innerHTML = shown.recommended ? 'Recommended with your design' : `${esc(shown.name)}${shown.test ? ' <span class="oh-test">test</span>' : ''}`;
       draw(main, p, shown).ready.then(r => {
         if(!r) return;
         const n = el.querySelector('.oh-main .oh-fontnote'); n.textContent = r.fontNote; n.hidden = !r.fontNote;
@@ -336,8 +237,8 @@
       el.querySelector('.oh-alts').hidden = !alts.length;
       if(grid.dataset.k !== alts.map(key).join()){
         grid.dataset.k = alts.map(key).join();
-        grid.innerHTML = alts.map(e => `<div class="oh-optwrap"><button type="button" class="oh-opt" data-k="${esc(key(e))}"><div class="oh-box"></div>
-          <span class="oh-name">${esc(e.name)}${e.test ? ' <span class="oh-test">test</span>' : ''}</span>${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}<span class="oh-why" hidden></span></button>${favBtn('pieces', key(e), e.name)}</div>`).join('');
+        grid.innerHTML = alts.map(e => `<button type="button" class="oh-opt" data-k="${esc(key(e))}"><div class="oh-box"></div>
+          <span class="oh-name">${esc(e.name)}${e.test ? ' <span class="oh-test">test</span>' : ''}</span>${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}<span class="oh-why" hidden></span></button>`).join('');
       }
       const by = Object.fromEntries(alts.map(e => [key(e), e]));
       grid.querySelectorAll('.oh-opt').forEach(b => draw(b.querySelector('.oh-box'), p, by[b.dataset.k]).ready.then(r => {
@@ -355,7 +256,7 @@
       if(!f.date.value){ status.textContent = 'Pick the date first.'; f.date.focus(); return false; }
       if(!f.start.value || !f.end.value){ status.textContent = 'Add the start and end times.'; (f.start.value ? f.end : f.start).focus(); return false; }
       if(main.classList.contains('oh-bad')){ status.textContent = "Something doesn't fit on this design. Shorten a line or pick another design."; return false; }
-      pkg.data = Object.assign({}, pkg.data, {openHouse: read()});   // the server adds the food photo from the library (pipeline/openhouse.flyer_data)
+      pkg.data = Object.assign({}, pkg.data, {openHouse: read()});
       choose(pkg, shown, 'update', hooks);   // the flyer on screen becomes the package's flyer and carries forward
       hooks.log && hooks.log({event: what, where: 'update', package: pkg.id, set_design: pkg.design, to: key(shown), kind: pkg.data.openHouse.kind});
       hooks.save && hooks.save(pkg);
@@ -385,25 +286,6 @@
 .oh-test{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#f3e3b8;color:#5b4310;border-radius:3px;padding:1px 5px;vertical-align:middle}
 .oh-links{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0}
 .oh-link{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--a);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.oh-food{border:0;margin:6px 0 0;padding:0}.oh-food legend{font-size:14px;margin-bottom:6px}
-.oh-foodgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
-.oh-foodopt{border:2px solid transparent;border-radius:6px;padding:0;background:none;cursor:pointer;text-align:left;font:inherit}
-.oh-foodopt img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:4px}
-.oh-foodopt span{display:block;font-size:11px;line-height:1.3;margin:3px 2px 2px;color:#5a5f63}
-.oh-optwrap,.oh-foodwrap{position:relative;min-width:0}.oh-optwrap>.oh-opt,.oh-foodwrap>.oh-foodopt{width:100%;box-sizing:border-box}
-.oh-optwrap>.oh-fav{top:14px;right:14px}.oh-optwrap[hidden]{display:none}
-.oh-fav{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 1px 3px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:2}
-.oh-fav svg{width:17px;height:17px;fill:none;stroke:#5a5f63;stroke-width:2}
-.oh-fav.on svg{fill:#c2413b;stroke:#c2413b}
-.oh-fav:focus-visible{outline:2px solid currentColor;outline-offset:2px}
-.oh-foodwrap .oh-fav{width:24px;height:24px;top:4px;right:4px}.oh-foodwrap .oh-fav svg{width:14px;height:14px}
-.oh-badge .oh-fav{position:static;display:inline-flex;vertical-align:middle;margin-left:6px;width:26px;height:26px}
-.oh-favgroup{margin:0 0 22px}.oh-favgroup h3{font-size:16px;margin:0 0 10px}.oh-favgroup h3 span{font-size:13px;color:#5a5f63;font-weight:400}
-.oh-favgroup .oh-foodwrap{display:inline-block;width:150px;margin:0 8px 8px 0;vertical-align:top}
-.oh-favimg{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:4px}
-.oh-favonly{margin-left:auto;margin-right:12px;font-size:14px;display:flex;gap:6px;align-items:center;cursor:pointer}
-.oh-foodmore{grid-column:1/-1;justify-self:start;background:none;border:1px solid currentColor;border-radius:6px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
-.oh-foodopt.on{border-color:currentColor}.oh-foodopt:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .oh-fontnote,.oh-hint{font-size:13px;color:#5a5f63;margin:8px 0 0;line-height:1.45}
 .oh-sheet{width:min(1080px,calc(100vw - 32px));max-height:calc(100vh - 48px);border:0;border-radius:10px;padding:24px;background:var(--p)}
 .oh-sheet::backdrop{background:rgba(20,22,24,.55)}
@@ -433,7 +315,7 @@
 .oh-row.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .oh-form input[type=date],.oh-form input[type=time],.oh-form input[type=text]{display:block;width:100%;box-sizing:border-box;margin-top:6px;font:inherit;font-weight:400;font-size:16px;padding:11px 12px;border:1px solid var(--l);border-radius:6px;background:#fff;color:var(--i)}
 .oh-opt-l{font-weight:400;color:#5a5f63;font-size:13px}
-.oh-extra[hidden],.oh-rtext[hidden],.oh-food[hidden]{display:none}
+.oh-extra[hidden]{display:none}
 .oh-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .oh-btn{font:inherit;font-weight:700;font-size:16px;padding:12px 20px;border-radius:6px;border:0;background:var(--a);color:#fff;cursor:pointer}
 .oh-btn.line{background:transparent;color:var(--i);border:1px solid var(--i)}
@@ -443,6 +325,5 @@
     document.head.appendChild(s);
   }
 
-  window.OpenHouse = {init, options, current, proofCard, openSheet, mountUpdater, mountFavorites, draw, LIMITS,
-    favorites: () => ({pieces: [...FAV.pieces], food: [...FAV.food]})};
+  window.OpenHouse = {init, options, current, proofCard, openSheet, mountUpdater, draw, LIMITS};
 })();
