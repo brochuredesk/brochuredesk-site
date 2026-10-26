@@ -1212,6 +1212,17 @@
     if(!j.ok) throw new Error(j.error || 'ai-failed');
     return j;
   }
+  // a rewrite whose spots still fail after two rounds sends just those back for the last (strongest-model) pass, in a request
+  // of its own: the platform stops each request at 150 s, and the last pass doesn't fit after two rounds
+  async function refitAll(body){
+    const j = await ai(body);
+    const left = (j.flagged || []).map(f => ({...body.slots.find(s => s.path === f.path), why: f.why})).filter(s => s.path);
+    if(!left.length) return j;
+    try {
+      const k = await ai({...body, slots: left, finalOnly: true});
+      return {...j, texts: {...j.texts, ...k.texts}, alts: {...j.alts, ...k.alts}, flagged: k.flagged || [], finals: k.finals || [], cost: (j.cost || 0) + (k.cost || 0)};
+    } catch(e) { console.error('last pass', e); return j; }
+  }
 
   // ---------- 4. final proof ----------
   let finalPiece = null;
@@ -1286,7 +1297,7 @@
             const at = path => path.split('.').reduce((o, k) => o == null ? o : o[k], r);
             const slots = r.refits.slice(i, i + 40).map(f => Object.assign({}, f, {photo: seen(f.photo), img: (photoOf(f.photo) || {}).url,
               ask: /\.a$/.test(f.path) ? at(f.path.replace(/\.a$/, '.q')) : undefined}));
-            const j = await ai({action: 'refit', packageId: pkg.id, slots, facts: pkg.master.facts, listing: pkg.listing,
+            const j = await refitAll({action: 'refit', packageId: pkg.id, slots, facts: pkg.master.facts, listing: pkg.listing,
               photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(r.companion)});   // reuse is checked within the new design (fold-over vs its other pieces), never against the design it replaces
             for(const [p, t] of Object.entries(j.texts || {})) MasterFit.place(r, p, t);
             cost += j.cost || 0; flagged = flagged.concat(j.flagged || []);
@@ -1361,7 +1372,7 @@
     w.filled = {spots: spots.length, cost: 0, at: new Date().toISOString()};
     if(spots.length){
       try {
-        const j = await ai({action: 'refit', packageId: pkg.id, slots: spots.slice(0, 40), facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
+        const j = await refitAll({action: 'refit', packageId: pkg.id, slots: spots.slice(0, 40), facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
           photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(w.companion)});
         // each box takes the version that fills it in the real layout (the old text stays if nothing new fits better)
         for(const [p, t] of Object.entries(j.texts || {})){ const el = els[p]; setPath(w, p, el ? pickFit(el, [t, ...((j.alts || {})[p] || []), getPath(w, p)]) || t : t); }
@@ -1391,7 +1402,7 @@
             photo: ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : '', img: ph ? ph.url : undefined,
             ask: /\.a$/.test(path) ? getPath(w, path.replace(/\.a$/, '.q')) : undefined};
         }).filter(x => x.versions[0]);
-        const r = await ai({action: 'refit', packageId: pkg.id, slots, facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
+        const r = await refitAll({action: 'refit', packageId: pkg.id, slots, facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
           photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(w.companion)});
         for(const [p, t] of Object.entries(r.texts || {})){ const el = slotEl(getPath(w, p)); setPath(w, p, el ? pickFit(el, [t, ...((r.alts || {})[p] || [])]) || t : t); }
         w.aiCheck.rewritten = Object.keys(r.texts || {}).length; w.aiCheck.cost += r.cost || 0; w.cost += r.cost || 0;
