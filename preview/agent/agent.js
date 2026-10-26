@@ -1254,6 +1254,7 @@
           pkg.arrangements[id] = arrangement(pkg, id).concat(usedM.map(m => +newId[m].slice(1)));
           const swap = o => typeof o === 'string' ? (newId[o] || o) : Array.isArray(o) ? o.map(swap) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, swap(v)])) : o;
           r.copy = swap(r.copy); r.companion = swap(r.companion);
+          r.refits.forEach(f => { if(newId[f.photo]) f.photo = newId[f.photo]; });
           resolvePhotos(pkg);   // the added photos load like the rest
         }
         // the agent's edits: the same saved text in the new design takes their version (refit when it won't fit)
@@ -1267,7 +1268,10 @@
         if(r.refits.length){
           say(`Rewriting ${r.refits.length} ${r.refits.length === 1 ? 'spot' : 'spots'} to fit ${name}, then checking every line…`);
           for(let i = 0; i < r.refits.length; i += 40){   // the function takes up to 40 spots a call
-            const j = await ai({action: 'refit', packageId: pkg.id, slots: r.refits.slice(i, i + 40), facts: pkg.master.facts, listing: pkg.listing,
+            // each spot says what its photo shows, so the rewrite (and the reviewer) never claims more than the photo does
+            const seen = pid => { const ph = /^p\d+$/.test(pid || '') ? pkg.photos[+pid.slice(1)] : null; return ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : ''; };
+            const slots = r.refits.slice(i, i + 40).map(f => Object.assign({}, f, {photo: seen(f.photo)}));
+            const j = await ai({action: 'refit', packageId: pkg.id, slots, facts: pkg.master.facts, listing: pkg.listing,
               photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(r.companion)});   // reuse is checked within the new design (fold-over vs its other pieces), never against the design it replaces
             for(const [p, t] of Object.entries(j.texts || {})) MasterFit.place(r, p, t);
             cost += j.cost || 0; flagged = flagged.concat(j.flagged || []);

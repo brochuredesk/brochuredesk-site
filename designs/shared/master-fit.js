@@ -48,14 +48,18 @@
     const sectionFor = (photo, room) => (master.sections || []).find(s => (s.photos || []).includes(photo))
       || (master.sections || []).find(s => s.room && s.room === room) || null;
     // the longest saved version that fits the slot's budget; none fits: listed for a refit, short version meanwhile
-    function pick(v, budget, path, label, key){
+    // a question spot only takes a saved line that is a question; a body spot only one that ends like a sentence
+    const lastKey = path => path.split('.').filter(x => !/^\d+$/.test(x)).pop();
+    const endsOk = (t, path) => { const k = lastKey(path); return /^q$/.test(k) ? /\?\s*$/.test(t) : /^(a|body|intro|summary|notes|detail|caption|locationBody)$/.test(k) ? /[.]\s*$/.test(t) : true; };
+    function pick(v, budget, path, label, key, photo){
       if(v == null) return '';
       if(typeof v === 'string') v = {long: v, short: v};
       const limit = Math.max(8, Math.round(budget * slack));
+      v = {long: endsOk(v.long || '', path) ? v.long : '', short: endsOk(v.short || '', path) ? v.short : ''};
       // a line already placed in this design isn't used twice (two photos of one room): the other version, else a refit
       const ok = [v.long, v.short].filter(Boolean).filter(t => len(t) <= limit && !placed.has(t)).sort((a, b) => len(b) - len(a));
       if(ok.length){ used.push(path); if(len(ok[0]) > 16) placed.add(ok[0]); return ok[0]; }
-      refits.push({path, budget, label, key, versions: [v.long, v.short].filter(Boolean)});
+      refits.push({path, budget, label, key, versions: [v.long, v.short].filter(Boolean), photo: photo || ''});
       const t = [v.short, v.long].find(x => x && !placed.has(x)) || '';
       if(len(t) > 16) placed.add(t);
       return t;
@@ -90,7 +94,7 @@
         const o = {}, g = {rooms: [], key};
         if('photo' in ex){
           o.photo = first ? ids[0] : photoFor(ex.photo); if(first) taken.add(ids[0]); first = false;
-          g.room = roomOf(o.photo); g.section = key === 'feature' ? null : sectionFor(o.photo, g.room);
+          g.room = roomOf(o.photo); g.photoId = o.photo; g.section = key === 'feature' ? null : sectionFor(o.photo, g.room);
           if(group) group.rooms.push(g.room);
         }
         if(key === 'feature' && master.feature) g.section = {title: master.feature.title, body: master.feature, caption: master.feature.title};
@@ -103,14 +107,14 @@
       const budget = len(ex), p = path.join('.'), S = group && group.section, M = master;
       if(group && 'room' in group && !S && /^(title|q|name|label|caption|body|a|detail|notes)$/.test(key)){
         // a photo whose room the master set doesn't cover: written to this slot's length in the refit step
-        refits.push({path: p, budget, label: key, key: group.room || 'room', versions: []}); return '';
+        refits.push({path: p, budget, label: key, key: group.room || 'room', versions: [], photo: group.photoId || ''}); return '';
       }
       if(S){
-        if(key === 'q') return pick(S.question || S.title, budget, p, 'question', S.room);
-        if(/^(title|name|label)$/.test(key)) return pick(S.title, budget, p, 'title', S.room);
-        if(key === 'caption') return pick(S.caption, budget, p, 'caption', S.room);
+        if(key === 'q') return pick(S.question || S.title, budget, p, 'question', S.room, group.photoId);
+        if(/^(title|name|label)$/.test(key)) return pick(S.title, budget, p, 'title', S.room, group.photoId);
+        if(key === 'caption') return pick(S.caption, budget, p, 'caption', S.room, group.photoId);
         if(key === 'lead') return '';
-        if(/^(body|a|detail|notes)$/.test(key)) return pick(S.body, budget, p, 'body', S.room);
+        if(/^(body|a|detail|notes)$/.test(key)) return pick(S.body, budget, p, 'body', S.room, group.photoId);
       }
       const inFlyer = path.includes('listing') && path.includes('companion'), inCard = path.includes('postcard');
       if(inFlyer && key === 'heading') return pick(M.flyer && M.flyer.heading, budget, p, 'flyer heading', 'flyer');
