@@ -1180,6 +1180,7 @@
       const body = {action: 'write', packageId: pkg.id, design: pkg.design, style: pkg.copyStyle, listing: pkg.listing,
         photos: Object.fromEntries(arr.map(i => ['p' + i, pkg.photos[i].desc || ''])),
         allPhotos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, [p.room, p.desc].filter(Boolean).join(': ')])),
+        photoUrls: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.url]).filter(([, u]) => /^https:\/\//.test(u || ''))),   // the writers see every photo
         example: ex, draft: {copy: d.copy, companion: d.companion}, pieces: piecesOf(pkg).map(pieceLabel)};
       const j = await ai(body);
       pkg.copy[pkg.design] = {copy: j.copy, companion: j.companion, writtenAt: new Date().toISOString(), cost: j.cost};
