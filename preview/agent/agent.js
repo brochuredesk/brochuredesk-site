@@ -1195,6 +1195,7 @@
       clearInterval(timer); $('#writeFill').style.width = '100%';
       await openFinal(piecesOf(pkg)[0]);
       await fillPass();
+      await aiCheckPass();
     } catch(e) {
       clearInterval(timer);
       pkg.stage = 'rough'; save();
@@ -1224,6 +1225,8 @@
     $('#finalTitle').textContent = `Proof: ${pkg.listing.address}`;
     $('#backToRough').hidden = !!pkg.paid;
     ohFields(); approveBox(); switchTiles(); await drawFinal();
+    // a proof that hasn't had its fill pass yet (written before it existed, or interrupted) gets one now
+    const w = pkg.copy[pkg.design]; if(w && !w.filled && !pkg.paid && pkg.stage === 'final') await fillPass();
   }
 
   // ---------- see it in another design (brief master-copy-design-switch-10-24) ----------
@@ -1296,17 +1299,43 @@
       const fl = (pkg.copy[id].flagged || []).length;
       say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`);
       await switchTiles(); await drawFinal();
-      if(!pkg.copy[id].filled){ say(`Filling every box in ${name}…`); await fillPass(); say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`); }
+      if(!pkg.copy[id].filled){ say(`Filling every box in ${name}…`); await fillPass(); say(`Checking that nothing reads machine-written…`); await aiCheckPass(); say(fl ? `Here it is in ${name}. ${fl} ${fl === 1 ? 'spot needs' : 'spots need'} a look: click it to change it.` : `Here it is in ${name}.`); }
     } catch(e) { say("We couldn't switch just now. Your proof is unchanged; try again."); }
     finally { $$('[data-switch]').forEach(b => b.disabled = false); }
   }
   // fill pass (the owner 10/26): every text box on the proof is filled to its last line, the last line at least 3/4 full.
   // After the proof lays out, each box that stops short is measured (characters per line in its own font and width)
   // and goes back once for a rewrite with real detail from its photo and the listing; then the proof redraws.
+  // how a text sits in its box on the proof: lines used, how full the last line is, and whether it runs over
+  function measure(el, text){
+    const doc = el.ownerDocument, keep = el.textContent; el.textContent = text;
+    const rg = doc.createRange(); rg.selectNodeContents(el);
+    const rows = []; [...rg.getClientRects()].filter(q => q.width > .5).forEach(q => { const row = rows.find(x => Math.abs(x.top - q.top) < 2); if(row) row.right = Math.max(row.right, q.right); else rows.push({top: q.top, right: q.right}); });
+    const box = el.getBoundingClientRect(), last = rows.sort((a, b) => a.top - b.top)[rows.length - 1];
+    const over = el.scrollHeight > el.clientHeight + 1 || rows.length > (+el.dataset.lines || 99);
+    const r = {rows: rows.length, last: last ? Math.min(1, (last.right - box.left) / box.width) : 0, over};
+    el.textContent = keep; return r;
+  }
+  // of the versions a rewrite sent back, the one that fills its box (last line at least 3/4) without running over; else
+  // the fullest one that fits; never one that runs over when another doesn't
+  function pickFit(el, cands){
+    const need = +el.dataset.fill || +el.dataset.lines || 1;
+    const scored = [...new Set(cands.filter(Boolean))].map(t => ({t, m: measure(el, t)}));
+    const good = scored.filter(x => !x.m.over && (x.m.rows > need || (x.m.rows === need && x.m.last >= 0.75)));
+    if(good.length) return good.sort((a, b) => b.t.length - a.t.length)[0].t;
+    const fits = scored.filter(x => !x.m.over);
+    return (fits.sort((a, b) => b.t.length - a.t.length)[0] || scored.sort((a, b) => a.t.length - b.t.length)[0] || {}).t;
+  }
+  function slotEl(text){
+    const t = norm(text);
+    for(const fr of $$('#finalProof iframe')){ const doc = fr.contentDocument; if(!doc) continue;
+      const el = [...doc.querySelectorAll('[data-slot]')].find(x => !x.children.length && norm(x.textContent) === t); if(el) return el; }
+    return null;
+  }
   async function fillPass(){
     const w = pkg.copy[pkg.design]; if(!w || w.filled) return;
     for(let t = 0; t < 40 && !$$('#finalProof iframe').some(fr => fr.contentDocument && fr.contentDocument.querySelector('.bd-edit')); t++) await new Promise(r => setTimeout(r, 250));
-    const spots = [], seenPath = new Set();
+    const spots = [], seenPath = new Set(), els = {};
     for(const fr of $$('#finalProof iframe')){
       const doc = fr.contentDocument; if(!doc) continue;
       doc.querySelectorAll('[data-slot]').forEach(el => {
@@ -1316,13 +1345,15 @@
         const rows = []; [...rg.getClientRects()].filter(q => q.width > .5).forEach(q => { const row = rows.find(x => Math.abs(x.top - q.top) < 2); if(row) row.right = Math.max(row.right, q.right); else rows.push({top: q.top, right: q.right}); });
         const box = el.getBoundingClientRect(), last = rows.sort((a, b) => a.top - b.top)[rows.length - 1];
         const lastFill = last ? Math.min(1, (last.right - box.left) / box.width) : 0;
-        if(rows.length > need || (rows.length === need && lastFill >= 0.75)) return;
+        const over = el.scrollHeight > el.clientHeight + 1 || rows.length > lines;   // running over goes back too, shorter
+        if(!over && (rows.length > need || (rows.length === need && lastFill >= 0.75))) return;
         const cpl = txt.length / Math.max(0.5, rows.length - 1 + lastFill);
         const path = (findPath(txt) || '').replace(/\[(\d+)\]/g, '.$1');
         if(!path || seenPath.has(path)) return; seenPath.add(path);
         const item = path.split('.').slice(0, -1).reduce((o, k) => o == null ? o : o[k], w) || {};
         const ph = /^p\d+$/.test(item.photo || '') ? pkg.photos[+item.photo.slice(1)] : null;
-        spots.push({path, budget: Math.floor(cpl * lines * 0.97), min: Math.ceil(cpl * (need - 0.2)), label: el.dataset.slot, key: '', versions: [txt],
+        els[path] = el;
+        spots.push({path, budget: Math.floor(cpl * lines * 0.97), min: Math.ceil(cpl * (need - 0.2)), variants: true, label: el.dataset.slot, key: '', versions: [txt],
           photo: ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : '', img: ph ? ph.url : undefined,
           ask: /\.a$/.test(path) ? getPath(w, path.replace(/\.a$/, '.q')) : undefined});
       });
@@ -1332,12 +1363,41 @@
       try {
         const j = await ai({action: 'refit', packageId: pkg.id, slots: spots.slice(0, 40), facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
           photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(w.companion)});
-        for(const [p, t] of Object.entries(j.texts || {})) setPath(w, p, t);
+        // each box takes the version that fills it in the real layout (the old text stays if nothing new fits better)
+        for(const [p, t] of Object.entries(j.texts || {})){ const el = els[p]; setPath(w, p, el ? pickFit(el, [t, ...((j.alts || {})[p] || []), getPath(w, p)]) || t : t); }
         w.filled.cost = j.cost || 0; w.filled.held = (j.flagged || []).length;
         w.cost = (w.cost || 0) + (j.cost || 0);
         store.event(pkg.id, 'fill-pass', {design: pkg.design, spots: spots.length, cost: j.cost || 0});
       } catch(e) { console.error('fill pass', e); }
     }
+    save(); await drawFinal();
+  }
+  // outside cross-check (Pangram AI-writing detector, the owner 10/26): the finished piece is read as a whole; any line inside a
+  // stretch it marks as AI-written goes back once for a rewrite at the same length. Skipped when the key isn't set.
+  async function aiCheckPass(){
+    const w = pkg.copy[pkg.design]; if(!w || w.aiCheck) return;
+    const lines = leaves({copy: w.copy, companion: w.companion}, '', []).map(([p, t]) => ({path: p.replace(/\[(\d+)\]/g, '.$1'), text: t}))
+      .filter(x => x.text.length > 2 && !/(^|\.)(kicker|stats|location|eyebrow|label|big|kind)(\.|$)/.test(x.path));
+    try {
+      const j = await ai({action: 'ai-check', packageId: pkg.id, texts: lines});
+      w.aiCheck = {prediction: j.prediction || '', fractionAi: j.fractionAi || 0, skipped: j.skipped || '', flagged: (j.flagged || []).length, cost: j.cost || 0};
+      w.cost = (w.cost || 0) + (j.cost || 0);
+      if((j.flagged || []).length){
+        const slots = j.flagged.slice(0, 40).map(path => {
+          const t = String(getPath(w, path) || ''), item = path.split('.').slice(0, -1).reduce((o, k) => o == null ? o : o[k], w) || {};
+          const ph = /^p\d+$/.test(item.photo || '') ? pkg.photos[+item.photo.slice(1)] : null;
+          return {path, budget: Math.ceil(t.length * 1.06), min: Math.floor(t.length * 0.94), variants: true, label: path, key: '', versions: [t],
+            why: 'An outside AI-writing detector marked this line as machine-written. Rewrite it the way a person would say it.',
+            photo: ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : '', img: ph ? ph.url : undefined,
+            ask: /\.a$/.test(path) ? getPath(w, path.replace(/\.a$/, '.q')) : undefined};
+        }).filter(x => x.versions[0]);
+        const r = await ai({action: 'refit', packageId: pkg.id, slots, facts: (pkg.master || {}).facts || {}, listing: pkg.listing,
+          photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(w.companion)});
+        for(const [p, t] of Object.entries(r.texts || {})){ const el = slotEl(getPath(w, p)); setPath(w, p, el ? pickFit(el, [t, ...((r.alts || {})[p] || [])]) || t : t); }
+        w.aiCheck.rewritten = Object.keys(r.texts || {}).length; w.aiCheck.cost += r.cost || 0; w.cost += r.cost || 0;
+      }
+      store.event(pkg.id, 'ai-check', {design: pkg.design, ...w.aiCheck});
+    } catch(e) { console.error('ai check', e); }
     save(); await drawFinal();
   }
   $('#finalPiece').onchange = e => { finalPiece = e.target.value; ohFields(); approveBox(); drawFinal(); };
