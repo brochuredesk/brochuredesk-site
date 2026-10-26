@@ -775,8 +775,12 @@
     for(const pt of parts) html[pt.piece.file] = html[pt.piece.file] || await tpl(designId, pt.piece.file);
     const have = [...box.querySelectorAll(':scope > figure')];
     if(have.length !== parts.length){ box.innerHTML = parts.map(pt => `<figure><div class="sheet"></div><figcaption></figcaption></figure>`).join(''); }
+    // resolves once every page has laid out: right after a design switch the fill pass used to measure the old design's
+    // pages (still in the frames), match nothing and stop
+    const ready = [];
     [...box.querySelectorAll(':scope > figure')].forEach((fig, i) => {
       const pt = parts[i], s = fig.querySelector('.sheet');
+      let done; ready.push(new Promise(r => { done = r; setTimeout(r, 20000); }));
       fig.querySelector('figcaption').textContent = parts.length > 1 ? pt.label : '';
       s.dataset.panel = pt.panel || '';
       const d = pt.piece.kind === 'foldover' ? Object.assign({}, data, {mode: 'proof'}) : Object.assign({}, data, {mode: 'email', piece: pt.piece});
@@ -785,9 +789,10 @@
       fr.title = pt.label;
       fr.onload = () => { const w = fr.contentWindow;
         Promise.resolve(w.brochureReady).then(() => fr.contentDocument.fonts ? fr.contentDocument.fonts.ready : 0)
-          .then(() => { if(d.preview) PT.fitPreview(fr.contentDocument); fit(s); if(onReady) onReady(fr, s, pt); }); fit(s); };
+          .then(() => { if(d.preview) PT.fitPreview(fr.contentDocument); fit(s); if(onReady) onReady(fr, s, pt); }).finally(done); fit(s); };
       fr.srcdoc = srcdoc(designId, html[pt.piece.file], d, pt.panel);
     });
+    await Promise.all(ready);
   }
 
   // ---------- 2. gallery ----------
