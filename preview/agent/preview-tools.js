@@ -137,9 +137,14 @@
   }
   const FLOORS = ['First floor', 'Second floor', 'Third floor', 'Fourth floor'];
   // blobs: one file (a PDF of every floor, or one image) or one image per floor -> [{src, tinted, label}]
+  // pdf.js's worker sometimes never starts on its first use in a page: a 20 s limit, then one fresh try
+  const withRetry = async b => {
+    const once = () => Promise.race([pages(b), new Promise((_, rej) => setTimeout(() => rej(new Error('plan-timeout')), 20000))]);
+    try { return await once(); } catch(e){ if(e.message !== 'plan-timeout') throw e; return once(); }
+  };
   PT.cleanPlan = async (blobs, labels) => {
     const out = [];
-    for(const b of [].concat(blobs)) for(const c of await pages(b)){ if(out.length >= 4) break; const a = lineArt(c); if(a) out.push(a); }
+    for(const b of [].concat(blobs)) for(const c of await withRetry(b)){ if(out.length >= 4) break; const a = lineArt(c); if(a) out.push(a); }
     return out.map((a, i) => Object.assign(a, {label: (labels && labels[i]) || (out.length > 1 ? FLOORS[i] : '')}));
   };
 
