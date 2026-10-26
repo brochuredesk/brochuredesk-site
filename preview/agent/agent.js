@@ -1254,7 +1254,7 @@
           say(`Rewriting ${r.refits.length} ${r.refits.length === 1 ? 'spot' : 'spots'} to fit ${name}, then checking every line…`);
           for(let i = 0; i < r.refits.length; i += 40){   // the function takes up to 40 spots a call
             const j = await ai({action: 'refit', packageId: pkg.id, slots: r.refits.slice(i, i + 40), facts: pkg.master.facts, listing: pkg.listing,
-              photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(pkg.copy[from])});
+              photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(r.companion)});   // reuse is checked within the new design (fold-over vs its other pieces), never against the design it replaces
             for(const [p, t] of Object.entries(j.texts || {})) MasterFit.place(r, p, t);
             cost += j.cost || 0; flagged = flagged.concat(j.flagged || []);
           }
