@@ -6,10 +6,9 @@
      event-loud      the label is 20 pt or larger, the date is the largest type on the page, the time is 18 pt or larger
      event-hidden    a public open house shows no refreshments or special-notes line; an empty field draws nothing
      logo-count      exactly one brokerage logo (or one text brokerage when there is no logo file)
-     qr              one QR code, at least 54 pt (0.75 in) square; none at all on pieces marked "qr": false
-                     (the open house flyer library, 10/20/2026)
+     qr              one QR code, at least 54 pt (0.75 in) square
      price / photo-number / staging   no listing price, no "Photo 12", no "virtually staged"
-   The TREC broker-name size rule needs the logo's wordmark measured by eye; it is recorded with the owner's approval. */
+   The TREC broker-name size rule needs the logo's wordmark measured by eye; it is recorded as approved. */
 (function(){
   const PT = 72 / 96;
   const size = el => parseFloat(getComputedStyle(el).fontSize) * PT;
@@ -49,14 +48,13 @@
 
     // exactly one brokerage logo
     const imgs = [...page.querySelectorAll('img')].filter(shown);
-    const logos = b.logo ? imgs.filter(i => same(i.getAttribute('src'), b.logo) || same(i.getAttribute('src'), b.logoOnDark) || same(i.getAttribute('src'), b.logoKnockout)).length
+    const logos = b.logo ? imgs.filter(i => same(i.getAttribute('src'), b.logo) || same(i.getAttribute('src'), b.logoOnDark)).length
                          : [...page.querySelectorAll('.logo')].filter(shown).length;
     if(logos !== 1) add('brand.logo', 'logo-count', `${logos} brokerage logos (exactly 1 allowed)`);
 
     // QR code
     const qrs = A.qr ? imgs.filter(i => same(i.getAttribute('src'), A.qr)) : [];
-    if(D.piece && D.piece.qr === false){ if(qrs.length) add('agent.qr', 'qr', 'this flyer takes no QR code'); }
-    else if(qrs.length !== 1) add('agent.qr', 'qr', `${qrs.length} QR codes (exactly 1 needed)`);
+    if(qrs.length !== 1) add('agent.qr', 'qr', `${qrs.length} QR codes (exactly 1 needed)`);
     else { const r = qrs[0].getBoundingClientRect(), s = Math.min(r.width, r.height) * PT; if(s < 53.5) add('agent.qr', 'qr', `QR is ${s.toFixed(0)} pt (54 pt minimum)`); }
 
     // words that never go on a piece

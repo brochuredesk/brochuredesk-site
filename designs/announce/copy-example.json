@@ -1,0 +1,129 @@
+{
+ "_about": "What the writer produces for the Just Listed / Just Sold library (templates/announce). Values are the 2614 Calder sample. Facts come only from the listing fact sheet; no price, neighborhood name, photo numbers or staging labels; plain sentences, no em dashes. Every block runs through the copy checks (annlib.js banned list + pipeline/copycheck.py) and the humanizer pass.",
+ "_fields": {
+  "justListed.lead": "one sentence, about 12 words, what the house is",
+  "justListed.hook": "short feature line, 3-6 words, sentence case (shown in capitals on some designs)",
+  "justListed.hookTail": "3-5 words that finish the hook (\"in a 1940 bungalow\")",
+  "justListed.about": "4 sentences, about 70 words",
+  "justListed.aboutShort": "2 sentences, about 30 words",
+  "justListed.features": "8 plain bullets, each under 45 characters",
+  "justListed.featuresShort": "8 bullets under 28 characters for front lists",
+  "justListed.captions": "one caption per listing photo id, under 60 characters",
+  "justListed.master": "the one master write-up for backs, 6-8 sentences; backs cut it to fit",
+  "justListed.drop": "1-based sentence numbers in the order they give way when a back is short on room (first sentence never listed)",
+  "justListed.callLine": "one line inviting a showing",
+  "justListed.photoRoles": "optional {role: photo id} when the auto match is wrong (front, family, kitchen, dining, living, primary, lawn, nook, office, ...)",
+  "justSold.headline": "agent pick: Just Sold | Another Home Sold | Sold | Listed & Sold | their own words",
+  "justSold.side": "agent pick: seller | buyer | both | null",
+  "justSold.days / offers / offersOk / overAsking": "agent inputs; offer counts and over asking print only when offersOk is true",
+  "justSold.ctaHead / ctaNext / ctaShort / cta": "from the CTA playbook or the agent's own words",
+  "justSold.master + drop": "the master back write-up and its drop order",
+  "justSold.letter": "the \"Hello, neighbor\" note, about 55 words, first person",
+  "justSold.offerList + listLabel": "the plain first-person steps list",
+  "justSold.nohsLines": "three short lines that fill the headshot spot when the agent has no headshot",
+  "justSold.quote": "only a real client quote the agent pastes with the client's OK; never written by AI",
+  "justListed.blurb": "two sentences, 120-140 characters, for two-line write-ups on social posts"
+ },
+ "companion": {
+  "justListed": {
+   "lead": "A 1940 bungalow with new wiring, plumbing, roof and siding.",
+   "hook": "New roof, wiring and plumbing",
+   "hookTail": "in a 1940 bungalow",
+   "about": "This 1940 bungalow in Houston has a new roof, new siding, and new wiring and plumbing. The kitchen has white upper cabinets, dark lower cabinets, marble-look counters and a bar that seats three. The living and dining rooms are open to each other, with a breakfast nook off the kitchen. The primary bedroom has a vaulted ceiling, and the back patio is covered.",
+   "aboutShort": "New wiring, plumbing, roof and siding on a 1940 Houston bungalow. Marble-look kitchen counters, a vaulted primary bedroom and a covered back patio.",
+   "features": [
+    "New roof and siding",
+    "New wiring and plumbing",
+    "Open living and dining room",
+    "Kitchen bar that seats three",
+    "Marble-look counters, stainless appliances",
+    "Vaulted ceiling in the primary bedroom",
+    "Breakfast nook off the kitchen",
+    "Covered back patio"
+   ],
+   "featuresShort": [
+    "Built in 1940",
+    "3 bedrooms · 2 baths",
+    "1,385 square feet",
+    "New roof and siding",
+    "New wiring and plumbing",
+    "Marble-look counters",
+    "Vaulted primary bedroom",
+    "Covered back patio"
+   ],
+   "captions": {
+    "kitchen": "White uppers, dark lowers and marble-look counters",
+    "living": "Open to the dining area, with wood-look floors throughout",
+    "primary": "Vaulted ceiling, ceiling fan and a double-door closet",
+    "lawn": "Covered patio across the back of the house",
+    "nook": "Windows on two sides, next to the kitchen",
+    "office": "Dark vanity with a marble-look top and a lighted mirror",
+    "front": "New roof and siding, with a covered front porch",
+    "dining": "Between the kitchen bar and the living room",
+    "family": "New roof and siding, with a covered front porch",
+    "kitchen2": "Bar seating for three at the peninsula",
+    "study": "Third bedroom off the hall",
+    "bedroom2": "Second bedroom with a ceiling fan",
+    "hall": "Front entry into the living room"
+   },
+   "master": [
+    "This 1940 bungalow in Houston has a new roof, new siding, and new wiring and plumbing.",
+    "It has three bedrooms, two full baths and 1,385 square feet, all on one floor.",
+    "The front door opens to a living room that runs into the dining area, with wood-look floors throughout.",
+    "The kitchen has white upper cabinets, dark lower cabinets, marble-look counters, stainless appliances and a bar that seats three.",
+    "A breakfast nook with windows on two sides sits next to the kitchen.",
+    "The primary bedroom has a vaulted ceiling and a double-door closet.",
+    "The back patio is covered."
+   ],
+   "drop": [
+    3,
+    5,
+    6,
+    4,
+    7,
+    2
+   ],
+   "callLine": "Call or text for a private showing.",
+   "blurb": "A 1940 bungalow with a new roof, new siding, and new wiring and plumbing. Marble-look kitchen counters and a covered back patio."
+  },
+  "justSold": {
+   "headline": "Just Sold",
+   "side": null,
+   "days": null,
+   "offers": null,
+   "offersOk": false,
+   "overAsking": false,
+   "ctaHead": "Thinking about selling?",
+   "cta": "Call or text me for a free home value estimate and a plan for your home.",
+   "ctaShort": "Call or text for a free home value estimate.",
+   "ctaNext": "Your home could be next.",
+   "master": [
+    "I just helped sell 2614 Calder Street.",
+    "If you've wondered what your home would sell for today, I'd be glad to put together a free estimate based on recent sales near you.",
+    "I'll walk you through it in person, along with a plan for pricing, prep and marketing.",
+    "There's no cost and no pressure to list.",
+    "Call or text me any time."
+   ],
+   "drop": [
+    3,
+    4,
+    5
+   ],
+   "letter": "I just helped sell the home at 2614 Calder Street. If you've been wondering what your home would sell for today, I'd be glad to put together a free estimate and walk you through it. There's no cost and no pressure to list. When you're ready, call or text me.",
+   "offerList": [
+    "Go over recent sales near you",
+    "Walk through your house with you",
+    "Give you a price range and what it takes to get there",
+    "Tell you what's worth fixing and what isn't",
+    "You decide if and when to list"
+   ],
+   "listLabel": "Here's how I'd start",
+   "nohsLines": [
+    "Free home value estimate",
+    "Recent sales near you",
+    "No pressure to list"
+   ],
+   "quote": null
+  }
+ }
+}

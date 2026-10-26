@@ -1,0 +1,222 @@
+{
+  "note": "Rough-draft preview text (brief preview-and-lookup-10-24, section 4). Shown under the real room headings in the free preview so the agent sees what each section will say, in place of filler. Says 'we' or 'our writer', never 'AI'. Several lines per room so repeats don't show; the preview joins and trims them to each slot's real copy length. No model call. Never on a paid or downloaded piece: the templates' checks block any render that carries preview text. Wording is the owner's call; edit here only. 'fillers' are short closing lines used only to fill a slot's last line in the preview.",
+  "version": "preview-lines@v1 (10/25/2026)",
+  "headings": {
+    "kitchen": "Kitchen",
+    "living room": "Living room",
+    "family room": "Family room",
+    "dining room": "Dining room",
+    "breakfast area": "Breakfast nook",
+    "primary bedroom": "Primary bedroom",
+    "primary bath": "Primary bath",
+    "bedroom": "Bedroom",
+    "bathroom": "Bathroom",
+    "study": "Study",
+    "game room": "Game room",
+    "laundry room": "Laundry room",
+    "entry": "Entry",
+    "stairs": "Stairs",
+    "backyard": "Backyard",
+    "patio": "Patio",
+    "pool": "Pool",
+    "garage": "Garage",
+    "front exterior": "Front of the home",
+    "side exterior": "Outside",
+    "back exterior": "Back of the home",
+    "aerial": "From above",
+    "view": "The view",
+    "community": "Community",
+    "room": "This room"
+  },
+  "rooms": {
+    "kitchen": [
+      "We'll describe this kitchen from the finishes and features in your photos.",
+      "Our writer covers the counters, cabinets and appliances that show here.",
+      "This section points out how the kitchen works day to day: the prep space, the storage and where people gather.",
+      "Anything special you can see, like an island or a gas range, gets named here.",
+      "Counters, cabinets and appliances, from your photos."
+    ],
+    "living room": [
+      "We'll write about the living room from what your photos show: the light, the floors and how it opens to the rooms around it.",
+      "Our writer notes the size of the living room and the details buyers look for.",
+      "Here we'll cover the fireplace, built-ins or windows if your photos show them.",
+      "Light, floors and layout of the living room."
+    ],
+    "family room": [
+      "We'll describe the family room and how it connects to the kitchen and yard.",
+      "Our writer picks out what makes this room easy to live in, from the photos and the listing.",
+      "Ceiling height, windows and any built-ins in the family room are named here.",
+      "How the family room connects and feels."
+    ],
+    "dining room": [
+      "We'll write about the dining room: its size, its light and how close it sits to the kitchen.",
+      "Our writer mentions how many it seats comfortably and any details like a chandelier or wainscoting.",
+      "This line covers how the dining room fits the rest of the main floor.",
+      "Size and light of the dining room."
+    ],
+    "breakfast area": [
+      "We'll describe the breakfast nook and what it looks out on.",
+      "Our writer notes how the nook works with the kitchen for everyday meals.",
+      "Windows, seating space and light in the nook are covered here.",
+      "The nook, its light and its view."
+    ],
+    "primary bedroom": [
+      "We'll describe the primary bedroom from your photos: its size, its windows and where it sits in the house.",
+      "Our writer covers the closet and the bath that go with this room.",
+      "Ceiling details, privacy from the street and the view from the primary are named here.",
+      "Size, light and privacy of the primary."
+    ],
+    "primary bath": [
+      "We'll write about the primary bath: the vanity, the shower or tub and the finishes in your photos.",
+      "Our writer points out double sinks, storage and tile work if they show.",
+      "This section covers what buyers notice first in a primary bath.",
+      "Vanity, shower and finishes in the bath."
+    ],
+    "bedroom": [
+      "We'll describe this bedroom's size, light and closet space.",
+      "Our writer notes where this bedroom sits and how it could be used.",
+      "Windows, flooring and any built-ins in this bedroom are named here.",
+      "Size, light and closet in this bedroom."
+    ],
+    "bathroom": [
+      "We'll describe this bathroom from the fixtures and finishes in your photos.",
+      "Our writer notes the vanity, the shower or tub and any updates that show.",
+      "This line covers which bedrooms this bath serves.",
+      "Fixtures and finishes in this bath."
+    ],
+    "study": [
+      "We'll describe the study and how it works as an office or a quiet room.",
+      "Our writer notes the light, the doors and any built-in shelving.",
+      "Where the study sits in the house, and why that matters, is covered here.",
+      "How the study works as an office."
+    ],
+    "game room": [
+      "We'll describe the game room and the ways it can be used.",
+      "Our writer covers its size, its light and where it sits apart from the bedrooms.",
+      "Built-ins, a wet bar or media wiring in this room get named here.",
+      "Size and uses of the game room."
+    ],
+    "laundry room": [
+      "We'll note the laundry room's location and storage.",
+      "Our writer covers the hookups, counter space and cabinets that show.",
+      "This line says where the laundry sits in relation to the bedrooms.",
+      "Where the laundry sits and its storage."
+    ],
+    "entry": [
+      "We'll describe the first thing buyers see when the front door opens.",
+      "Our writer covers the entry's ceiling, floors and what it opens to.",
+      "This section sets up the walk through the rest of the house.",
+      "What the front door opens to."
+    ],
+    "stairs": [
+      "We'll describe the staircase and what sits at the top.",
+      "Our writer notes the railing, the treads and the light on the stairs.",
+      "This line covers how the floors connect.",
+      "The staircase and what's at the top."
+    ],
+    "backyard": [
+      "We'll describe the backyard from your photos: its size, its shade and what's planted.",
+      "Our writer covers the fence, the lawn and room to play or garden.",
+      "Anything built in out back, like a deck or an outdoor kitchen, gets named here.",
+      "Lawn, fence and shade out back."
+    ],
+    "patio": [
+      "We'll describe the patio and how it connects to the house.",
+      "Our writer notes whether it's covered, what it looks out on and how much seating fits.",
+      "Lights, fans or an outdoor kitchen on the patio are named here.",
+      "Cover, seating and view on the patio."
+    ],
+    "pool": [
+      "We'll describe the pool and the space around it.",
+      "Our writer notes the decking, the shade and how the pool sits in the yard.",
+      "Any spa, water feature or fencing that shows is covered here.",
+      "The pool and the space around it."
+    ],
+    "garage": [
+      "We'll note the garage size and any storage or workshop space.",
+      "Our writer covers how the garage connects to the house and driveway.",
+      "This line mentions parking for guests if the photos show it.",
+      "Garage size and storage."
+    ],
+    "front exterior": [
+      "We'll describe the front of the home from your photos: its style, its materials and its curb appeal.",
+      "Our writer covers the porch, the landscaping and what buyers see from the street.",
+      "Roof, windows and recent exterior updates are named here when they show.",
+      "Style and curb appeal from the street."
+    ],
+    "side exterior": [
+      "We'll describe the outside of the home and the lot it sits on.",
+      "Our writer covers the materials, the driveway and the yard space that show.",
+      "This section points out exterior work buyers will want to know about.",
+      "Materials, lot and yard outside."
+    ],
+    "back exterior": [
+      "We'll describe the back of the home and how it opens to the yard.",
+      "Our writer notes the doors, the patio and the shade out back.",
+      "This line covers what the back of the house says about outdoor living here.",
+      "How the back of the home opens up."
+    ],
+    "aerial": [
+      "We'll describe the lot and its setting from this view.",
+      "Our writer notes the trees, the yard and how the house sits on the land.",
+      "This section covers the street and what's nearby, without naming schools.",
+      "The lot and its setting."
+    ],
+    "view": [
+      "We'll describe the view and which rooms enjoy it.",
+      "Our writer notes what the windows look out on and the light it brings in.",
+      "This line covers the setting around the home.",
+      "What the windows look out on."
+    ],
+    "community": [
+      "We'll describe the community features that come with the home.",
+      "Our writer covers the parks, pools or trails your listing includes.",
+      "This section sticks to facts from the listing about shared amenities.",
+      "Shared amenities from the listing."
+    ],
+    "room": [
+      "We'll describe this room from what your photos show.",
+      "Our writer names the details buyers look for here.",
+      "This section covers the size, the light and the finishes in this room.",
+      "Size, light and finishes in this room."
+    ]
+  },
+  "sections": {
+    "headline": [
+      "Your headline goes here.",
+      "A headline about this home.",
+      "Your headline goes here, written for this home.",
+      "We'll write a short headline about what sets this home apart."
+    ],
+    "intro": [
+      "This opening tells buyers what kind of home this is, from your listing facts and photos.",
+      "Our writer sums up the house in a few lines: its style, its size and what buyers will like most.",
+      "We'll cover the updates and the layout here, in plain words a buyer can picture.",
+      "What kind of home this is, in a few lines."
+    ],
+    "location": [
+      "We'll describe the location from your listing: the street, the commute and what's close by.",
+      "Our writer covers parks, shopping and dining nearby, and never schools or demographics.",
+      "This section sticks to facts about getting around from this address.",
+      "Getting around from this address."
+    ],
+    "feature": [
+      "We'll use this space for the home's standout feature, from your listing and photos.",
+      "Our writer picks the one detail buyers should not miss and explains why it matters.",
+      "Updates, systems and work done to the home are covered here.",
+      "The one detail buyers shouldn't miss."
+    ],
+    "summary": [
+      "We'll write a short summary of the home from your listing facts and photos.",
+      "Our writer covers its style, its size and its best features in a few lines."
+    ]
+  },
+  "fillers": [
+    "Every line is checked before you see it.",
+    "Facts come from your listing.",
+    "It stays plain and accurate.",
+    "All from your photos.",
+    "More in the final copy.",
+    "Nothing here is final."
+  ]
+}

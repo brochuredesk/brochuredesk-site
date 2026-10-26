@@ -1,0 +1,404 @@
+{
+ "copy": {
+  "cover": {
+   "photo": "cover",
+   "summary": {
+    "q": "What kind of house?",
+    "a": "A 1940 East End bungalow with three bedrooms, two full baths and 1,385 square feet, rebuilt from the foundation up."
+   },
+   "stat5": "garage",
+   "photos": [
+    {
+     "photo": "living",
+     "q": "What opens off the entry?",
+     "lead": "The Living Room, 16'3\" x 12'6\",",
+     "a": "with a clerestory window and a wide opening to the Dining area and Kitchen."
+    },
+    {
+     "photo": "primary-2",
+     "q": "Where is the Primary?",
+     "lead": "At the back, 14'4\" x 14'6\",",
+     "a": "under a vaulted ceiling with an exposed painted beam."
+    },
+    {
+     "photo": "patio-dusk",
+     "q": "How much covered space?",
+     "a": "A covered patio, 8'11\" x 25'11\", and a covered garage, 14'4\" x 24'3\", in the fenced yard."
+    }
+   ]
+  },
+  "frontRooms": {
+   "kicker": "Living, dining, kitchen and nook",
+   "title": "How do the front rooms connect?",
+   "intro": "The front door opens into the Living Room, and wood-look floors run from there to the Kitchen with no thresholds.",
+   "photos": [
+    {
+     "photo": "living-wide",
+     "q": "What does the cased opening join?",
+     "lead": "Living Room, 16'3\" x 12'6\".",
+     "a": "A wide cased opening joins it to the Dining area and Kitchen, so the whole front of the home works as one room."
+    },
+    {
+     "photo": "dining",
+     "q": "Where is the Dining area?",
+     "lead": "Dining Area, 11'2\" x 8'9\",",
+     "a": "between the Kitchen peninsula and the hall to the bedrooms. Two pendants hang over the breakfast bar."
+    },
+    {
+     "photo": "kitchen",
+     "q": "How is the Kitchen laid out?",
+     "lead": "Kitchen, 8'1\" x 11'10\".",
+     "a": "All new, in an L with a peninsula, and open to the Dining area and Living Room. The pantry and Breakfast Nook are just around the corner."
+    },
+    {
+     "photo": "nook",
+     "q": "Where is the Breakfast Nook?",
+     "lead": "Breakfast Nook, 8'1\" x 8'9\",",
+     "a": "beside the Kitchen, with windows on two walls and a door out to the backyard deck."
+    }
+   ],
+   "plan": {
+    "w": 890,
+    "h": 400,
+    "noteCorner": "tr",
+    "note": "Street side at left, covered patio and garage at right. Approximate; not to scale. Buyer to verify.",
+    "rooms": [
+     {
+      "label": "Kitchen",
+      "dims": "8'1\" x 11'10\"",
+      "x": 223,
+      "y": 0,
+      "w": 162,
+      "h": 103
+     },
+     {
+      "label": "Breakfast nook",
+      "dims": "8'1\" x 8'9\"",
+      "x": 385,
+      "y": 0,
+      "w": 90,
+      "h": 103
+     },
+     {
+      "label": "Deck",
+      "x": 475,
+      "y": 50,
+      "w": 40,
+      "h": 53,
+      "kind": "outdoor"
+     },
+     {
+      "label": "Living room",
+      "dims": "16'3\" x 12'6\"",
+      "x": 70,
+      "y": 35,
+      "w": 153,
+      "h": 192
+     },
+     {
+      "label": "Dining area",
+      "dims": "11'2\" x 8'9\"",
+      "x": 223,
+      "y": 103,
+      "w": 112,
+      "h": 124
+     },
+     {
+      "label": "Pantry",
+      "x": 335,
+      "y": 103,
+      "w": 40,
+      "h": 124,
+      "kind": "closet",
+      "vertical": true
+     },
+     {
+      "label": "Primary bath",
+      "dims": "10'0\" x 7'10\"",
+      "x": 375,
+      "y": 103,
+      "w": 100,
+      "h": 124,
+      "kind": "wet"
+     },
+     {
+      "label": "Porch",
+      "x": 7,
+      "y": 170,
+      "w": 63,
+      "h": 57,
+      "kind": "outdoor"
+     },
+     {
+      "label": "Covered patio",
+      "dims": "8'11\" x 25'11\"",
+      "x": 577,
+      "y": 117,
+      "w": 308,
+      "h": 106,
+      "kind": "outdoor"
+     },
+     {
+      "label": "Hall",
+      "x": 158,
+      "y": 227,
+      "w": 287,
+      "h": 50,
+      "kind": "hall"
+     },
+     {
+      "label": "Bedroom 2",
+      "dims": "13'7\" x 12'6\"",
+      "x": 3,
+      "y": 227,
+      "w": 155,
+      "h": 168
+     },
+     {
+      "label": "Hall bath",
+      "dims": "9'10\" x 6'10\"",
+      "x": 158,
+      "y": 277,
+      "w": 82,
+      "h": 118,
+      "kind": "wet"
+     },
+     {
+      "label": "Closet",
+      "x": 240,
+      "y": 277,
+      "w": 36,
+      "h": 118,
+      "kind": "closet",
+      "vertical": true
+     },
+     {
+      "label": "Bedroom 3",
+      "dims": "13'7\" x 11'3\"",
+      "x": 276,
+      "y": 277,
+      "w": 136,
+      "h": 118
+     },
+     {
+      "label": "Primary closet",
+      "x": 412,
+      "y": 277,
+      "w": 33,
+      "h": 118,
+      "kind": "closet",
+      "vertical": true
+     },
+     {
+      "label": "Primary bedroom",
+      "dims": "14'4\" x 14'6\"",
+      "x": 445,
+      "y": 227,
+      "w": 145,
+      "h": 168
+     },
+     {
+      "label": "Covered garage",
+      "dims": "14'4\" x 24'3\"",
+      "x": 590,
+      "y": 227,
+      "w": 295,
+      "h": 168,
+      "kind": "garage"
+     }
+    ],
+    "walls": [
+     [
+      [
+       70,
+       227
+      ],
+      [
+       70,
+       35
+      ],
+      [
+       223,
+       35
+      ],
+      [
+       223,
+       0
+      ],
+      [
+       475,
+       0
+      ],
+      [
+       475,
+       227
+      ],
+      [
+       590,
+       227
+      ],
+      [
+       590,
+       395
+      ],
+      [
+       3,
+       395
+      ],
+      [
+       3,
+       227
+      ],
+      [
+       70,
+       227
+      ]
+     ],
+     [
+      [
+       590,
+       227
+      ],
+      [
+       885,
+       227
+      ],
+      [
+       885,
+       395
+      ],
+      [
+       590,
+       395
+      ]
+     ]
+    ]
+   }
+  },
+  "bedsBaths": {
+   "kicker": "Bedrooms and baths",
+   "title": "Where are the bedrooms and baths?",
+   "intro": "Three bedrooms and two full baths. Bedrooms 2 and 3 share the hall bath, so the Primary bath stays private.",
+   "pair": [
+    {
+     "photo": "primary",
+     "q": "How is the Primary set up?",
+     "lead": "Primary Bedroom, 14'4\" x 14'6\".",
+     "a": "A vaulted ceiling with an exposed painted beam, windows on two walls, a double-door closet and a doorway to the Primary bath on the closet wall."
+    },
+    {
+     "photo": "primary-wall",
+     "q": "Is the Primary away from the street?",
+     "a": "Yes. It is at the back of the home, across the house from Bedroom 2."
+    }
+   ],
+   "tiles": [
+    {
+     "photo": "primary-vanity",
+     "q": "What is at the vanity?",
+     "lead": "Primary Bath, 10'0\" x 7'10\".",
+     "a": "A dark navy vanity with a stone top under an LED backlit mirror."
+    },
+    {
+     "photo": "primary-shower",
+     "q": "What kind of shower?",
+     "a": "Marble-look tile floor to ceiling, a glass door, a rain showerhead and a handheld."
+    },
+    {
+     "photo": "primary-closet",
+     "q": "Do the closet built-ins stay?",
+     "a": "Yes. Double doors open to a shelving tower with hanging rods on both sides."
+    },
+    {
+     "photo": "bedroom2",
+     "q": "Which bedroom is larger?",
+     "lead": "Bedroom 2, 13'7\" x 12'6\",",
+     "a": "at the front corner with windows on two walls."
+    },
+    {
+     "photo": "bedroom3",
+     "q": "Where is the Bedroom 3 closet?",
+     "lead": "Bedroom 3, 13'7\" x 11'3\".",
+     "a": "On the hall side, leaving the window wall open for a desk."
+    },
+    {
+     "photo": "hall-bath",
+     "q": "Who uses the hall bath?",
+     "lead": "Hall Bath, 9'10\" x 6'10\".",
+     "a": "Bedrooms 2 and 3 share it: a tub with marble-look tile and a pebble tile niche."
+    }
+   ],
+   "builtIn": [
+    "Closet tower stays with the home",
+    "LED backlit mirrors in both baths",
+    "All new baths and kitchen"
+   ]
+  },
+  "outside": {
+   "kicker": "Outside and nearby",
+   "title": "What is new, and what is nearby?",
+   "exterior": {
+    "photo": "front",
+    "q": "What is new outside?",
+    "a": "Hardi Plank siding, a new roof and a new driveway. The front door opens from the porch into the Living Room."
+   },
+   "backyard": {
+    "photo": "patio",
+    "q": "Is the yard fenced?",
+    "lead": "Yes.",
+    "a": "Out back, the fenced yard has the covered patio, 8'11\" x 25'11\", with the covered garage, 14'4\" x 24'3\", beside it."
+   },
+   "small": [
+    {
+     "photo": "deck",
+     "q": "Is there a deck?",
+     "a": "Yes, off the Breakfast Nook door, with steps down to the yard."
+    },
+    {
+     "photo": "garage",
+     "q": "How big is the garage?",
+     "lead": "14'4\" x 24'3\",",
+     "a": "covered, beside the patio."
+    }
+   ],
+   "checklist": {
+    "q": "What was rebuilt?",
+    "lead": "The 1940 bungalow, from the foundation up:",
+    "items": [
+     "Foundation reworked, leveled and braced",
+     "All new wiring and breaker box",
+     "Three-phase power",
+     "New plumbing",
+     "Hardi Plank siding",
+     "New roof",
+     "New driveway",
+     "All new kitchen and baths"
+    ]
+   },
+   "callout": {
+    "kind": "flood",
+    "q": "Has it ever flooded?",
+    "big": "Never flooded"
+   },
+   "nearby": [
+    {
+     "dist": "0.3 miles",
+     "place": "Cullinan Park",
+     "kind": "park"
+    },
+    {
+     "dist": "0.7 miles",
+     "place": "Bohemeo's",
+     "kind": "restaurant"
+    },
+    {
+     "dist": "3.5 miles",
+     "place": "Downtown Houston",
+     "kind": "attraction"
+    }
+   ]
+  },
+  "finePrint": "Information deemed reliable but not guaranteed; buyer to verify. Room dimensions are approximate, from a floor plan. Living area of 1,385 square feet per HCAD."
+ },
+ "companion": {}
+}

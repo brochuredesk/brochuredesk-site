@@ -16,7 +16,7 @@
           log(row)   {event: 'switch'|'reset'|'update'|'download', from, to, where}, for the switch counts
           download(pkg, flyer)  both files (print-at-home and email) from the renderer; printer(pkg, flyer) the upload panel
    Skin: the host page sets --oh-accent, --oh-ink, --oh-paper, --oh-line, --oh-font (a team page passes its team colors).
-   Wording on buttons and headings is a draft; the owner's call. */
+   Wording on buttons and headings is a draft. */
 (function(){
   const LIMITS = {refreshments: 50, note: 70};   // same as pipeline/openhouse.py
   const KINDS = {public: 'Public', broker: 'Broker', realtor: 'REALTOR®'};

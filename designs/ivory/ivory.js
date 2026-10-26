@@ -52,8 +52,10 @@
   // Story count from the listing data (or the plan's level count); plan = a redrawn plan with at least one level.
   Ivory.version = D => {
     const L = D.listing || {};
-    const plan = !!(D.plan && D.plan.levels && D.plan.levels.length);
-    const levels = plan ? D.plan.levels.filter(l=>!l.garageApartment).length : 0;
+    const real = !!(D.plan && D.plan.levels && D.plan.levels.length);
+    // the rough-draft preview's simple plan (D.planPreview, one image per floor) picks the plan version too
+    const pre = !real && !!(D.planPreview && D.planPreview.length), plan = real || pre;
+    const levels = real ? D.plan.levels.filter(l=>!l.garageApartment).length : pre ? D.planPreview.length : 0;
     const stories = Math.max(1, Math.min(4, Math.round(+L.stories || levels || 1)));
     return {stories, plan, id: `${stories}-story-${plan ? 'plan' : 'noplan'}`};
   };
@@ -270,6 +272,10 @@
   // photos under 300 ppi at print size, empty or missing photos.
   Ivory.check = function(extra){
     const issues = [...(extra||[]), ...Ivory.fontIssues];
+    // rough-draft preview text and the preview plan never reach a paid or downloaded piece (10/25/2026)
+    const PD = Ivory.data() || {};
+    if(PD.preview) issues.push({slot:'copy', kind:'preview-text', detail:'rough-draft preview lines; the writer has not run'});
+    if(PD.planPreview && PD.planPreview.length) issues.push({slot:'plan', kind:'preview-plan', detail:'simple preview plan; the redraw has not run'});
     document.querySelectorAll('[data-slot]').forEach(el=>{
       const name = el.dataset.slot, cs = getComputedStyle(el);
       const size = parseFloat(cs.fontSize)*72/96;

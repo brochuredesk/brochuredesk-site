@@ -2,8 +2,15 @@
  {
   "id": "ivory",
   "name": "Ivory",
-  "thumb": "/preview/img/listing-flyer.jpg",
+  "thumb": "/preview/img/open-house-flyer.jpg",
   "fonts": true
+ },
+ {
+  "id": "announce",
+  "name": "Just Listed and Just Sold library (test)",
+  "thumb": "/designs/announce/thumb.jpg",
+  "test": true,
+  "library": true
  },
  {
   "id": "answer-book",

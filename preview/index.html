@@ -81,13 +81,14 @@ section.s.alt{background:var(--paper);border-block:1px solid var(--line)}
 .shead p{color:var(--slate)}
 .shot{box-shadow:0 1px 2px rgba(30,34,38,.12),0 12px 28px rgba(30,34,38,.16);background:var(--paper)}
 
-/* package: five pieces */
+/* package: four pieces */
 .pieces{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:34px 26px;align-items:start}
 .pieces .piece.wide{align-self:end}
 .piece{display:grid;gap:12px;min-width:0;grid-column:span 2}
 .piece.wide{grid-column:span 3}
-@media (max-width:900px){.pieces{grid-template-columns:repeat(2,minmax(0,1fr))}.piece,.piece.wide{grid-column:span 1}.piece.wide{grid-column:span 2}}
-@media (max-width:520px){.pieces{grid-template-columns:minmax(0,1fr)}.piece,.piece.wide{grid-column:span 1}}
+.piece.sold{grid-column:span 4;align-self:end}
+@media (max-width:900px){.pieces{grid-template-columns:repeat(2,minmax(0,1fr))}.piece,.piece.wide,.piece.sold{grid-column:span 1}.piece.wide{grid-column:span 2}}
+@media (max-width:520px){.pieces{grid-template-columns:minmax(0,1fr)}.piece,.piece.wide,.piece.sold{grid-column:span 1}}
 .piece h3{font-family:var(--body);font-weight:600;font-size:16px}
 .piece p{font-size:14.5px;color:var(--slate)}
 .piece .twin{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
@@ -255,11 +256,11 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
           <div class="linkbox"><input id="hero-link" type="url" inputmode="url" aria-label="Matrix listing link" placeholder="Paste your Matrix listing link"><button class="btn" type="submit">Go</button></div>
           <p class="startnote" role="status" aria-live="polite"><button type="button" class="linkbtn" data-mx-help>How do I create a Matrix link?</button></p>
         </form>
-        <ul class="facts"><li>11 x 17 fold-over</li><li>Two 8.5 x 11 flyers</li><li>Just Listed and Just Sold postcards</li></ul>
+        <ul class="facts"><li>11 x 17 fold-over</li><li>8.5 x 11 Open House flyer</li><li>Just Listed and Just Sold postcards</li></ul>
       </div>
       <div class="stack" aria-hidden="true">
         <div class="pg p1"><img src="img/open-house-flyer.jpg" alt="" width="900" height="1165"></div>
-        <div class="pg p3"><img src="img/listing-flyer.jpg" alt="" width="900" height="1165"></div>
+        <div class="pg p3"><img src="img/open-house-flyer-2.jpg" alt="" width="900" height="1165"></div>
       </div>
     </div>
   </section>
@@ -333,9 +334,8 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
             <figure><div class="sheet" data-piece="foldover" data-panel="top" data-label="Fold-over, inside top"></div><figcaption>Inside, top</figcaption></figure>
             <figure><div class="sheet" data-piece="foldover" data-panel="bottom" data-label="Fold-over, inside bottom"></div><figcaption>Inside, bottom</figcaption></figure>
           </div></div>
-        <div class="tryset"><h4>Flyers, 8.5 x 11</h4>
+        <div class="tryset"><h4>Open House flyer, 8.5 x 11</h4>
           <div class="three">
-            <figure><div class="sheet" data-piece="listing-flyer" data-label="Listing flyer"></div><figcaption>Listing</figcaption></figure>
             <figure><div class="sheet" data-piece="open-house-v1" data-label="Open House flyer"></div><figcaption>Open House. You set the date and time after you sign up.</figcaption></figure>
           </div></div>
         <div class="tryset"><h4>Just Listed postcard</h4>
@@ -360,15 +360,14 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
   <section class="s alt" id="package">
     <div class="in">
       <div class="shead">
-        <h2>Five matching pieces for every listing</h2>
+        <h2>Four matching pieces for every listing</h2>
         <p>One order covers what you hand out at showings and what you mail to the neighborhood, all in the same design. Open house details change for free whenever you need them to.</p>
       </div>
       <div class="pieces">
         <div class="piece wide"><img class="shot" src="img/foldover-front.jpg" alt="Cover of an 11 x 17 fold-over brochure for a sample listing" width="1200" height="933" loading="lazy"><h3>11 x 17 fold-over brochure</h3><p>Sized to your printer's specs and uploaded to your cart.</p></div>
         <div class="piece wide"><div class="twin"><img class="shot" src="img/postcard-6x11-front.jpg" alt="Front of a Just Listed postcard" width="1200" height="655" loading="lazy"><img class="shot" src="img/postcard-6x11-back.jpg" alt="Back of a Just Listed postcard with the mailing area" width="1200" height="655" loading="lazy"></div><h3>Just Listed postcard</h3><p>6 x 9 or 6 x 11, uploaded to your mail vendor.</p></div>
-        <div class="piece"><img class="shot" src="img/listing-flyer.jpg" alt="8.5 x 11 listing flyer" width="900" height="1165" loading="lazy"><h3>Listing flyer</h3><p>8.5 x 11. A print file with white margins and a smaller file for email.</p></div>
         <div class="piece"><img class="shot" src="img/open-house-flyer.jpg" alt="8.5 x 11 Open House flyer" width="900" height="1165" loading="lazy"><h3>Open House flyer</h3><p>8.5 x 11. Change the date, time and label as often as you like.</p></div>
-        <div class="piece"><img class="shot" src="img/just-sold-6x11-front.jpg" alt="Front of a Just Sold postcard" width="1200" height="655" loading="lazy"><h3>Just Sold postcard</h3><p>6 x 9 or 6 x 11. After the sale, pick it up from your home page, ready for your mail vendor.</p></div>
+        <div class="piece sold"><img class="shot" src="img/just-sold-6x11-front.jpg" alt="Front of a Just Sold postcard" width="1200" height="655" loading="lazy"><h3>Just Sold postcard</h3><p>6 x 9 or 6 x 11. After the sale, pick it up from your home page, ready for your mail vendor.</p></div>
       </div>
     </div>
   </section>
@@ -387,9 +386,9 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
 
   <section class="s alt" id="designs">
     <div class="in">
-      <div class="shead"><span class="tag">In progress</span><h2>Designs</h2><p>Every design comes as the full five-piece set. Ivory is the first one finished. The rest are still being drawn, so the gray tiles below are placeholders.</p></div>
+      <div class="shead"><span class="tag">In progress</span><h2>Designs</h2><p>Every design comes as the full four-piece set. Ivory is the first one finished. The rest are still being drawn, so the gray tiles below are placeholders.</p></div>
       <div class="gallery">
-        <figure><img class="shot" src="img/listing-flyer.jpg" alt="Ivory design, listing flyer" width="900" height="1165" loading="lazy"><figcaption>Ivory</figcaption></figure>
+        <figure><img class="shot" src="img/open-house-flyer.jpg" alt="Ivory design, Open House flyer" width="900" height="1165" loading="lazy"><figcaption>Ivory</figcaption></figure>
         <div class="ph">Design in progress</div><div class="ph">Design in progress</div><div class="ph">Design in progress</div><div class="ph">Design in progress</div>
       </div>
     </div>
@@ -422,7 +421,7 @@ footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
     <div class="in">
       <div class="shead"><h2>One price per listing</h2><p>No subscription and no setup fee. You pay for each package when you order it.</p></div>
       <div class="prices">
-        <div class="price main"><h3>Listing package</h3><div class="amt">$25 <small>per listing</small></div><ul><li>All five matching pieces</li><li>Brochure uploaded to your printer's cart</li><li>Free open house updates</li></ul></div>
+        <div class="price main"><h3>Listing package</h3><div class="amt">$25 <small>per listing</small></div><ul><li>All four matching pieces</li><li>Brochure uploaded to your printer's cart</li><li>Free open house updates</li></ul></div>
         <div class="price"><h3>10 or more a month</h3><div class="amt">$20 <small>per listing</small></div><ul><li>Starts with your 10th package in a calendar month</li><li>Applied at checkout, nothing to sign up for</li></ul></div>
         <div class="price"><h3>5-pack</h3><div class="amt">$100 <small>$20 each</small></div><ul><li>Prepaid, use them anytime</li><li>No monthly count to hit</li></ul></div>
       </div>
