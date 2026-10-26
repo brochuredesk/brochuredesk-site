@@ -865,7 +865,7 @@
     'logo-version-missing': 'This spot needs a white version of your logo', 'trec-logo-too-small': 'The logo is too small next to your name (TREC)', 'logo-under-0.35in': 'The logo is under 0.35 in',
     'outside-safe-zone': 'Something is too close to the trim', 'type-too-small': 'Some type is under 8 pt', 'fine-print-below-6pt': 'Fine print is under 6 pt',
     'low-contrast': 'Some text is hard to read on its color', 'story-safe-zone': 'Text sits under the Instagram/Facebook bars', 'outside-grid-crop': 'Address or name falls outside the grid crop',
-    'banned-phrase': 'A phrase we don\'t allow', 'neighborhood-name': 'The neighborhood name shows', 'missing-copy': 'Some copy is missing'};
+    'banned-phrase': 'A phrase we don\'t allow', 'missing-copy': 'Some copy is missing'};
   const libState = p => p.lib || (p.lib = {houses: null, housesNote: '', copy: null, cost: 0, tab: 'jl-mail', picks: [],
     sold: {headline: 'Just Sold', side: '', days: '', offers: '', offersOk: false, cta: 3, own: ''}, ordered: null});
   function libSold(s){
@@ -935,14 +935,11 @@
     const ids = Object.keys(libData().photos);
     const draft = Object.fromEntries(Object.keys(exJL).map(k => [k, Array.isArray(exJL[k]) ? [] : typeof exJL[k] === 'string' ? '' : exJL[k]]));
     draft.captions = ids.map(photo => ({photo, text: ''}));
-    // these designs never print the neighborhood name (city and state only), so the writer never sees it
-    const hood = (pkg.listing.neighborhood || '').trim(), re = hood ? new RegExp('\\b' + hood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi') : null;
-    const strip = t => re ? String(t || '').replace(re, '') : t;
+    // the place line prints city and state only; the writer may still use the neighborhood in the copy (optional, the owner 10/26/2026)
     const details = Object.fromEntries(Object.entries(pkg.listing.details || {}).map(([sec, f]) =>
-      [sec, Object.fromEntries(Object.entries(f).filter(([k]) => !/subdivision|market area|legal/i.test(k)).map(([k, v]) => [k, strip(v)]))]));
-    const listing = Object.assign({}, pkg.listing, {neighborhood: '', description: strip(pkg.listing.description), details,
-      photoCaptions: (pkg.listing.photoCaptions || []).map(c => ({n: c.n, caption: strip(c.caption)}))});
-    const j = await ai({action: 'write', packageId: pkg.id, design: 'Just Listed postcards and social posts (city and state only, never a neighborhood or area name)', style: pkg.copyStyle, listing,
+      [sec, Object.fromEntries(Object.entries(f).filter(([k]) => !/legal/i.test(k)))]));
+    const listing = Object.assign({}, pkg.listing, {details});
+    const j = await ai({action: 'write', packageId: pkg.id, design: 'Just Listed postcards and social posts', style: pkg.copyStyle, listing,
       photos: Object.fromEntries(ids.map(id => [id, libData().photos[id].tags])), example: {copy: {}, companion: {justListed: exJL}},
       draft: {copy: {}, companion: {justListed: draft}}, pieces: ['Just Listed postcard (front and back)', 'Just Listed social posts and stories']});
     const jl = j.companion.justListed;

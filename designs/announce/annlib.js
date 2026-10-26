@@ -11,7 +11,7 @@
      companion.justListed  writer copy for Just Listed (see copy-example.json)
      companion.justSold    agent inputs + writer copy for Just Sold (see copy-example.json)
    Rules kept from the handoff (docs/briefs/approved-designs-handoff/briefs, the two approved-to-code docs):
-     no price, QR, photo numbers, neighborhood name or "virtually staged"; whole house in every front-of-house photo;
+     no price, QR, photo numbers or "virtually staged" (the neighborhood may appear in the copy, the owner 10/26/2026); whole house in every front-of-house photo;
      no photo twice on one mailer; brokerage logo on every postcard front (except JL-M02, JL-M08); write-up cut to fit
      from one master; long agent names shrink to the 18 pt floor, then compact rows, then a hyphen break.
    Every check runs in window.brochureCheck() (the renderer collects it into checks.json). */
@@ -97,7 +97,7 @@
     A.FACTS_UP = up(`${A.beds} Bedrooms &nbsp;&middot;&nbsp; ${fb} &nbsp;&middot;&nbsp; ${A.sqft} Sq Ft`).replace(/&NBSP;/g,'&nbsp;').replace(/&MIDDOT;/g,'&middot;');
     A.FACTS_DOT = `${A.beds} Bedrooms &nbsp;&middot;&nbsp; ${fb} &nbsp;&middot;&nbsp; ${A.sqft} Sq Ft`;
     A.FACTS_SHORT = `${A.beds} BEDS &nbsp;&middot;&nbsp; ${A.baths}${A.halfBaths ? '.5' : ''} BATHS &nbsp;&middot;&nbsp; ${A.sqft} SQ FT`;
-    A.hood = String(L.neighborhood || '');   // never printed; the copy check fails any piece that shows it
+    A.hood = String(L.neighborhood || '');   // the writer may use it in the copy (optional, the owner 10/26/2026)
     // agent
     const name = String(ag.name || '').trim();
     A.name = esc(name);
@@ -705,7 +705,7 @@
     // contrast: text on a solid color reads at 4.5:1 (3:1 for large type); text over photos is the design's own shade
     for(const e of L){ const m = measureContrast(e); if(m && m.c < m.need - 0.05) add(slotOf(e), 'low-contrast', {ratio: r1(m.c), need: m.need}); }
     if(A.social && spec.own) socialChecks(add, pg);
-    // copy: banned phrases, price, neighborhood name, placeholders
+    // copy: banned phrases, price, placeholders
     const vis = L.map(e => e.textContent).join(' \n ');
     // Just Sold sells the agent: never a free estimate, never the sold home's features (owner rules 10/24/2026)
     if(A.card === 'sold'){
@@ -715,7 +715,6 @@
       if(f) add('copy', 'sold-home-features', {text: f[0]});
     }
     for(const re of BANNED){ const m = vis.match(re); if(m) add('copy', 'banned-phrase', {text: vis.slice(Math.max(0, m.index - 30), m.index + m[0].length + 30).replace(/\s+/g, ' ')}); }
-    if(A.hood && new RegExp('\\b' + A.hood.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i').test(vis)) add('copy', 'neighborhood-name', {detail: A.hood});
     if(A.print){
       if(document.querySelector('.pg .guide')) add('mail', 'placeholder');
       if((A.D.agent || {}).headshotSample && document.querySelector('.pg img.hs, .pg .ac-ph')) add('agent.headshot', 'sample-headshot-on-paid-piece');

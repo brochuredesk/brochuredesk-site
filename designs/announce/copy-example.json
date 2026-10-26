@@ -1,5 +1,5 @@
 {
- "_about": "What the writer produces for the Just Listed / Just Sold library (templates/announce). Values are the 2614 Calder sample. Facts come only from the listing fact sheet; no price, neighborhood name, photo numbers or staging labels; plain sentences, no em dashes. Every block runs through the copy checks (annlib.js banned list + pipeline/copycheck.py) and the humanizer pass.",
+ "_about": "What the writer produces for the Just Listed / Just Sold library (templates/announce). Values are the 2614 Calder sample. Facts come only from the listing fact sheet; no price, photo numbers or staging labels (the neighborhood is optional in the copy); plain sentences, no em dashes. Every block runs through the copy checks (annlib.js banned list + pipeline/copycheck.py) and the humanizer pass.",
  "_fields": {
   "justListed.lead": "one sentence, about 12 words, what the house is",
   "justListed.hook": "short feature line, 3-6 words, sentence case (shown in capitals on some designs)",
