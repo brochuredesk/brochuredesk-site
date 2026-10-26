@@ -1269,8 +1269,12 @@
           say(`Rewriting ${r.refits.length} ${r.refits.length === 1 ? 'spot' : 'spots'} to fit ${name}, then checking every line…`);
           for(let i = 0; i < r.refits.length; i += 40){   // the function takes up to 40 spots a call
             // each spot says what its photo shows, so the rewrite (and the reviewer) never claims more than the photo does
-            const seen = pid => { const ph = /^p\d+$/.test(pid || '') ? pkg.photos[+pid.slice(1)] : null; return ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : ''; };
-            const slots = r.refits.slice(i, i + 40).map(f => Object.assign({}, f, {photo: seen(f.photo)}));
+            // and sends the photo itself (img) plus the question an answer sits under (ask), so the writer and reviewer see what the reader sees
+            const photoOf = pid => /^p\d+$/.test(pid || '') ? pkg.photos[+pid.slice(1)] : null;
+            const seen = pid => { const ph = photoOf(pid); return ph ? [ph.room, ph.desc].filter(Boolean).join(': ') || 'listing photo' : ''; };
+            const at = path => path.split('.').reduce((o, k) => o == null ? o : o[k], r);
+            const slots = r.refits.slice(i, i + 40).map(f => Object.assign({}, f, {photo: seen(f.photo), img: (photoOf(f.photo) || {}).url,
+              ask: /\.a$/.test(f.path) ? at(f.path.replace(/\.a$/, '.q')) : undefined}));
             const j = await ai({action: 'refit', packageId: pkg.id, slots, facts: pkg.master.facts, listing: pkg.listing,
               photos: Object.fromEntries(pkg.photos.map((p, i) => ['p' + i, p.desc || ''])), others: allStrings(r.companion)});   // reuse is checked within the new design (fold-over vs its other pieces), never against the design it replaces
             for(const [p, t] of Object.entries(j.texts || {})) MasterFit.place(r, p, t);
