@@ -1240,8 +1240,22 @@
         say(`Fitting your copy to ${name}…`);
         await PT.load();
         const ex = await example(id), ids = arrangement(pkg, id).map(i => 'p' + i);
-        const r = MasterFit.fit(pkg.master, ex, {ids, roomOf: pid => (pkg.photos[+pid.slice(1)] || {}).room || '', heading: PT.heading,
+        // a design with more photo spots than the package has photos borrows from the listing's other photos (the
+        // picker's lower box) before it repeats any; only the ones it places join the package
+        const more = (pkg.morePhotos || []).filter(m => !pkg.photos.some(p => p.url === m.url));
+        const extra = MasterFit.photoSpots(ex) > ids.length ? more.map((_, i) => 'm' + i) : [];
+        const roomOf = pid => (pid[0] === 'm' ? more[+pid.slice(1)] : pkg.photos[+pid.slice(1)] || {}).room || '';
+        const r = MasterFit.fit(pkg.master, ex, {ids, extra, roomOf, heading: PT.heading,
           base: {copy: draftCopy(ids), companion: draftCompanion(ids)}});
+        const usedM = [...new Set(JSON.stringify([r.copy, r.companion]).match(/"m\d+"/g) || [])].map(q => q.slice(1, -1));
+        if(usedM.length){
+          const newId = {};
+          for(const m of usedM){ pkg.photos.push(Object.assign({}, more[+m.slice(1)])); newId[m] = 'p' + (pkg.photos.length - 1); }
+          pkg.arrangements[id] = arrangement(pkg, id).concat(usedM.map(m => +newId[m].slice(1)));
+          const swap = o => typeof o === 'string' ? (newId[o] || o) : Array.isArray(o) ? o.map(swap) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, swap(v)])) : o;
+          r.copy = swap(r.copy); r.companion = swap(r.companion);
+          resolvePhotos(pkg);   // the added photos load like the rest
+        }
         // the agent's edits: the same saved text in the new design takes their version (refit when it won't fit)
         const exLen = path => String(path.split('.').reduce((o, k) => o == null ? o : o[k], {copy: ex.copy, companion: ex.companion}) || '').length;
         const walk = (o, p) => typeof o === 'string' ? [[p, o]] : o && typeof o === 'object' ? Object.entries(o).flatMap(([k, v]) => walk(v, p ? `${p}.${k}` : k)) : [];

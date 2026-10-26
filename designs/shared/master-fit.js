@@ -10,7 +10,7 @@
    the length of that slot's example text (the design was drawn for it). The longest saved version within the budget
    wins; words are never cut and type never shrinks. A slot no version fits is listed in `refits` (one small writer call
    each, package-ai 'refit'); until then it carries the short version and the proof flags it.
-   opts: ids (photo ids in the agent's arrangement, first = cover), roomOf(id), base (the design's draft: fixed fields
+   opts: ids (photo ids in the agent's arrangement, first = cover), extra (more listing photos, used before any repeat), roomOf(id), base (the design's draft: fixed fields
    like stats and location), slack (default 1.06). Works in the browser (window.MasterFit) and in Node (tests). */
 (function(root){
   const KEEP = /^(location|stats|variant|footnote|planDisclosures|flyerPhotos|eyebrowFixed|fineprint|stat\d|noteCorner)$/;
@@ -35,8 +35,10 @@
     const refits = [], used = [], placed = new Set(), taken = new Set();
     // a photo spot gets a photo of the room it was drawn for (or the nearest kind), never one already placed until
     // every photo is used once; then it falls back to the agent's order
+    // opts.extra: more listing photos (the picker's lower box) used before any photo repeats
+    const all = ids.concat((opts.extra || []).filter(id => !ids.includes(id)));
     const photoFor = name => {
-      const want = hintOf(name), free = ids.filter(id => !taken.has(id));
+      const want = hintOf(name), free = all.filter(id => !taken.has(id));
       const pool = free.length ? free : ids;
       const pickBy = room => room && pool.find(id => roomOf(id) === room);
       const id = pickBy(want) || (near[want] || []).map(pickBy).find(Boolean) || pool[0];
@@ -136,6 +138,12 @@
     for(let i = 0; i < parts.length - 1; i++){ if(o == null) return; o = o[parts[i]]; }
     if(o && typeof o[parts[parts.length - 1]] === 'string') o[parts[parts.length - 1]] = text;
   }
-  const api = {fit, place};
+  // how many photo spots a design's example copy has (a switch adds listing photos when the package has fewer)
+  function photoSpots(example){
+    let n = 0;
+    (function walk(v){ if(Array.isArray(v)) v.forEach(walk); else if(v && typeof v === 'object'){ if(typeof v.photo === 'string') n++; Object.values(v).forEach(walk); } })(example && example.copy);
+    return n;
+  }
+  const api = {fit, place, photoSpots};
   if(typeof module === 'object' && module.exports) module.exports = api; else root.MasterFit = api;
 })(typeof window !== 'undefined' ? window : globalThis);
