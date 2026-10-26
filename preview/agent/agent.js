@@ -1445,7 +1445,8 @@
   function leaves(node, path, out){
     if(typeof node === 'string') out.push([path, node]);
     else if(Array.isArray(node)) node.forEach((v, i) => leaves(v, `${path}[${i}]`, out));
-    else if(node && typeof node === 'object') for(const [k, v] of Object.entries(node)) if(!['photo', 'photos', 'flyerPhotos', 'variant', 'fineprint', 'footnote'].includes(k)) leaves(v, path ? `${path}.${k}` : k, out);
+    // "photos" is skipped only as a list of photo picks: in the Answer Book it holds the cover's and front page's captions
+    else if(node && typeof node === 'object') for(const [k, v] of Object.entries(node)) if(!['photo', 'flyerPhotos', 'variant', 'fineprint', 'footnote'].includes(k) && !(k === 'photos' && Array.isArray(v) && v.every(x => typeof x === 'string'))) leaves(v, path ? `${path}.${k}` : k, out);
     return out;
   }
   function findPath(text){
