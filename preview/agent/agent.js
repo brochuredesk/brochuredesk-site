@@ -1251,10 +1251,14 @@
       catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artPages(F.art); }
       const st = +pkg.listing.stories || 0;
       if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
-      const j = await ai({action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
-        stories: st || null, sqft: +pkg.listing.sqft || null});
-      Object.assign(pkg, {plan: j.plan || null, planKey: key, planCost: (pkg.planCost || 0) + (j.cost || 0)});
-      store.event(pkg.id, j.plan ? 'plan-redraw' : 'plan-redraw-failed', j.plan ? {model: j.model, cost: j.cost} : {why: j.why, cost: j.cost});
+      const body = {action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
+        stories: st || null, sqft: +pkg.listing.sqft || null};
+      // the first read, then (turned down) the more careful retry as a request of its own: a slow first read on the
+      // strongest model leaves too little of the 150 s limit for a second in the same request
+      let j = await ai(Object.assign({attempt: 'first'}, body)), cost = j.cost || 0;
+      if(!j.plan && j.retry){ j = await ai(Object.assign({}, body, {attempt: 'retry'})); cost += j.cost || 0; }
+      Object.assign(pkg, {plan: j.plan || null, planKey: key, planCost: (pkg.planCost || 0) + cost});
+      store.event(pkg.id, j.plan ? 'plan-redraw' : 'plan-redraw-failed', j.plan ? {model: j.model, cost} : {why: j.why, cost});
     } catch(e) {
       // a failed call is tried again at the next Finalize (no key saved)
       pkg.plan = null; store.event(pkg.id, 'plan-redraw-failed', {why: [e.message]});
