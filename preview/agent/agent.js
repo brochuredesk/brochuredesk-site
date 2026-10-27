@@ -555,12 +555,7 @@
     try {
       // one place's files only (a plan found as a document and again as a photo is the same plan, not two floors)
       files = files.filter(f => !f.from || !source || f.from === source);
-      const blobs = [];
-      for(const f of files.slice(0, 4)){
-        if(f.blob){ blobs.push(f.blob); continue; }
-        const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
-        blobs.push(await r.blob());
-      }
+      const blobs = await planBlobs(files);
       let art = await PT.cleanPlan(blobs, files.map(f => /\b(1st|first|ground|main)\b/i.test(f.label || '') ? 'First floor' : /\b(2nd|second|upper)\b/i.test(f.label || '') ? 'Second floor' : ''));
       // a plan PDF often ends with a page of every floor together (1030 Chamboard Ln: 3 pages, 2 floors): with the
       // story count known, the pages past it are not more floors
@@ -570,6 +565,16 @@
       Object.assign(lookup.floorPlan, {source, art, active: true, removed: false});
     } catch(e) { Object.assign(lookup.floorPlan, {art: null, active: false, failed: true}); }
     drawPlanBox();
+  }
+  async function planBlobs(files){
+    const blobs = [];
+    for(const f of files.slice(0, 4)){
+      if(f.blob){ blobs.push(f.blob); continue; }
+      if(!f.url) throw new Error('plan');
+      const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
+      blobs.push(await r.blob());
+    }
+    return blobs;
   }
   function drawPlanBox(){
     const F = lookup.floorPlan, box = $('#planBody'); $('#planBox').hidden = false;
@@ -725,7 +730,7 @@
       companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : pre.companion,
       copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {},
       // the redrawn plan is saved as linework (rooms, walls, levels); each design restyles it in code, never a second redraw
-      written && pkg.plan ? {plan: pkg.plan} : {});
+      written && pkg.plan && fp && fp.active ? {plan: pkg.plan} : {});
   }
   // The design's own example copy gives the shape and the length of every slot. Photo sections get the room heading of
   // the photo placed there and a line about that room; other text gets a line about what that part will say.
@@ -1200,6 +1205,7 @@
       'Checking every line: Fair Housing, no price, plain English…', 'Laying it all out…'];
     let i = 0; const tick = () => { $('#writeStatus').textContent = lines[Math.min(i, lines.length - 1)]; $('#writeFill').style.width = Math.min(92, 10 + i * 18) + '%'; i++; };
     tick(); const timer = setInterval(tick, 9000);
+    const planDone = redrawPlan();   // runs while the copy is written
     try {
       const ex = await example(pkg.design);
       const d = await dataFor(pkg.design, false);
@@ -1218,6 +1224,7 @@
         if(m.master) pkg.master = m.master;
         pkg.copy[pkg.design].cost += m.cost || 0;
       } catch(e) { console.error('master set', e); }
+      await planDone;
       pkg.stage = 'final'; save(true);
       clearInterval(timer); $('#writeFill').style.width = '100%';
       await openFinal(piecesOf(pkg)[0]);
@@ -1228,6 +1235,29 @@
       pkg.stage = 'rough'; save();
       $('#writeErr').textContent = e.message === 'daily-cap' ? "We've hit today's writing limit for test drives. Try again tomorrow." : "We couldn't finish writing just now. Your design is saved; try again.";
       $('#writeRetry').hidden = false;
+    }
+  }
+  // The professional floor plan redraw (product.md "Floor plans"): once per plan, at Finalize. The drawing is saved as
+  // linework (pkg.plan) that every design styles in code, so a design switch never redraws; a new plan (an upload) does.
+  // A plan the checks turn down leaves pkg.plan empty and the design takes its no-plan version.
+  async function redrawPlan(){
+    const F = pkg.floorPlan;
+    if(!F || !F.active) return;
+    const key = JSON.stringify([F.source, (F.files || []).filter(f => !f.from || f.from === F.source).map(f => f.url || f.label)]);
+    if(pkg.planKey === key) return;
+    try {
+      let pages;
+      try { pages = await PT.planPages(await planBlobs((F.files || []).filter(f => !f.from || !F.source || f.from === F.source))); }
+      catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artPages(F.art); }
+      const st = +pkg.listing.stories || 0;
+      if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
+      const j = await ai({action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
+        stories: st || null, sqft: +pkg.listing.sqft || null});
+      Object.assign(pkg, {plan: j.plan || null, planKey: key, planCost: (pkg.planCost || 0) + (j.cost || 0)});
+      store.event(pkg.id, j.plan ? 'plan-redraw' : 'plan-redraw-failed', j.plan ? {model: j.model, cost: j.cost} : {why: j.why, cost: j.cost});
+    } catch(e) {
+      // a failed call is tried again at the next Finalize (no key saved)
+      pkg.plan = null; store.event(pkg.id, 'plan-redraw-failed', {why: [e.message]});
     }
   }
   async function ai(body){

@@ -3,6 +3,7 @@
 //   PreviewTools.load() / heading / line    room headings and the "what you'll get" lines (/designs/shared/preview-lines.json)
 //   PreviewTools.isPreview(text)            true when a text holds a preview line (exports refuse it)
 //   PreviewTools.cleanPlan(blob)            the agent's own floor plan as simple line art, one image per floor
+//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the redraw at Finalize
 //   PreviewTools.picker(root, opts)         the two-box photo picker (upper: in the package, lower: the rest)
 (function(){
   const PT = window.PreviewTools = {};
@@ -150,6 +151,23 @@
     for(const b of [].concat(blobs)) for(const c of await withRetry(b)){ if(out.length >= 4) break; const a = lineArt(c); if(a) out.push(a); }
     return out.map((a, i) => Object.assign(a, {label: (labels && labels[i]) || (out.length > 1 ? FLOORS[i] : '')}));
   };
+  // the plan pages as the redraw at Finalize reads them: the page as printed (room names and sizes stay sharp, no line
+  // cleanup), JPEG at most 1568 px on the long side (what the model reads at full detail). -> [{data (base64), w, h}]
+  const forRead = c => {
+    const k = Math.min(1, 1568 / Math.max(c.width, c.height)), o = canvas(c.width * k, c.height * k), g = o.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, o.width, o.height); g.imageSmoothingQuality = 'high'; g.drawImage(c, 0, 0, o.width, o.height);
+    return {data: o.toDataURL('image/jpeg', .88).split(',')[1], w: o.width, h: o.height};
+  };
+  PT.planPages = async blobs => {
+    const out = [];
+    for(const b of [].concat(blobs)) for(const c of await withRetry(b)){ if(out.length >= 4) break; out.push(forRead(c)); }
+    return out;
+  };
+  // no file to read again (an upload from an earlier visit): the cleaned line art, on white
+  PT.artPages = art => Promise.all([].concat(art).slice(0, 4).map(a => new Promise((res, rej) => {
+    const im = new Image(); im.onload = () => { const c = canvas(im.naturalWidth, im.naturalHeight); c.getContext('2d').drawImage(im, 0, 0); res(forRead(c)); };
+    im.onerror = rej; im.src = a.src;
+  })));
 
   // ---------- photo picker ----------
   // opts: photos [{key, src, room}], upper [keys in the package], cap, full (the message when the upper box is full),
