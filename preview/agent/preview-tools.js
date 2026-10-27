@@ -3,7 +3,7 @@
 //   PreviewTools.load() / heading / line    room headings and the "what you'll get" lines (/designs/shared/preview-lines.json)
 //   PreviewTools.isPreview(text)            true when a text holds a preview line (exports refuse it)
 //   PreviewTools.cleanPlan(blob)            the agent's own floor plan as simple line art, one image per floor
-//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the redraw at Finalize
+//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the redraw at Finalize, cropped to the drawing
 //   PreviewTools.picker(root, opts)         the two-box photo picker (upper: in the package, lower: the rest)
 (function(){
   const PT = window.PreviewTools = {};
@@ -88,13 +88,13 @@
     s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + 'pdf.worker.min.js'; res(window.pdfjsLib); }; s.onerror = rej; document.head.appendChild(s);
   });
   const canvas = (w, h) => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
-  // a PDF (each page up to 4: one per floor) or an image -> white-backed canvases about 1800 px on the long side
-  async function pages(blob){
+  // a PDF (each page up to 4: one per floor) or an image -> white-backed canvases about `long` px on the long side
+  async function pages(blob, long = 1800){
     const head = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
     if(blob.type === 'application/pdf' || String.fromCharCode(...head) === '%PDF-'){
       const lib = await PT.pdfjs(), doc = await lib.getDocument({data: await blob.arrayBuffer()}).promise, out = [];
       for(let i = 1; i <= Math.min(doc.numPages, 4); i++){
-        const pg = await doc.getPage(i), v = pg.getViewport({scale: 1}), vp = pg.getViewport({scale: Math.min(4, 1800 / Math.max(v.width, v.height))});
+        const pg = await doc.getPage(i), v = pg.getViewport({scale: 1}), vp = pg.getViewport({scale: Math.min(8, long / Math.max(v.width, v.height))});
         const c = canvas(vp.width, vp.height), g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
         // pdf.js paces drawing on screen refreshes, which a background tab doesn't get: a plain timer stands in meanwhile
         const raf = window.requestAnimationFrame;
@@ -142,8 +142,8 @@
   const FLOORS = ['First floor', 'Second floor', 'Third floor', 'Fourth floor'];
   // blobs: one file (a PDF of every floor, or one image) or one image per floor -> [{src, tinted, label}]
   // pdf.js's worker sometimes never starts on its first use in a page: a 20 s limit, then one fresh try
-  const withRetry = async b => {
-    const once = () => Promise.race([pages(b), new Promise((_, rej) => setTimeout(() => rej(new Error('plan-timeout')), 20000))]);
+  const withRetry = async (b, long) => {
+    const once = () => Promise.race([pages(b, long), new Promise((_, rej) => setTimeout(() => rej(new Error('plan-timeout')), 20000))]);
     try { return await once(); } catch(e){ if(e.message !== 'plan-timeout') throw e; return once(); }
   };
   PT.cleanPlan = async (blobs, labels) => {
@@ -152,15 +152,42 @@
     return out.map((a, i) => Object.assign(a, {label: (labels && labels[i]) || (out.length > 1 ? FLOORS[i] : '')}));
   };
   // the plan pages as the redraw at Finalize reads them: the page as printed (room names and sizes stay sharp, no line
-  // cleanup), JPEG at most 1568 px on the long side (what the model reads at full detail). -> [{data (base64), w, h}]
+  // cleanup), cropped to the drawing, JPEG at most 1568 px on the long side (what the model reads at full detail).
+  // A PDF is drawn large first (4200 px), so a floor that fills a third of its page still reaches the model sharp.
+  // -> [{data (base64), w, h}]
   const forRead = c => {
-    const k = Math.min(1, 1568 / Math.max(c.width, c.height)), o = canvas(c.width * k, c.height * k), g = o.getContext('2d');
-    g.fillStyle = '#fff'; g.fillRect(0, 0, o.width, o.height); g.imageSmoothingQuality = 'high'; g.drawImage(c, 0, 0, o.width, o.height);
+    const b = drawingBox(c), k = Math.min(1, 1568 / Math.max(b.w, b.h)), o = canvas(b.w * k, b.h * k), g = o.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, o.width, o.height); g.imageSmoothingQuality = 'high'; g.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, o.width, o.height);
     return {data: o.toDataURL('image/jpeg', .88).split(',')[1], w: o.width, h: o.height};
   };
+  // where the drawing is on the page: anything not paper, in a coarse grid, joined across small gaps; the largest piece and
+  // any piece at least a fifth its size (two floors side by side) are kept, so the fine print, logo and page number drop out
+  PT.drawingBox = drawingBox;
+  function drawingBox(c){
+    const W = c.width, H = c.height, cell = Math.max(2, Math.round(Math.max(W, H) / 200)), gw = Math.ceil(W / cell), gh = Math.ceil(H / cell);
+    const d = c.getContext('2d', {willReadFrequently: true}).getImageData(0, 0, W, H).data, on = new Uint8Array(gw * gh);
+    for(let y = 0; y < H; y += 2) for(let x = 0; x < W; x += 2){ const i = (y * W + x) * 4; if(.299 * d[i] + .587 * d[i + 1] + .114 * d[i + 2] < 235) on[Math.floor(y / cell) * gw + Math.floor(x / cell)] = 1; }
+    const R = 2, grow = new Uint8Array(gw * gh);   // join pieces less than 2 cells apart (a door gap, a label beside a wall)
+    for(let y = 0; y < gh; y++) for(let x = 0; x < gw; x++) if(on[y * gw + x])
+      for(let v = Math.max(0, y - R); v <= Math.min(gh - 1, y + R); v++) for(let u = Math.max(0, x - R); u <= Math.min(gw - 1, x + R); u++) grow[v * gw + u] = 1;
+    const id = new Int32Array(gw * gh).fill(-1), parts = [];
+    for(let s = 0; s < gw * gh; s++){
+      if(!grow[s] || id[s] >= 0) continue;
+      const P = {n: 0, x0: gw, y0: gh, x1: -1, y1: -1}, st = [s]; id[s] = parts.length;
+      while(st.length){ const p = st.pop(), x = p % gw, y = (p - x) / gw; if(on[p]){ P.n++; P.x0 = Math.min(P.x0, x); P.y0 = Math.min(P.y0, y); P.x1 = Math.max(P.x1, x); P.y1 = Math.max(P.y1, y); }
+        for(const q of [x > 0 ? p - 1 : -1, x < gw - 1 ? p + 1 : -1, p - gw, p + gw]) if(q >= 0 && q < gw * gh && grow[q] && id[q] < 0){ id[q] = parts.length; st.push(q); } }
+      parts.push(P);
+    }
+    const big = Math.max(0, ...parts.map(P => P.n)), keep = parts.filter(P => P.n && P.n >= big / 5);
+    if(!keep.length) return {x: 0, y: 0, w: W, h: H};
+    const x0 = Math.min(...keep.map(P => P.x0)) * cell, y0 = Math.min(...keep.map(P => P.y0)) * cell;
+    const x1 = Math.min(W, (Math.max(...keep.map(P => P.x1)) + 1) * cell), y1 = Math.min(H, (Math.max(...keep.map(P => P.y1)) + 1) * cell);
+    const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.03), x = Math.max(0, x0 - pad), y = Math.max(0, y0 - pad);
+    return {x, y, w: Math.min(W, x1 + pad) - x, h: Math.min(H, y1 + pad) - y};
+  }
   PT.planPages = async blobs => {
     const out = [];
-    for(const b of [].concat(blobs)) for(const c of await withRetry(b)){ if(out.length >= 4) break; out.push(forRead(c)); }
+    for(const b of [].concat(blobs)) for(const c of await withRetry(b, 4200)){ if(out.length >= 4) break; out.push(forRead(c)); }
     return out;
   };
   // no file to read again (an upload from an earlier visit): the cleaned line art, on white
