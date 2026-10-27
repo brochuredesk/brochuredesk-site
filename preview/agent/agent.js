@@ -531,19 +531,41 @@
         lookup.tags[p.url] = {role: t.role, house: t.house || null, exterior: !!t.exterior};
         if(!p.room) p.room = PT.ROLE_ROOM[t.role] || ''; }
       lookup.tagCost = j.cost || 0;
+      planPhotos();
       if(!$('#vStart').hidden) drawPicker();
     } catch(e) { /* labels then come from the captions alone */ }
+  }
+  // the photo half of the floor plan check (every listing, even when the documents had a plan): a photo the read labels
+  // a floor plan leaves the photo boxes and joins the listing's plan files; with no plan yet, it becomes the plan
+  function planPhotos(){
+    const plans = lookup.photos.filter(p => (lookup.tags[p.url] || {}).role === 'floorplan' || p.room === 'floor plan');
+    if(!plans.length) return;
+    const F = lookup.floorPlan, out = new Set(plans.map(p => p.url));
+    lookup.photos = lookup.photos.filter(p => !out.has(p.url));
+    lookup.upper = lookup.upper.filter(u => !out.has(u));
+    for(const p of lookup.photos){ if(lookup.upper.length >= PICK_CAP) break; if(!lookup.upper.includes(p.url)) lookup.upper.push(p.url); }
+    const have = new Set(F.files.map(f => f.url)), add = plans.filter(p => !have.has(p.url)).map(p => ({url: p.url, kind: 'image', label: p.desc || '', from: 'photo'}));
+    F.files = F.files.concat(add);
+    F.sources = [...new Set((F.sources || (F.source ? [F.source] : [])).concat('photo'))];
+    store.event(lookup.id, 'floor-plan-photo', {photos: plans.length, alsoIn: F.source || null});
+    if(!F.active && !F.removed) loadPlan(add.length ? add : F.files.filter(f => f.from === 'photo'), 'photo');
   }
   async function loadPlan(files, source){
     const box = $('#planBody'); box.innerHTML = '<p class="fine">Reading your floor plan…</p>';
     try {
+      // one place's files only (a plan found as a document and again as a photo is the same plan, not two floors)
+      files = files.filter(f => !f.from || !source || f.from === source);
       const blobs = [];
       for(const f of files.slice(0, 4)){
         if(f.blob){ blobs.push(f.blob); continue; }
         const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
         blobs.push(await r.blob());
       }
-      const art = await PT.cleanPlan(blobs, files.map(f => /\b(1st|first|ground|main)\b/i.test(f.label || '') ? 'First floor' : /\b(2nd|second|upper)\b/i.test(f.label || '') ? 'Second floor' : ''));
+      let art = await PT.cleanPlan(blobs, files.map(f => /\b(1st|first|ground|main)\b/i.test(f.label || '') ? 'First floor' : /\b(2nd|second|upper)\b/i.test(f.label || '') ? 'Second floor' : ''));
+      // a plan PDF often ends with a page of every floor together (1030 Chamboard Ln: 3 pages, 2 floors): with the
+      // story count known, the pages past it are not more floors
+      const st = +lookup.listing.stories || 0;
+      if(st && art.length > st) art = art.slice(0, st);
       if(!art.length) throw new Error('plan');
       Object.assign(lookup.floorPlan, {source, art, active: true, removed: false});
     } catch(e) { Object.assign(lookup.floorPlan, {art: null, active: false, failed: true}); }
