@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Agent Preview</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Agent Preview (from reference B26). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner liked the design but the text got lost on the black, and "Hard Hat Tour" becomes the agent's own event wording
+  (remembered). The house across the top fading into the brand's dark color over the lawn only; the event wording
+  large in serif capitals with its last word in the accent color; the address, a row of facts with line icons, and a
+  framed date-and-time box with calendar and clock icons. Every line is white or accent at full strength, larger than
+  the reference. Agent and logo at the foot.
+  Type: Spectral (headline, address, date), Manrope (labels).
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .eyebrow{font:700 10.5pt/13pt Manrope;letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--accent-on-dark)}
+  .label{font:500 46pt/54pt Spectral;text-transform:uppercase;letter-spacing:1pt;text-align:center;white-space:nowrap;overflow:hidden}
+  .label span{color:var(--accent-on-dark)}
+  .addr{font:500 20pt/26pt Spectral;text-align:center;white-space:nowrap;overflow:hidden}
+  .place{font:700 9.5pt/12pt Manrope;letter-spacing:3pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
+  .fact{position:absolute;text-align:center}
+  .fact .v{font:500 15pt/19pt Spectral;white-space:nowrap;overflow:hidden;height:19pt;margin-top:5pt}
+  .fact .k{font:700 8.6pt/11pt Manrope;letter-spacing:1.6pt;text-transform:uppercase;opacity:.85;white-space:nowrap;overflow:hidden;height:11pt}
+  .vr{position:absolute;width:.8pt;background:var(--on-dark);opacity:.3}
+  .box{position:absolute;border:1.2pt solid var(--accent-on-dark)}
+  .bk{font:700 9pt/12pt Manrope;letter-spacing:2.4pt;text-transform:uppercase;color:var(--accent-on-dark);white-space:nowrap}
+  .date{font:500 24pt/30pt Spectral;white-space:nowrap;overflow:hidden}
+  .time{font:700 18pt/30pt Manrope;white-space:nowrap;overflow:hidden}
+  .ev{font:600 10.5pt/13.5pt Manrope;text-align:center}
+  .hr{position:absolute;left:36pt;width:540pt;height:.9pt;background:var(--on-dark);opacity:.3}
+  .oh-agent-name{font-family:Spectral;font-weight:500}
+  .oh-agent{font-family:Manrope}
+  .fine{font:400 6.6pt/8pt Manrope;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['500 10pt Spectral', '700 10pt Manrope', '600 10pt Manrope', '400 10pt Manrope'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  // the house; the fade into the dark color covers only what lies below the house (lawn), or a thin edge otherwise
+  const fr = OHL.fitHero(D, hero, 612, 300), ph = fr.h, px = (612 - fr.w)/2;
+  const fade = fr.w === 612 && OHL.maskFits(D, hero, 612, ph, 1 - 64/ph) ? 64 : 18;
+  h += OHL.photo(D, hero, `left:${px}pt;top:0;width:${fr.w}pt;height:${ph}pt`);
+  h += `<div class="abs" style="left:${px}pt;top:${ph - fade}pt;width:${fr.w}pt;height:${fade+1}pt;background:linear-gradient(transparent, var(--dark))"></div>`;
+  const top0 = ph;   // everything under the photo is built from here, then centered in the space left
+  let y = ph + 18;
+  const mid0 = h.length;
+  h += `<div class="abs eyebrow" style="left:36pt;top:${y}pt;width:540pt;height:13pt">You're invited</div>`;
+  y += 18;
+  const w = E.label.split(/\s+/), last = w.length > 1 ? w.pop() : '';
+  h += `<div class="abs label" style="left:30pt;top:${y}pt;width:552pt;height:54pt" data-fit="46,26" data-slot="oh.label" data-lines="1">${esc(w.join(' '))}${last ? ' <span>' + esc(last) + '</span>' : ''}</div>`;
+  y += 58;
+  h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:26pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  y += 28;
+  h += `<div class="abs place" style="left:36pt;top:${y}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city, L.state].filter(Boolean).join('  ·  '))}</div>`;
+  y += 26;
+  // facts row
+  const cells = OHL.factCells(L).slice(0, 3), cw = 540/cells.length;
+  cells.forEach(([ic, v, kk], i) => {
+    h += `<div class="fact" style="left:${36+i*cw}pt;top:${y}pt;width:${cw}pt;height:58pt"><div style="width:20pt;margin:0 auto">${OHL.icon(ic, 20, 'var(--accent-on-dark)')}</div><div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(kk)}</div></div>`;
+    if(i) h += `<div class="vr" style="left:${36+i*cw}pt;top:${y+4}pt;height:50pt"></div>`;
+  });
+  y += 70;
+  // date and time box
+  const bh = 66;
+  h += `<div class="box" style="left:36pt;top:${y}pt;width:540pt;height:${bh}pt"></div><div class="vr" style="left:330pt;top:${y+12}pt;height:${bh-24}pt;opacity:.5"></div>`;
+  h += `<div class="abs" style="left:54pt;top:${y+20}pt;color:var(--accent-on-dark)">${OHL.icon('cal', 24)}</div>`;
+  h += `<div class="abs bk" style="left:90pt;top:${y+12}pt;width:220pt;height:12pt">Date</div>`;
+  h += `<div class="abs date" style="left:90pt;top:${y+26}pt;width:232pt;height:30pt" data-fit="24,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  h += `<div class="abs" style="left:348pt;top:${y+20}pt;color:var(--accent-on-dark)">${OHL.icon('clock', 24)}</div>`;
+  h += `<div class="abs bk" style="left:384pt;top:${y+12}pt;width:180pt;height:12pt">Time</div>`;
+  if(E.time) h += `<div class="abs time" style="left:384pt;top:${y+26}pt;width:186pt;height:30pt" data-fit="18,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += bh + 12;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 36, y, 540, 13.5, 2);
+  h += ev.html;
+  const cy = 704;
+  const issues = y + ev.h > cy - 14 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the agent card'}] : [];
+  const shift = Math.max(0, (cy - 14 - (y + ev.h + 4))/2);
+  h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;
+  h += `<div class="hr" style="top:${cy - 12}pt"></div>`;
+  h += OHL.contact(D, {x:36, y:cy, w:540, h:62, tone:'dark', nameSize:18, phoneSize:13, lineSize:9.5, logoW:184, logoH:52});
+  h += `<div class="abs fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

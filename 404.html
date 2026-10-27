@@ -56,6 +56,11 @@ dialog{margin:auto}
 .lockup{display:flex;flex-direction:column;gap:26px}
 .lk-title{display:flex;flex-direction:column;gap:16px;font-weight:400}
 .lk-logo svg{width:min(360px,100%);height:auto;display:block}
+.lk-logo{display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.lk-logo img{display:block;max-width:min(340px,100%);max-height:150px;width:auto;height:auto}
+.wm{display:inline-flex;flex-direction:column;gap:6px;font-family:var(--team-display);line-height:1}
+.wm-top{font-size:clamp(34px,3.6vw,52px);font-weight:600;letter-spacing:.01em}
+.wm-sub{font-family:var(--team-body);font-size:13px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;opacity:.9}
 .lk-word{font-family:var(--team-display);font-size:clamp(46px,5.4vw,78px);line-height:.98}
 .lk-powered{display:inline-flex;align-items:center;gap:14px;color:#fff;text-decoration:none;padding-top:18px;border-top:1px solid rgba(255,255,255,.45);align-self:flex-start;min-width:min(360px,100%)}
 .lk-by{font-size:13px;letter-spacing:.06em;opacity:.85}
@@ -90,6 +95,9 @@ dialog{margin:auto}
 .vh header .bar{display:flex;align-items:center;justify-content:space-between;gap:20px;height:76px}
 .team-lock{display:inline-flex;align-items:center;gap:16px;text-decoration:none;color:var(--team-ink)}
 .team-lock svg{width:210px;height:auto;display:block}
+.team-lock [data-slot="logoColor"]{display:inline-flex;align-items:center;gap:10px}
+.team-lock img{display:block;max-height:46px;max-width:200px;width:auto;height:auto}
+.team-lock .wm{gap:3px}.team-lock .wm-top{font-size:22px}.team-lock .wm-sub{font-size:9.5px;letter-spacing:.2em}
 .tl-div{width:1px;height:30px;background:var(--team-ink);opacity:.35}
 .tl-word{font-family:var(--team-display);font-size:26px;line-height:1;color:var(--team-primary);white-space:nowrap}
 .vh .right{display:flex;align-items:center;gap:22px}
@@ -133,7 +141,7 @@ dialog{margin:auto}
 .vh .btn:hover{background:var(--team-deep)}
 .vh .btn.line{background:transparent;color:var(--team-ink);border:1px solid var(--team-ink)}
 .vh .btn.line:hover{background:var(--mist)}
-.vh .quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+.vh .quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:30px}
 .vh .q{display:block;text-decoration:none;text-align:left;font:inherit;color:var(--team-ink);background:var(--mist);border:0;border-left:4px solid var(--team-deep);padding:16px 18px;cursor:pointer;border-radius:0 6px 6px 0}
 .vh .q:hover{background:#ece8e6}
 .vh .q b{display:block;font-size:16px}
@@ -274,19 +282,19 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
 
 <!-- Team sign-in -->
 <div class="vs" id="vSignin" hidden>
-  <section class="brand" aria-label="Team brand">
+  <section class="brand" aria-label="Brand">
     <div class="top">
       <div class="lockup">
         <h1 class="lk-title"><span class="lk-logo" data-slot="logoLight"></span><span class="lk-word" data-slot="lockup">Print Marketing</span></h1>
-        <a class="lk-powered" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk">
+        <span class="lk-powered">
           <span class="lk-by">powered by</span>
           <span class="lk-bd"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#E9D7B3" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#ffffff"/></svg>BrochureDesk</span>
-        </a>
+        </span>
       </div>
     </div>
     <div class="gap" aria-hidden="true"></div>
     <div class="bottom">
-      <p class="carries">Every piece carries the <strong>team logo and colors</strong>, with <strong>your own contact card</strong> on the back.</p>
+      <p class="carries">Every piece carries the <strong><span data-k="org">team</span> logo and colors</strong>, with <strong>your own contact card</strong> on the back.</p>
       <p class="carries">Paste a listing link and your brochure, flyers and postcard come back ready to print.</p>
       <p class="printer">We can even upload them to your printer! You just check out.</p>
       <p class="office" data-slot="office"></p>
@@ -294,9 +302,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   </section>
   <main class="signin">
     <div class="inner">
-      <p class="tag">Team sign-in</p>
+      <p class="tag"><span data-k="Org">Team</span> sign-in</p>
       <h2>Sign in</h2>
-      <p class="lede">Use the email and password for your team account.</p>
+      <p class="lede">Use the email and password for your <span data-k="org">team</span> account.</p>
       <form id="signinForm" novalidate>
         <label for="email">Email</label>
         <input id="email" type="email" autocomplete="username" inputmode="email" required>
@@ -306,7 +314,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <p class="status" id="signinStatus" role="status" aria-live="polite"></p>
       </form>
       <div class="help">
-        <p>Joining the team? Ask your team admin to send you an invite.</p>
+        <p>Joining the <span data-k="org">team</span>? Ask your <span data-k="org">team</span> admin to send you an invite.</p>
         <p>Trouble signing in? Email <b>support@brochuredesk.com</b></p>
       </div>
       <p class="about"><span data-slot="name"></span> Print Marketing runs on <b>BrochureDesk</b>. Signing in takes you to your BrochureDesk account, set up in the <span data-slot="name"></span> brand.</p>
@@ -319,9 +327,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   <div class="test">Test page. Nothing here is a real order yet.</div>
   <header>
     <div class="wrap bar">
-      <a class="team-lock" href="#" data-nav data-home aria-label="Home"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word" data-slot="lockup">Print Marketing</span></a>
+      <a class="team-lock" href="#" id="lockHome" data-nav data-home aria-label="Go to your home page"><span data-slot="logoColor"></span><span class="tl-div" aria-hidden="true"></span><span class="tl-word" data-slot="lockup">Print Marketing</span></a>
       <div class="right">
-        <a class="bd" href="https://brochuredesk.com" aria-label="Powered by BrochureDesk"><span class="by">powered by</span>
+        <a class="bd" href="#" id="bdHome" data-nav data-home aria-label="Powered by BrochureDesk, go to your home page"><span class="by">powered by</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="12" height="15" fill="none" stroke="#9C7B45" stroke-width="1.5" transform="rotate(-8 9 12.5)"/><rect x="8" y="3" width="12" height="15" fill="#1F4D3F"/></svg>
           <span class="bdw">BrochureDesk</span></a>
         <button class="acct" type="button" id="acctBtn"><span class="ini" id="ini"></span><span class="nm" id="firstName"></span></button>
@@ -364,6 +372,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         </section>
         <div class="quick">
           <a class="q" href="#" data-nav data-to="orders"><b>Update an open house flyer</b><span>Change the date, time or label. Free every time.</span></a>
+          <a class="q" href="#" data-nav data-to="orders"><b>Pick up a Just Sold postcard</b><span>Sold a listing? Its matching postcard is included. Open for 2 years after the sale.</span></a>
           <a class="q" href="#" data-nav data-to="orders"><b>Reuse a past order</b><span>More pieces or another design for the same listing.</span></a>
           <a class="q" href="#" data-nav data-to="orders"><b>Printer uploads</b><span>See what's waiting in your printer's cart.</span></a>
         </div>
@@ -374,9 +383,14 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       </div>
       <aside>
         <div class="pack"><div class="n">3</div><p>packages left in your 5-pack. Use them on any listing, any time.</p><a class="btn" href="#">Buy another 5-pack</a></div>
+        <div class="card" id="designTeaser">
+          <h3>Want your own design?</h3>
+          <p>We'll build a full matching set around your brand and keep it in your account.</p>
+          <div class="row" style="margin-top:12px"><button class="btn line" type="button" id="openDesign">See how it works</button></div>
+        </div>
         <div class="card">
           <h3>Your contact card</h3>
-          <p>This goes on the back of every piece, under the team brand.</p>
+          <p>This goes on the back of every piece, under the <span data-k="org">team</span> brand.</p>
           <div class="contact" id="contactCard"></div>
           <div class="row" style="margin-top:12px"><button class="btn line" type="button" id="editCard">Edit profile</button></div>
         </div>
@@ -393,6 +407,16 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         </div>
       </aside>
     </div>
+  </main>
+
+  <!-- Personalized design request (own-design.js is loaded the first time this opens) -->
+  <main class="wrap" id="designMain" hidden>
+    <section class="hello">
+      <p><button class="btn line" type="button" id="designBack">Back to your home</button></p>
+      <h1>Want your own design?</h1>
+      <p>We'll build a full matching set around your brand and keep it in your account.</p>
+    </section>
+    <div id="designRoot" style="padding-bottom:64px"></div>
   </main>
 
   <!-- Everything else under the team address: new package, a package, past orders, receipts, help (team/flow.js) -->
@@ -423,6 +447,10 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         <label class="pf-lbl" for="pfDisplay">Your name as it should appear</label>
         <p class="pf-hint">Exactly how it prints on your contact card, like Alex Morgan or Alex J. Morgan.</p>
         <input id="pfDisplay" type="text" autocomplete="name" maxlength="40" required>
+
+        <label class="pf-lbl" for="pfMailer">Name on mailers <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+        <p class="pf-hint">Your postcards use this name. If your name is long, a shorter form here fits every design, like Alex Morgan or Alexandra M. Reyes. Leave it blank to use the name above.</p>
+        <input id="pfMailer" type="text" autocomplete="off" maxlength="40">
 
         <label class="pf-lbl" for="pfGreet">What should we call you?</label>
         <p class="pf-hint">Used when we welcome you back.</p>
@@ -457,7 +485,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       </aside>
     </div>
   </main>
-  <footer><div class="wrap"><span>Questions? support@brochuredesk.com. We reply within 24 hours.</span><span>BrochureDesk</span></div></footer>
+  <footer><div class="wrap"><span>Questions? support@brochuredesk.com</span><span>BrochureDesk</span></div></footer>
 </div>
 
 <dialog class="cropdlg" id="cropDlg" aria-labelledby="cropH">
@@ -509,6 +537,9 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (b.display) r.setProperty('--team-display', b.display);
     if (b.body) r.setProperty('--team-body', b.body);
     if (b.googleFonts) $('teamFonts').href = 'https://fonts.googleapis.com/css2?' + b.googleFonts + '&display=swap';
+    const org = b.kind === 'brokerage' ? 'brokerage' : 'team';   // set per company record; prospects are brokerages
+    document.querySelectorAll('[data-k="org"]').forEach(e => e.textContent = org);
+    document.querySelectorAll('[data-k="Org"]').forEach(e => e.textContent = org[0].toUpperCase() + org.slice(1));
     (b.fontFaces || []).forEach(f => {
       if (!f.family || !/^\/fonts\/[\w.-]+\.woff2$/.test(f.url || '')) return;    // only fonts we host
       try { const ff = new FontFace(f.family, `url(${f.url}) format("woff2")`, {weight: String(f.weight || 400), style: f.style || 'normal', display: 'swap'});
@@ -563,6 +594,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     const p = profile || {};
     $('pfDisplay').value = p.display_name || [me.team.first_name, me.team.last_name].filter(Boolean).join(' ');
     $('pfGreet').value = p.greeting_name || me.team.first_name || '';
+    $('pfMailer').value = p.mailer_name || '';
     $('pfEmail').value = p.preferred_email || me.email || '';
     $('pfCell').value = p.cell || '';
     pendingPhoto = null; removePhoto = false;
@@ -578,7 +610,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
       $('pfSave').textContent = 'Save changes'; $('pfCancel').hidden = false;
     }
     preview(); fillHeader();
-    $('homeMain').hidden = true; $('flowMain').hidden = true; $('profileMain').hidden = false;
+    $('homeMain').hidden = true; $('flowMain').hidden = true; $('designMain').hidden = true; $('profileMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
   }
 
@@ -740,9 +772,12 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
         cropSet = pendingPhoto.crop;
         st.textContent = 'Saving...';
       }
-      const row = { user_id: me.id, display_name: display, greeting_name: greet, preferred_email: email, cell,
+      const row = { user_id: me.id, display_name: display, mailer_name: $('pfMailer').value.trim() || null, greeting_name: greet, preferred_email: email, cell,
         headshot_path: path, headshot_original_path: origPath, headshot_crop: cropSet, updated_at: new Date().toISOString() };
-      const { error } = await sb.from('agent_profiles').upsert(row);
+      let { error } = await sb.from('agent_profiles').upsert(row);
+      if (error && /mailer_name/.test(error.message || '')) {   // until the mailer_name column exists, save the rest
+        delete row.mailer_name; ({ error } = await sb.from('agent_profiles').upsert(row));
+      }
       if (error) throw error;
       const keep = new Set([path, origPath].filter(Boolean));
       const stale = [profile?.headshot_path, profile?.headshot_original_path].filter(p => p && !keep.has(p));
@@ -786,7 +821,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     tx.append(document.createElement('br'), p.preferred_email || me.email);
     c.append(tx);
     document.title = `${team.name} Print Marketing`;
-    $('profileMain').hidden = true; $('flowMain').hidden = true; $('homeMain').hidden = false;
+    $('profileMain').hidden = true; $('flowMain').hidden = true; $('designMain').hidden = true; $('homeMain').hidden = false;
     show('vHome'); window.scrollTo(0,0);
     homePackages();
   }
@@ -842,7 +877,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (!r.length) return enterHome();
     if (r[0] === 'profile' && r.length === 1) return openProfile('edit');
     fillHeader();
-    $('homeMain').hidden = true; $('profileMain').hidden = true; $('flowMain').hidden = false;
+    $('homeMain').hidden = true; $('profileMain').hidden = true; $('designMain').hidden = true; $('flowMain').hidden = false;
     document.title = `${team.name} Print Marketing`;
     show('vHome');
     TeamFlow.mount(ctx(), r);
@@ -857,6 +892,36 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
   });
   document.querySelectorAll('a[data-nav][data-to]').forEach(a => a.setAttribute('href', `/${code}/${a.dataset.to}`));
   document.querySelectorAll('a[data-nav][data-home]').forEach(a => a.setAttribute('href', `/${code}`));
+
+  // ---------- own design request ----------
+  let designLoaded = null;
+  function loadOwnDesign(){
+    if (window.OwnDesign) return Promise.resolve();
+    if (!designLoaded) designLoaded = new Promise((ok, no) => {
+      const s = document.createElement('script');
+      s.src = '/preview/own-design.js?v=1'; s.onload = ok; s.onerror = () => { designLoaded = null; no(); };
+      document.head.appendChild(s);
+    });
+    return designLoaded;
+  }
+  async function openDesign(){
+    const b = team.brand || {};
+    const { data: s } = await sb.auth.getSession();
+    try { await loadOwnDesign(); } catch (e) { return; }
+    const p = profile || {};
+    window.OwnDesign.mount($('designRoot'), {
+      mode: 'portal',
+      org: { name: team.name, kind: b.kind === 'brokerage' ? 'brokerage' : 'team', logoSvg: b.logoColor, colors: [b.primary, b.deep].filter(Boolean) },
+      person: { name: p.display_name || '', preferred: p.greeting_name || '', email: p.preferred_email || me.email, brokerage: team.name },
+      logo: b.logoColor ? { svg: b.logoColor } : null,
+      accessToken: s.session ? s.session.access_token : null,
+      portal: code
+    });
+    $('homeMain').hidden = true; $('profileMain').hidden = true; $('flowMain').hidden = true; $('designMain').hidden = false;
+    show('vHome'); window.scrollTo(0,0);
+  }
+  $('openDesign').addEventListener('click', openDesign);
+  $('designBack').addEventListener('click', () => nav(home()));
 
   async function tryEnter(){
     const { data, error } = await sb.rpc('my_team', { p_code: code });
@@ -880,7 +945,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     show('vSignin');
   }
 
-  const NEUTRAL = "That email and password don't match a team account. Check both and try again.";
+  const NEUTRAL = () => `That email and password don't match a ${team && team.brand && team.brand.kind === 'brokerage' ? 'brokerage' : 'team'} account. Check both and try again.`;
   $('signinForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('email').value.trim(), password = $('password').value;
@@ -892,7 +957,7 @@ dialog.cropdlg::backdrop{background:rgba(20,18,18,.6)}
     if (!error) await sb.auth.signOut();          // signed in, but not on this team: same message, nothing revealed
     $('goBtn').disabled = false;
     st.className = 'status err';
-    st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL;
+    st.textContent = (error && /fetch|network/i.test(error.message)) ? "Can't reach the sign-in service right now. Check your connection and try again." : NEUTRAL();
   });
 
   // Sign out: end the Supabase session, forget everything kept in this browser, wipe what the last person saw,

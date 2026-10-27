@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Lifted Photo</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Lifted Photo (from reference B11). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner liked how the top photo curls and pops off the page, but not the QR code, and the address, date and time
+  were hard to see. The house fills the top with its bottom edge sweeping up to the right and a soft shadow under it, as
+  if the print were lifting off the paper (the edge only crosses lawn, checked). Under it the event wording large on
+  the left and the date and time large on the right; then the event details and a big address; agent and logo at the foot.
+  Type: Fraunces (headline, date, address), Outfit (everything else).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .lift{position:absolute;left:0;top:0;width:612pt;filter:drop-shadow(0 7pt 9pt rgba(0,0,0,.32))}
+  .hl{font:600 56pt/56pt Fraunces;white-space:nowrap;overflow:hidden;letter-spacing:-.5pt}
+  .hl.b{color:var(--main-on-paper)}
+  .vr{position:absolute;width:1pt;background:var(--ink);opacity:.25}
+  .wd{font:600 10pt/13pt Outfit;letter-spacing:3pt;text-transform:uppercase;color:var(--accent-on-paper);white-space:nowrap;overflow:hidden}
+  .date{font:600 34pt/40pt Fraunces;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .time{font:600 20pt/26pt Outfit;white-space:nowrap;overflow:hidden}
+  .k{font:600 9pt/12pt Outfit;letter-spacing:2.4pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
+  .ev{font:400 12pt/16pt Outfit}
+  .addr{font:600 24pt/28pt Fraunces}
+  .place{font:400 10pt/13pt Outfit;white-space:nowrap;overflow:hidden}
+  .hr{position:absolute;left:36pt;width:540pt;height:.9pt;background:var(--ink);opacity:.25}
+  .oh-agent-name{font-family:Fraunces;font-weight:600}
+  .oh-agent{font-family:Outfit}
+  .fine{font:400 6.6pt/8pt Outfit;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt Fraunces', '400 10pt Outfit', '600 10pt Outfit'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  // the house, its bottom edge sweeping up to the right (a curve sampled as a polygon, so the check is exact)
+  const ph = Math.max(372, OHL.minFrameH(D, hero, 612, 408)), lift = 0.17;
+  const curve = [...Array(13)].map((_, i) => { const x = i/12; return [x, 1 - lift*Math.pow(x, 1.7)]; });
+  const poly = [[0,0],[1,0], ...curve.reverse()];
+  const lifted = OHL.polyFits(D, hero, 612, ph, poly);
+  h += `<div class="lift" style="height:${ph}pt">` + (lifted ? OHL.maskedPhoto(D, hero, `left:0;top:0;width:612pt;height:${ph}pt`, poly)
+                                                      : OHL.photo(D, hero, `left:0;top:0;width:612pt;height:${ph}pt`)) + `</div>`;
+  // headline left, date and time right
+  let y = ph + 24;
+  const mid0 = h.length;
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl${i ? ' b' : ''}" style="left:34pt;top:${y + i*56}pt;width:300pt;height:60pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  h += `<div class="vr" style="left:350pt;top:${y+8}pt;height:${lines.length*56 - 8}pt"></div>`;
+  const dx = 368, dw = 208;
+  if(E.weekday){
+    h += `<div class="abs wd" style="left:${dx}pt;top:${y+6}pt;width:${dw}pt;height:13pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+    h += `<div class="abs date" style="left:${dx}pt;top:${y+20}pt;width:${dw}pt;height:40pt" data-fit="34,24" data-slot="oh.date" data-lines="1">${esc(E.monthDay)}</div>`;
+  } else h += `<div class="abs date" style="left:${dx}pt;top:${y+20}pt;width:${dw}pt;height:40pt" data-fit="34,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${dx}pt;top:${y+64}pt;width:${dw}pt;height:26pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += Math.max(lines.length*56, 92) + 22;
+  h += `<div class="hr" style="top:${y}pt"></div>`;
+  y += 18;
+  // details left (the agent's lines, else the facts), address right
+  const det = [[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']].filter(l => l[0]);
+  h += `<div class="abs k" style="left:36pt;top:${y}pt;width:250pt;height:12pt">${det.length ? 'Good to know' : 'The home'}</div>`;
+  let ev;
+  if(det.length) ev = Ivory.eventLines(det, 36, y + 18, 262, 16, 4);
+  else { const fl = Ivory.facts(L); ev = {html: fl.map((t, i) => `<div class="abs ev" style="left:36pt;top:${y+18+i*16}pt;width:262pt;height:16pt;white-space:nowrap;overflow:hidden" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`).join(''), h: fl.length*16}; }
+  h += ev.html;
+  h += `<div class="vr" style="left:312pt;top:${y}pt;height:${Math.max(ev.h + 18, 78)}pt"></div>`;
+  h += `<div class="abs k" style="left:330pt;top:${y}pt;width:246pt;height:12pt">Where</div>`;
+  const an = Ivory.linesNeeded('addr', L.address, 246, 28);
+  h += `<div class="abs addr" style="left:330pt;top:${y+16}pt;width:246pt;height:${an*28+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:330pt;top:${y+20+an*28}pt;width:246pt;height:13pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', '))}</div>`;
+  const end = y + Math.max(ev.h + 18, an*28 + 36);
+  const cy = 704;
+  const shift = Math.max(0, (cy - 18 - end)/2);
+  h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;
+  h += `<div class="hr" style="top:${cy - 12}pt"></div>`;
+  h += OHL.contact(D, {x:36, y:cy, w:540, h:62, tone:'light', nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:50});
+  h += `<div class="abs fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = end > cy - 18 ? [{slot:'oh.note', kind:'overflow', detail:'the details run into the agent card'}] : [];
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 56, 30, ph + 24, 1.0);   // inside the shifted block
+  return f;
+});
+</script>
+</body>
+</html>

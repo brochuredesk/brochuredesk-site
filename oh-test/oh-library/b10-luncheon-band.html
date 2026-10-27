@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Luncheon Band</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Luncheon Band (from reference B10). Trim 612 x 792 pt. REALTOR(R) / broker opens with refreshments.
+  The owner's B10 note: the house at top; one dark band that names the event and the refreshment ("REALTOR(R) Open House
+  Luncheon"; Luncheon / Happy Hour / Breakfast / Sweets & Coffee, or the agent's own words for Other); bigger
+  boxes below that fill the page: the refreshment on the left (with a matching food photo from our library), the
+  address on the right; agent on the left and the brokerage on the right at the foot.
+  Type: IBM Plex Sans Condensed (event, date, address), Libre Franklin (details).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .band{position:absolute;left:0;width:612pt;background:var(--dark);color:var(--on-dark)}
+  .band~.ttl,.band~.date,.band~.ev{color:var(--on-dark)}
+  .ttl{font:700 40pt/46pt 'Plex Condensed';text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.3pt}
+  .ttl span{font-weight:400;color:var(--accent-on-dark)}
+  .date{font:700 30pt/36pt 'Plex Condensed';text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:400 22pt/27pt 'Plex Condensed';text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
+  .ev{font:600 10.5pt/13pt 'Libre Franklin';text-align:center;opacity:.9}
+  .k{font:700 8.8pt/11pt 'Libre Franklin';letter-spacing:2.2pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
+  .rt{font:700 20pt/24pt 'Plex Condensed';text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap;overflow:hidden}
+  .rx{font:400 13pt/17pt 'Libre Franklin'}
+  .addr{font:700 22pt/25pt 'Plex Condensed'}
+  .place{font:400 9.5pt/12.5pt 'Libre Franklin'}
+  .vr{position:absolute;width:.9pt;background:var(--ink);opacity:.25}
+  .hr{position:absolute;height:.9pt;background:var(--ink);opacity:.25}
+  .oh-agent-name{font-family:'Plex Condensed';font-weight:700}
+  .oh-agent{font-family:'Libre Franklin'}
+  .fine{font:400 6.6pt/8pt 'Libre Franklin';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Plex Condensed"', '400 10pt "Plex Condensed"', '400 10pt "Libre Franklin"', '600 10pt "Libre Franklin"', '700 10pt "Libre Franklin"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const food = Object.keys(D.photos||{}).find(id => /^food\b/i.test(D.photos[id].tags||''));
+  let h = '';
+  // room the band and the boxes need; the house photo gives up lawn at the bottom when they need more
+  // (at most 60 pt; the house-cut check guards the crop)
+  const fw0 = (E.hasRefresh && food) ? 150 : 0, tw0 = 324 - 18 - 36 - (fw0 ? fw0 + 14 : 0), aw0 = 576 - 342;
+  const noteH = E.note ? Ivory.linesNeeded('ev', E.note, 540, 13)*13 + 8 : 0;
+  const bandH = 70 + 36 + (E.time ? 29 : 0) + noteH + 16;
+  const pl0 = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : '')].filter(Boolean).join(', ');
+  let addrNeed = 22 + Ivory.linesNeeded('addr', L.address, aw0, 25)*25 + Ivory.linesNeeded('place', pl0, aw0, 12.5)*12.5 + 15;
+  const refNeed = E.hasRefresh ? 18 + (E.refreshText ? Ivory.linesNeeded('rx', E.refreshText, tw0, 17)*17 : 28) : 0;
+  const over = need => 36 + 360 + 18 + bandH + 20 + need + 14 - 696;
+  // first the facts line under the address goes (it is extra), then the photo gives up ground
+  const showFacts = over(Math.max(addrNeed, refNeed, fw0 ? 96 : 0)) <= 0;
+  if(!showFacts) addrNeed -= 15;
+  const boxNeed = Math.max(addrNeed, refNeed, fw0 ? 96 : 0);
+  // the photo gives up ground; when the house leaves none, it gets smaller at 3:2 instead (nothing more is cropped)
+  const ph = 360 - Math.min(60, Math.max(0, over(boxNeed))), pw = ph >= OHL.minFrameH(D, hero, 540, 360) ? 540 : Math.round(ph*1.5);
+  h += OHL.photo(D, hero, `left:${36 + (540-pw)/2}pt;top:36pt;width:${pw}pt;height:${ph}pt`);
+
+  // the band: event and refreshment, date, time, special notes
+  let y = 36 + ph + 18;
+  const bandTop = y;
+  let band = `<div class="abs ttl" style="left:30pt;top:${y+18}pt;width:552pt;height:46pt" data-fit="40,24" data-slot="oh.label" data-lines="1">${esc(E.label)}${E.refreshTitle ? ` <span data-slot="oh.refreshType">${esc(E.refreshTitle)}</span>` : ''}</div>`;
+  y += 70;
+  band += `<div class="abs date" style="left:36pt;top:${y}pt;width:540pt;height:36pt" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  y += 36;
+  if(E.time){ band += `<div class="abs time" style="left:36pt;top:${y}pt;width:540pt;height:27pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`; y += 29; }
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev']], 36, y + 4, 540, 13);
+  band += ev.html; y += (ev.h ? ev.h + 8 : 0) + 16;
+  h += `<div class="band" style="top:${bandTop}pt;height:${y-bandTop}pt"></div>` + band;
+
+  // refreshment box (left) and address box (right)
+  const by = y + 20, bh = 696 - by - 14;
+  const cx = 324;
+  let refreshBottom = 0;
+  if(E.hasRefresh){
+    const fw = food ? Math.min(150, Math.round(bh*1.2)) : 0;
+    if(food) h += OHL.photo(D, food, `left:36pt;top:${by}pt;width:${fw}pt;height:${bh}pt`);
+    const tx = 36 + (fw ? fw + 14 : 0), tw = cx - 18 - tx;
+    h += `<div class="abs k" style="left:${tx}pt;top:${by+2}pt;width:${tw}pt;height:11pt">Refreshments</div>`;
+    let ty = by + 18;
+    // the band already names the refreshment; the box carries the agent's own line (the title only when there is none)
+    if(!E.refreshText && E.refreshTitle){ h += `<div class="abs rt" style="left:${tx}pt;top:${ty}pt;width:${tw}pt;height:24pt" data-slot="oh.refreshTitle" data-lines="1">${esc(E.refreshTitle)}</div>`; ty += 28; }
+    if(E.refreshText){ const n = Ivory.linesNeeded('rx', E.refreshText, tw, 17);
+      h += `<div class="abs rx" style="left:${tx}pt;top:${ty}pt;width:${tw}pt;height:${n*17+4}pt" data-slot="oh.refreshments" data-lines="${n}">${esc(E.refreshText)}</div>`; ty += n*17; }
+    refreshBottom = ty;
+  }
+  h += `<div class="vr" style="left:${cx}pt;top:${by}pt;height:${bh}pt"></div>`;
+  const ax = cx + 18, aw = 576 - ax;
+  h += `<div class="abs k" style="left:${ax}pt;top:${by+2}pt;width:${aw}pt;height:11pt">Join us at</div>`;
+  const an = Ivory.linesNeeded('addr', L.address, aw, 25);
+  h += `<div class="abs addr" style="left:${ax}pt;top:${by+18}pt;width:${aw}pt;height:${an*25+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  const pl = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : '')].filter(Boolean).join(', ');
+  const pn = Ivory.linesNeeded('place', pl, aw, 12.5);
+  h += `<div class="abs place" style="left:${ax}pt;top:${by+22+an*25}pt;width:${aw}pt;height:${pn*12.5+3}pt" data-slot="place" data-lines="${pn}">${esc(pl)}</div>`;
+  if(showFacts) h += `<div class="abs place" style="left:${ax}pt;top:${by+26+an*25+pn*12.5}pt;width:${aw}pt;height:15pt;white-space:nowrap;overflow:hidden" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  const issues = [];
+  if(by + bh > 696 || (refreshBottom && refreshBottom > by + bh + 2) || by + 22 + an*25 + pn*12.5 + (showFacts ? 15 : 0) > by + bh + 4)
+    issues.push({slot:'oh.refreshments', kind:'overflow', detail:'the boxes under the band need more room'});
+
+  // agent left, brokerage right
+  h += `<div class="hr" style="left:36pt;top:696pt;width:540pt"></div>`;
+  h += OHL.contact(D, {x:36, y:706, w:540, h:62, tone:'light', nameSize:17, phoneSize:12.5, lineSize:9, logoW:180, logoH:50});
+  h += `<div class="abs fine" style="left:36pt;top:779pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

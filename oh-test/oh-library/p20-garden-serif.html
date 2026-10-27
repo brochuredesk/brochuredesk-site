@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Garden Serif</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Garden Serif (from reference P20). Trim 612 x 792 pt. Public or REALTOR(R).
+  The reference was a holiday flyer; this keeps its look for any season: the page in the agent's main color, the event
+  wording repeated up a thin rule along the left edge, the wording large in italic serif, a wide house photo with a
+  round room photo overlapping its top corner (the circle sits over sky beside the house, never on it), and the date
+  and time large in italic at the foot beside the address.
+  Type: Libre Baskerville (italic headline, date), Instrument Sans (details).
+-->
+<style>
+  .sheet{background:var(--main);color:var(--on-main)}
+  .side{position:absolute;left:30pt;top:396pt;width:740pt;height:14pt;margin-left:-370pt;margin-top:-7pt;transform:rotate(-90deg);font:500 8.5pt/14pt 'Instrument Sans';letter-spacing:3.4pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;opacity:.85}
+  .vr{position:absolute;left:46pt;top:26pt;width:.9pt;height:740pt;background:var(--on-main);opacity:.35}
+  .hl{font:italic 700 50pt/52pt 'Libre Baskerville';white-space:nowrap;overflow:hidden;text-transform:uppercase;letter-spacing:-.5pt}
+  .circ{position:absolute;border-radius:50%;border:5pt solid var(--main);overflow:hidden}
+  .date{font:italic 700 24pt/30pt 'Libre Baskerville';white-space:nowrap;overflow:hidden}
+  .time{font:600 18pt/23pt 'Instrument Sans';white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .addr{font:600 12pt/16pt 'Instrument Sans'}
+  .place{font:400 10pt/13pt 'Instrument Sans';white-space:nowrap;overflow:hidden;opacity:.9}
+  .ev{font:400 10pt/13pt 'Instrument Sans'}
+  .oh-agent-name{font-family:'Libre Baskerville';font-weight:700;font-style:italic}
+  .oh-agent{font-family:'Instrument Sans'}
+  .fine{font:400 6.6pt/8pt 'Instrument Sans';white-space:nowrap;opacity:.65}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['italic 700 10pt "Libre Baskerville"', '700 10pt "Libre Baskerville"', '600 10pt "Instrument Sans"', '500 10pt "Instrument Sans"', '400 10pt "Instrument Sans"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const room = OHL.photos(D).find(id => id !== hero && /living|kitchen/i.test(D.photos[id].tags||'')) || OHL.photos(D).find(id => id !== hero && !Ivory.fullHouse(D, id));
+  const X = 66, W = 612 - X - 30;
+  let h = `<div class="vr"></div><div class="side">${esc(Array(5).fill(E.label).join('   ·   '))}</div>`;
+  const lines = OHL.labelLines(E.label);
+  const cs = 128;
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:${X}pt;top:${30 + i*52}pt;width:${W - cs - 14}pt;height:56pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  // the house, wide; the room circle over its upper right corner only when that corner is clear of the house
+  const py = 30 + lines.length*52 + 30, ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, 0, W, 13, 2);
+  const ph = 690 - 18 - (ev.h ? ev.h + 8 : 0) - 70 - 22 - py;
+  const fr = OHL.fitHero(D, hero, W, ph);
+  h += OHL.photo(D, hero, `left:${X + (W - fr.w)/2}pt;top:${py}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  const cx = X + W - cs, cy = 24;
+  h += `<div class="circ" style="left:${cx}pt;top:${cy}pt;width:${cs}pt;height:${cs}pt">${OHL.photo(D, room, `left:0;top:0;width:${cs-10}pt;height:${cs-10}pt`)}</div>`;
+  // the foot: date and time left, address right
+  let y = py + fr.h + 22;
+  h += `<div class="abs date" style="left:${X}pt;top:${y}pt;width:300pt;height:30pt" data-fit="24,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${X}pt;top:${y+32}pt;width:300pt;height:23pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  h += `<div class="abs" style="left:${X+312}pt;top:${y+4}pt;width:.9pt;height:52pt;background:var(--on-main);opacity:.4"></div>`;
+  const an = Ivory.linesNeeded('addr', L.address, W - 330, 16);
+  h += `<div class="abs addr" style="left:${X+326}pt;top:${y+4}pt;width:${W-330}pt;height:${an*16+3}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:${X+326}pt;top:${y+6+an*16}pt;width:${W-330}pt;height:13pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join(', '))}</div>`;
+  h += `<div class="abs place" style="left:${X+326}pt;top:${y+20+an*16}pt;width:${W-330}pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, ' · '))}</div>`;
+  y += 66;
+  if(ev.h){ h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + y}pt`); y += ev.h + 8; }
+  const issues = ph < 160 || y > 684 ? [{slot:'oh.note', kind:'overflow', detail:'the page is too full'}] : [];
+  h += `<div class="abs" style="left:${X}pt;top:684pt;width:${W}pt;height:.9pt;background:var(--on-main);opacity:.35"></div>`;
+  h += OHL.contact(D, {x:X, y:692, w:W, h:76, tone:OHL.toneOn(k.main), nameSize:18, logoW:170, logoH:48, color:'var(--on-main)'});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 50, 28, 30, 1.04);
+  return f;
+});
+</script>
+</body>
+</html>

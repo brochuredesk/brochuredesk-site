@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Diagonal</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Diagonal (from reference P22). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner shoots at angles and wanted something built on this design. The page is the agent's main color; the event
+  wording sits large at top left, and an angled shot of the house fills the middle with its top edge cut on a
+  diagonal rising to the right, an accent stripe riding the cut (the cut crosses sky only, checked; otherwise the
+  top edge is straight). Date and time large under the photo, the address beside them, and the agent and logo on a
+  dark bar at the foot.
+  Type: Barlow throughout.
+-->
+<style>
+  .sheet{background:var(--main);color:var(--on-main)}
+  .hl{font:700 66pt/62pt Barlow;text-transform:uppercase;white-space:nowrap;overflow:hidden;letter-spacing:-.5pt}
+  .date{font:700 30pt/36pt Barlow;white-space:nowrap;overflow:hidden}
+  .time{font:500 22pt/27pt Barlow;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .ev{font:400 10pt/13pt Barlow}
+  .addr{font:600 20pt/24pt Barlow;text-align:right}
+  .place{font:500 9.5pt/12pt Barlow;letter-spacing:1.6pt;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:hidden}
+  .facts{font:500 10.5pt/13pt Barlow;text-align:right;white-space:nowrap;overflow:hidden;opacity:.9}
+  .bar{position:absolute;left:0;width:612pt;background:var(--dark)}
+  .bar~.ond{color:var(--on-dark)}
+  .oh-agent-name{font-family:Barlow;font-weight:700}
+  .oh-agent{font-family:Barlow}
+  .fine{font:400 6.6pt/8pt Barlow;white-space:nowrap;opacity:.65}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt Barlow', '600 10pt Barlow', '500 10pt Barlow', '400 10pt Barlow'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'angled');
+  let h = '';
+  // the house; its top edge falls from right (0) to left (rise), crossing sky only
+  const py = 120, ph = 470, rise = 0.18, P = 4/3;
+  const poly = [[0,rise],[1,0],[1,1],[0,1]];
+  const cut = OHL.polyFits(D, hero, 612, ph, poly);
+  if(cut){
+    h += OHL.maskedPhoto(D, hero, `left:0;top:${py}pt;width:612pt;height:${ph}pt`, poly);
+    h += `<svg class="abs" style="left:0;top:${py-14}pt;width:612pt;height:${ph*rise+20}pt" viewBox="0 0 816 ${(ph*rise+20)*P}"><line x1="0" y1="${(ph*rise+4)*P}" x2="816" y2="${4*P}" stroke="var(--accent)" stroke-width="7"/></svg>`;
+  } else { const fr = OHL.fitHero(D, hero, 612, ph*(1-rise)); h += OHL.photo(D, hero, `left:${(612-fr.w)/2}pt;top:${py + ph*rise}pt;width:${fr.w}pt;height:${fr.h}pt`); }
+  // headline at top left, above the cut
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:34pt;top:${26 + i*62}pt;width:${cut ? 330 : 540}pt;height:66pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  // date and time left, address right, under the photo
+  let y = py + ph + 14;
+  h += `<div class="abs date" style="left:34pt;top:${y}pt;width:300pt;height:36pt" data-fit="30,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:34pt;top:${y+36}pt;width:300pt;height:27pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 34, y + 66, 300, 13, 2);
+  h += ev.html;
+  const an = Ivory.linesNeeded('addr', L.address, 230, 24);
+  h += `<div class="abs addr" style="left:348pt;top:${y+2}pt;width:230pt;height:${an*24+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:348pt;top:${y+6+an*24}pt;width:230pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs facts" style="left:348pt;top:${y+22+an*24}pt;width:230pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  const barTop = 704;
+  const issues = (y + 66 + ev.h > barTop - 6) ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the bar'}] : [];
+  h += `<div class="bar" style="top:${barTop}pt;height:${792-barTop}pt"></div>`;
+  h += OHL.contact(D, {x:34, y:barTop+9, w:544, h:56, tone:'dark', nameSize:16, phoneSize:12.5, lineSize:9, logoW:170, logoH:46, color:'var(--on-dark)'}).replace('class="abs oh-agent"', 'class="abs ond oh-agent"');
+  h += `<div class="abs ond fine" style="left:34pt;top:782pt;width:544pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 66, 34, 26, 0.94);
+  return f;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Ivory open house flyer · v1 Invitation</title>
+<link rel="stylesheet" href="ivory.css">
+<script src="ivory.js"></script>
+<!--
+  Ivory · Open House flyer v1 "Invitation" (trim 612 x 792 pt).
+  The page opens like a printed invitation and the event is the loudest thing on it: the label at 28 pt tracked caps
+  between two hairlines, the weekday in serif, the month and day at 64 pt, the time at 26 pt bold in the accent color,
+  then the special-notes and refreshments lines on a tinted strip. The event takes the top 30% of the page. Below an accent rule: a photo
+  grid (hero 3:2 at left, two stacked photos at right), the address centered, then the contact card (the one logo).
+  Nothing shrinks to fit; the strip appears only when special notes or refreshments are set (broker and REALTOR(R) opens).
+-->
+<style>
+  .ev-label{left:36pt;top:28pt;width:540pt;height:30pt;text-align:center;font-size:28pt;line-height:30pt;letter-spacing:4pt;font-weight:700}
+  .ev-hair{top:43pt;height:.8pt;background:var(--accent);opacity:.6}
+  .ev-wd{left:36pt;top:64pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt;text-align:center;color:var(--muted)}
+  .ev-date{left:36pt;top:92pt;width:540pt;height:74pt;font-size:64pt;line-height:74pt;text-align:center}
+  .ev-raw{left:36pt;top:70pt;width:540pt;height:96pt;font-size:40pt;line-height:48pt;text-align:center;white-space:normal}
+  .ev-time{left:36pt;top:172pt;width:540pt;height:32pt;font:700 26pt/32pt var(--font-body);color:var(--accent);text-align:center;white-space:nowrap;overflow:hidden}
+  .ev-strip{position:absolute;left:36pt;width:540pt;background:var(--accent);opacity:.1}
+  .ev-note{height:15pt;font:600 11.5pt/15pt var(--font-body);color:var(--ink);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .oh-strong{height:15pt;font:700 11.5pt/15pt var(--font-body);color:var(--accent);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .address{left:36pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt;text-align:center}
+  .placeline{left:36pt;width:540pt;height:9pt;text-align:center}
+  .factline{left:36pt;width:540pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
+</style>
+</head>
+<body data-mode="email">
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+Ivory.whenFonts(function(){
+  const D = Ivory.data();
+  if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{};
+  document.body.dataset.mode = D.mode||'email';
+  Ivory.applyBrand(b);
+  const O = Ivory.openHouse(D);
+
+  const ids = Ivory.photoOrder(D);
+  const pick = (C.flyerPhotos && C.flyerPhotos.length>=3) ? C.flyerPhotos : ids;
+  const [hero, s1, s2] = pick;
+
+  let h = '';
+  // event block: label between two hairlines, weekday, the month and day at 64 pt, the time in accent
+  h += `<div class="ev-hair abs" id="hairL" style="left:36pt;width:0"></div><div class="ev-hair abs" id="hairR" style="left:576pt;width:0"></div>`;
+  h += `<div class="abs label ev-label" id="evLabel" data-slot="oh.label" data-lines="1">${esc(O.label)}</div>`;
+  if(O.weekday){
+    h += `<div class="abs display ev-wd" data-slot="oh.weekday" data-lines="1">${esc(O.weekday)}</div>`;
+    h += `<div class="abs display ev-date" data-slot="oh.date" data-lines="1">${esc(O.monthDay)}</div>`;
+  } else if(O.long){
+    h += `<div class="abs display ev-raw" data-slot="oh.date" data-lines="2">${esc(O.long)}</div>`;
+  } else h += Ivory.ghost(186, 96, 240, 2, 36);
+  h += O.time ? `<div class="abs ev-time" data-slot="oh.time" data-lines="1">${esc(O.time)}</div>` : Ivory.ghost(246, 180, 120, 1, 16);
+  // special-notes and refreshments lines on a tinted strip (only when set)
+  const ev = Ivory.eventLines([[O.note,'oh.note','oh-strong'],[O.refreshments,'oh.refreshments','ev-note']], 36, 217, 540, 15);
+  let y = 212;
+  if(ev.h){
+    const sh = 10 + ev.h;
+    h += `<div class="ev-strip" style="top:${y}pt;height:${sh}pt"></div>` + ev.html;
+    y += sh;
+  }
+  y += 10;
+  h += Ivory.fullRule(D, 612, y);
+
+  // photo grid: hero 3:2-ish at left, two stacked 3:2 photos at right; the grid grows into whatever the strip leaves
+  const g = y + 12, gh = Math.min(272, 652 - 72 - g), sh = (gh - 8)/2, sw = Math.round(sh*1.5), hw = 540 - 8 - sw;
+  h += Ivory.photo(D, '', hero, `left:36pt;top:${g}pt;width:${hw}pt;height:${gh}pt`);
+  h += Ivory.photo(D, '', s1, `left:${36+hw+8}pt;top:${g}pt;width:${sw}pt;height:${sh}pt`);
+  h += Ivory.photo(D, '', s2, `left:${36+hw+8}pt;top:${g+sh+8}pt;width:${sw}pt;height:${sh}pt`);
+  const a = g + gh + 12;
+  h += `<div class="abs display address" style="top:${a}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs place placeline" style="top:${a+34}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs factline" style="top:${a+47}pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
+  // a short description of the house fills the space above the card (10/21/2026)
+  const blurb = (C.openHouse||{}).blurb || (C.listing||{}).body || '';
+  const bl = Math.floor((640 - (a+64)) / 13.5);
+  if(blurb && bl >= 2) h += `<div class="abs body" style="left:66pt;top:${a+64}pt;width:480pt;height:${bl*13.5}pt;font-size:10pt;line-height:13.5pt;text-align:center" data-slot="oh.blurb" data-lines="${bl}" data-fill="${Math.min(3, bl)}">${esc(blurb)}</div>`;
+
+  // contact card (the one logo on the page) + fine print
+  h += Ivory.card(D, {x:36, y:652, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:56, logoH:28, gap:18, brkMin:170,
+                      top:{name:8, title:40, callLbl:52, phone:60}});
+  h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+
+  const f = Ivory.frame(D, 612, 792, h);
+  document.getElementById('pages').innerHTML = f.html;
+  Ivory.shapeLogos();
+  // hairlines run from the margins to 16 pt either side of the label
+  const lb = document.getElementById('evLabel'), m = document.createElement('span');
+  m.style.cssText = 'position:absolute;white-space:nowrap;visibility:hidden'; const cs = getComputedStyle(lb);
+  m.style.font = cs.font; m.style.letterSpacing = cs.letterSpacing; m.style.textTransform = cs.textTransform; m.textContent = lb.textContent;
+  lb.parentElement.appendChild(m); const lw = m.offsetWidth*72/96; m.remove();
+  const side = Math.max(0, (540 - lw)/2 - 16);
+  document.getElementById('hairL').style.width = side+'pt';
+  document.getElementById('hairR').style.left = (576 - side)+'pt'; document.getElementById('hairR').style.width = side+'pt';
+  window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+  // the description is an excerpt: drop whole sentences from the end until it fits its lines (never shrink the type)
+  const blEl = document.querySelector('[data-slot="oh.blurb"]');
+  if(blEl){ let sents = blEl.textContent.match(/[^.!?]+[.!?]+/g) || [blEl.textContent];
+    while(blEl.scrollHeight > blEl.clientHeight + 1 && sents.length > 1){ sents.pop(); blEl.textContent = sents.join('').trim(); }
+    if(blEl.scrollHeight > blEl.clientHeight + 1) blEl.remove();
+    else blEl.dataset.fill = Math.min(+blEl.dataset.fill, Math.round(blEl.scrollHeight / (13.5*96/72))); }
+  const cardIssues = Ivory.layoutCards();
+  window.brochureCheck = () => Ivory.check(cardIssues);
+});
+</script>
+</body>
+</html>

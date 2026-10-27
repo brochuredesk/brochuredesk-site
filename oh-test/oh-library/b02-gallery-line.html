@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Gallery Line</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Gallery Line (from reference B02). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner's B02 note: recolor it to each agent's palette and make sure there is room for the
+  contact information and the broker's logo. A quiet gallery layout: the event wording in wide serif capitals and the
+  address on paper at top, the house at 3:2 sitting half on the paper and half on a field of the agent's main color,
+  then the date and time large, a row of the listing facts and the agent card with the logo on that color.
+  Type: Spectral (headline, date), Jost (everything else).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .field{position:absolute;left:0;width:612pt;background:var(--main)}
+  .field~.on{color:var(--on-main)}
+  .label{font:500 30pt/40pt Spectral;letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .addr{font:500 14pt/18pt Jost;letter-spacing:1.2pt;text-align:center;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .date{font:500 30pt/38pt Spectral;white-space:nowrap;overflow:hidden}
+  .time{font:600 20pt/38pt Jost;text-align:right;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .ev{font:500 10.5pt/13pt Jost}
+  .rule{position:absolute;left:36pt;width:540pt;height:.8pt;background:currentColor;opacity:.35}
+  .fact{position:absolute;text-align:center}
+  .fact .v{font:500 16pt/20pt Spectral;white-space:nowrap;overflow:hidden;height:20pt;margin-top:4pt}
+  .fact .k{font:500 8.6pt/11pt Jost;letter-spacing:1.6pt;text-transform:uppercase;opacity:.8;white-space:nowrap;overflow:hidden;height:11pt}
+  .oh-agent-name{font-family:Spectral;font-weight:500}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['500 10pt Spectral', '500 10pt Jost', '600 10pt Jost', '400 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  h += `<div class="abs label" style="left:36pt;top:30pt;width:540pt;height:40pt" data-fit="30,20" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  h += `<div class="abs addr" style="left:36pt;top:74pt;width:540pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  // the field of the main color starts halfway down the photo
+  h += `<div class="field" style="top:290pt;height:502pt"></div>`;
+  h += OHL.photo(D, hero, `left:36pt;top:108pt;width:540pt;height:360pt`);
+  // date and time on one line, large
+  let y = 486;
+  h += `<div class="abs on date" style="left:36pt;top:${y}pt;width:340pt;height:38pt" data-fit="30,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs on time" style="left:376pt;top:${y}pt;width:200pt;height:38pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 46;
+  h += `<div class="on rule" style="top:${y}pt"></div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], 36, y + 12, 540, 13, 3);
+  h += ev.html;
+  // facts with line icons
+  const fy = Math.max(y + 22 + ev.h + 14, 584), cells = OHL.factCells(L), cw = 540/cells.length;
+  cells.forEach(([ic, v, kk], i) => h += `<div class="on fact" style="left:${36+i*cw}pt;top:${fy}pt;width:${cw}pt;height:62pt"><div style="width:20pt;margin:0 auto">${OHL.icon(ic, 20, 'var(--accent-on-main)')}</div><div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(kk)}</div></div>`);
+  const cy = 694;
+  h += `<div class="on rule" style="top:${cy - 10}pt"></div>`;
+  h += OHL.contact(D, {x:36, y:cy, w:540, h:66, tone:OHL.toneOn(k.main), nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:52, color:'var(--on-main)'});
+  h += `<div class="abs on fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = fy + 62 > cy - 14 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines push the facts into the agent card'}] : [];
+  return f;
+});
+</script>
+</body>
+</html>

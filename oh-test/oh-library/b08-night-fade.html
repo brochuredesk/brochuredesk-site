@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Night Fade</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Night Fade (from reference B08). Trim 612 x 792 pt. REALTOR(R) or public.
+  The house photo fades into the brand's dark field at its sides and foot (over lawn only, checked), under the event
+  wording and an accent bar with the date and time; address, three rooms and the agent below.
+  A house-cutout version was built and tested on 20 Houston listings, then taken out (10/2026): free cutout
+  tools weren't reliable enough on Houston photos (trees, shrubs, fences). Revisit when the tech gets better or cheaper;
+  see docs/context/roadmap.md.
+  Type: Archivo.
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .eyebrow{font:400 11pt/14pt Archivo;letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;color:var(--accent-on-dark)}
+  .label{font:700 34pt/42pt Archivo;letter-spacing:1pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .bar{position:absolute;left:66pt;width:480pt;height:40pt;background:var(--accent);color:var(--on-accent);display:flex;align-items:center;justify-content:center;gap:12pt;white-space:nowrap;overflow:hidden}
+  .bar .date{font:700 22pt/28pt Archivo;white-space:nowrap}
+  .bar .time{font:700 20pt/28pt Archivo;white-space:nowrap}
+  .bar i{width:1.2pt;height:20pt;background:currentColor;opacity:.6}
+  .ev{font:400 10.5pt/13pt Archivo;text-align:center;opacity:.92}
+  .addr{font:700 16pt/20pt Archivo;letter-spacing:3pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .place{font:400 9pt/12pt Archivo;letter-spacing:2.4pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
+  .hr{position:absolute;left:36pt;width:540pt;height:.8pt;background:var(--on-dark);opacity:.3}
+  .oh-agent-name{font-family:Archivo;font-weight:700}
+  .oh-agent{font-family:Archivo}
+  .fine{font:400 6.6pt/8pt Archivo;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt Archivo', '400 10pt Archivo'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D);
+  const hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => !Ivory.fullHouse(D, id)).slice(0, 3);
+  let h = '';
+  // event
+  h += `<div class="abs eyebrow" style="left:36pt;top:34pt;width:540pt;height:14pt">You're invited</div>`;
+  h += `<div class="abs label" style="left:30pt;top:52pt;width:552pt;height:42pt" data-fit="34,22" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  // date and time on one line in the bar; when they don't fit, stacked on two lines (never smaller)
+  const inner = `<span class="date" data-slot="oh.date" data-lines="1">${esc(E.long)}</span>${E.time ? `<i></i><span class="time" data-slot="oh.time" data-lines="1">${esc(E.time)}</span>` : ''}`;
+  const m = document.createElement('div'); m.className = 'bar'; m.style.cssText = 'position:absolute;visibility:hidden;width:auto;padding:0 14pt'; m.innerHTML = inner;
+  document.body.appendChild(m); const two = m.offsetWidth*72/96 > 480; m.remove();
+  const barH = two ? 64 : 40;
+  h += `<div class="bar" style="top:104pt;height:${barH}pt${two ? ';flex-direction:column;gap:0' : ''}" data-slot="oh.when" data-lines="${two ? 2 : 1}">${two ? inner.replace('<i></i>', '') : inner}</div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 66, 114 + barH, 480, 13, 2);
+  h += ev.html;
+  const top = 114 + barH + ev.h + (ev.h ? 12 : 4);
+  const ground = 540;
+  // the photo fades into the dark field at its sides and foot, over ground only; without that proof, at its foot only
+  const ph = ground + 10 - top, fr = OHL.fitHero(D, hero, 612, ph), px = (612 - fr.w)/2, side = 0.07, foot = 0.80;
+  const sides = fr.w === 612 && OHL.polyFits(D, hero, 612, fr.h, [[side,0],[1-side,0],[1-side,foot],[side,foot]]);
+  const footOk = OHL.maskFits(D, hero, fr.w, fr.h, foot);
+  h += OHL.photo(D, hero, `left:${px}pt;top:${top}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  const g = `background:linear-gradient`;
+  h += `<div class="abs" style="left:${px}pt;top:${top + fr.h*(footOk ? foot : 0.94)}pt;width:${fr.w}pt;height:${fr.h*(footOk ? 1-foot : 0.06)+1}pt;${g}(transparent, var(--dark))"></div>`;
+  if(sides) h += `<div class="abs" style="left:0;top:${top}pt;width:${612*side}pt;height:${fr.h}pt;${g}(90deg, var(--dark), transparent)"></div><div class="abs" style="left:${612*(1-side)}pt;top:${top}pt;width:${612*side+1}pt;height:${fr.h}pt;${g}(270deg, var(--dark), transparent)"></div>`;
+  // address and rooms
+  let y = ground + 18;
+  h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:20pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y+22}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city, Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  '))}</div>`;
+  y += 44;
+  const rw = (540 - 2*14)/3, rh = 692 - y;
+  rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${36 + i*(rw+14)}pt;top:${y}pt;width:${rw}pt;height:${rh}pt`));
+  const cy = 706;
+  h += OHL.contact(D, {x:36, y:cy, w:540, h:62, tone:'dark', nameSize:17, phoneSize:13, lineSize:9.5, logoW:180, logoH:50});
+  h += `<div class="abs fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = rh < 70 ? [{slot:'oh.note', kind:'overflow', detail:'the room photos are squeezed too thin'}] : [];
+  return f;
+});
+</script>
+</body>
+</html>

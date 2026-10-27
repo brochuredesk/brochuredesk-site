@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Just Listed postcards · test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<meta name="bd-root" content="/">
+<script src="/designs/jl-library/jllib.js"></script>
+<style>
+  :root{--ink:#1d1d1b;--muted:#5f5d58;--line:#e2ded6;--paper:#f6f4ef;--card:#fff;--accent:#1f4e5f;--bad:#a3332a;--ok:#2f6b3a}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Figtree,system-ui,sans-serif}
+  header{padding:18px 16px 10px;border-bottom:1px solid var(--line);background:#fff}
+  header h1{margin:0;font-size:20px;font-weight:700}
+  header p{margin:4px 0 0;color:var(--muted);font-size:13.5px}
+  main{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:calc(100vh - 70px)}
+  aside{border-right:1px solid var(--line);background:#fff;padding:14px 16px;overflow:auto;max-height:calc(100vh - 70px);position:sticky;top:0}
+  .grp{margin:0 0 14px}
+  .grp h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:600}
+  .list{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .list button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 2px;font:600 13px Figtree,sans-serif;color:var(--ink);cursor:pointer}
+  .list button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .list button.needs::after{content:"•";color:#c08a2b;margin-left:2px}
+  fieldset{border:0;padding:0;margin:0 0 14px}
+  legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+  label{display:block;font-size:13px;color:var(--muted);margin:6px 0 2px}
+  input[type=text],input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:15px Figtree,sans-serif}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;border:0;background:#fff;padding:8px;font:600 13px Figtree,sans-serif;cursor:pointer;color:var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  section.view{padding:18px 20px 40px;min-width:0}
+  .vtitle{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin:0 0 4px}
+  .vtitle h2{margin:0;font-size:22px}
+  .vtitle span{color:var(--muted);font-size:14px}
+  .note{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+  .sides{display:grid;grid-template-columns:1fr;gap:22px;max-width:1000px}
+  .side h3{margin:0 0 8px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .frame.wide{aspect-ratio:11/6}
+  .frame{position:relative;width:100%;aspect-ratio:3/2;background:#ddd;border-radius:4px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+  .frame .host{position:absolute;left:0;top:0;width:864px;height:576px;transform-origin:0 0}
+  .frame.wide .host{width:1056px}
+  .draft{background:#fff4d6;border-left:4px solid #d39b12;padding:6px 10px;font-size:13.5px;margin:0 0 12px;display:none}
+  .checks{margin:8px 0 0;font-size:13.5px}
+  .checks.ok{color:var(--ok)}
+  .checks.bad{color:var(--bad)}
+  .checks ul{margin:4px 0 0;padding-left:18px}
+  .act{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .act button{border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:7px 12px;font:600 13px Figtree,sans-serif;cursor:pointer}
+  #busy{position:fixed;right:16px;bottom:16px;background:#1d1d1b;color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;display:none}
+  #print{display:none}
+  .host [data-spot]{cursor:text}
+  .host [data-spot]:hover{outline:1.5px dashed rgba(30,110,220,.85);outline-offset:2px}
+  .host [data-spot].sel{outline:2px solid rgba(30,110,220,.95);outline-offset:2px}
+  #editor{position:fixed;right:16px;top:16px;width:300px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.18);padding:14px;display:none;z-index:20;font-size:13px}
+  #editor h4{margin:0 0 8px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  #editor textarea{width:100%;min-height:80px;box-sizing:border-box;font:14px Figtree,sans-serif;padding:6px}
+  #editor select,#editor input[type=range]{width:100%}
+  #editor .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+  #editor .lock{color:var(--muted);font-size:12.5px;margin:4px 0}
+  @media (max-width: 820px){
+    main{grid-template-columns:1fr}
+    aside{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line)}
+    .list{grid-template-columns:repeat(6,1fr)}
+    section.view{padding:16px}
+  }
+  @media print{
+    @page{size:9.25in 6.25in;margin:0}
+    body{background:#fff}
+    header,main,#busy{display:none!important}
+    #print{display:block}
+    #print .page{position:relative;width:888px;height:600px;overflow:hidden}
+    #print .page.wide{width:1080px}
+    #print .page > .jl-card{position:absolute!important;left:12px;top:12px;overflow:visible!important}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Just Listed postcards · test page</h1>
+  <p>Every approved design. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
+</header>
+<main>
+  <aside>
+    <div class="grp"><h2>Designs</h2><div class="list" id="list-main"></div></div>
+    <fieldset><legend>Card size</legend>
+      <div class="seg" id="size"><button type="button" data-v="6x9" aria-pressed="true">6 x 9</button><button type="button" data-v="6x11">6 x 11</button></div>
+    </fieldset>
+    <fieldset><legend>Agent</legend>
+      <div class="seg" id="hs"><button type="button" data-v="0" aria-pressed="true">No headshot</button><button type="button" data-v="1">Headshot</button></div>
+      <label for="f-name">Name</label><input type="text" id="f-name">
+      <label for="f-mailer">Name on mailers <span style="font-weight:400">(optional, a shorter form for postcards)</span></label><input type="text" id="f-mailer" placeholder="Same as name">
+      <div class="row2"><div><label for="f-phone">Phone</label><input type="text" id="f-phone"></div>
+      <div><label for="f-web">Website</label><input type="text" id="f-web"></div></div>
+      <label for="f-email">Email</label><input type="text" id="f-email">
+      <div class="act"><button type="button" id="longname">Try a long name</button><button type="button" id="longname2">Another long name</button><button type="button" id="reset">Back to the sample</button></div>
+    </fieldset>
+    <fieldset><legend>Listing</legend>
+      <label for="f-head">Headline</label><input type="text" id="f-head">
+      <label for="f-street">Street address</label><input type="text" id="f-street">
+      <div class="row2"><div><label for="f-city">City</label><input type="text" id="f-city"></div>
+      <div><label for="f-state">State</label><input type="text" id="f-state"></div></div>
+      <div class="row2"><div><label for="f-beds">Bedrooms</label><input type="number" id="f-beds"></div>
+      <div><label for="f-baths">Baths</label><input type="number" id="f-baths" step="0.5"></div></div>
+      <div class="row2"><div><label for="f-sqft">Square feet</label><input type="number" id="f-sqft"></div>
+      <div><label for="f-year">Year built</label><input type="number" id="f-year"></div></div>
+      <div class="row2"><div><label for="f-zip">ZIP</label><input type="text" id="f-zip"></div>
+      <div><label for="f-stories">Stories</label><input type="number" id="f-stories"></div></div>
+      <label for="f-pool">Write-up sentences <span style="font-weight:400">(one per line; the cards pick the ones that fill their lines)</span></label>
+      <textarea id="f-pool" rows="8" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:14px Figtree,sans-serif"></textarea>
+      <p class="note" style="margin:6px 0 0">Other copy on a card (bullets, captions, short write-ups) is the sample listing's. Click it on the card to change it.</p>
+    </fieldset>
+  </aside>
+  <section class="view">
+    <div class="vtitle"><h2 id="t-name"></h2><span id="t-sub"></span></div>
+    <p class="note" id="t-note"></p>
+    <p class="draft" id="t-draft">This design's 6 x 11 isn't approved yet.</p>
+    <p class="note">Click any text on a card to change its wording, font, color or size. The print checks run on your changes.</p>
+    <div class="sides">
+      <div class="side" data-side="front"><h3>Front</h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
+        <div class="act"><button type="button" data-print="front">Download print PDF (front)</button></div></div>
+      <div class="side" data-side="back"><h3>Back (mailing side) <span id="t-hs" style="text-transform:none;letter-spacing:0"></span></h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
+        <div class="act"><button type="button" data-print="back">Download print PDF (back)</button></div></div>
+    </div>
+    <div id="socials" data-set="listed"></div>
+  </section>
+</main>
+<div id="print"></div>
+<div id="editor" role="dialog" aria-label="Edit text">
+  <h4>Edit this text</h4>
+  <textarea id="e-text"></textarea><p class="lock" id="e-lock" style="display:none">This notice keeps its wording. You can still change its look.</p>
+  <label for="e-font">Font</label><select id="e-font"></select>
+  <div class="row2"><div><label for="e-color">Color</label><input type="color" id="e-color"></div>
+  <div><label for="e-size">Size <span id="e-sizev">100%</span></label><input type="range" id="e-size" min="80" max="130" step="5" value="100"></div></div>
+  <div class="act"><button type="button" id="e-apply">Apply</button><button type="button" id="e-reset">Undo my changes here</button><button type="button" id="e-close">Close</button></div>
+</div>
+<div id="busy">Drawing the cards…</div>
+<script>
+(function(){
+  const ROOT = document.querySelector('meta[name=bd-root]').content;
+  const LIB = ROOT + 'designs/jl-library/';
+  const fix = o => JSON.parse(JSON.stringify(o).replace(/"\/designs\//g, '"' + ROOT + 'designs/'));
+  const $ = id => document.getElementById(id);
+  let spec, sample, data, cur, html = {}, loadedFonts = new Set(), seq = 0;
+  const FIELDS = {name:['agent','name'], mailer:['agent','mailerName'], phone:['agent','phone'], web:['agent','web'], email:['agent','email'],
+    street:['listing','address'], city:['listing','city'], state:['listing','state'], year:['listing','yearBuilt'], beds:['listing','beds'],
+    baths:['listing','baths'], sqft:['listing','sqft'], stories:['listing','stories'], zip:['listing','zip'], head:['copy','headline']};
+  const WORDS = {
+    'name-too-long': () => 'Your name is too long for this design. Shorten your mailer name or pick another design.',
+    'missing-caption': () => 'A photo caption is missing.',
+    'overflow': c => `A line runs past its space: "${c.text}".`,
+    'text-outside-safe-area': c => `Text is too close to the edge to print safely: "${c.text}".`,
+    'text-in-mail-zone': c => `Text runs into the ${c.slot} area: "${c.text}".`,
+    'image-in-mail-zone': c => `A photo or box runs into the ${c.slot} area.`,
+    'touches-address-block': () => 'Something touches the address block.',
+    'type-too-small': c => `Type under 8 pt: "${c.text}".`,
+    'photo-under-300ppi': c => `A photo is under 300 ppi at this size (the print file enlarges it).`,
+    'roof-cut': () => 'The top of the house is cut off.',
+    'house-cut': () => 'The house doesn’t fit in its photo (the top or bottom is cut off).',
+    'text-overlap': c => `Your change to "${c.text}" runs into other text or a photo. Shorten it or make it smaller.`,
+    'missing-photo': c => `No photo for ${c.slot.replace('photo.','')}.`,
+    'copy-fit': () => 'The write-up does not fill its lines.',
+    'missing-return-address': () => 'No brokerage return address.',
+  };
+  function setIn(o, [a, b], v){ o[a] = o[a] || {}; o[a][b] = v; }
+  function getIn(o, [a, b]){ return (o[a] || {})[b]; }
+  // the write-up sentences show with the sample's numbers filled in; they keep tracking the fields until edited
+  let poolEdited = false;
+  function poolText(){ const v = JLLib.values(data); return (data.copy.pool || []).map(s => s.replace(/\{\{(\w+)\}\}/g, (m, k) => k in v ? v[k] : m)).join('\n'); }
+  function fillForm(){ for(const k in FIELDS){ const v = getIn(data, FIELDS[k]); $('f-' + k).value = v == null ? '' : v; } poolEdited = false; $('f-pool').value = poolText(); }
+  function readForm(){ for(const k in FIELDS){ let v = $('f-' + k).value.trim(); const el = $('f-' + k);
+    if(el.type === 'number') v = v === '' ? null : +v; setIn(data, FIELDS[k], v); }
+    if(poolEdited) data.copy.pool = $('f-pool').value.split('\n').map(s => s.trim()).filter(Boolean); else $('f-pool').value = poolText(); }
+  function fonts(text){
+    (text.match(/<link [^>]*fonts\.googleapis[^>]*>/g) || []).forEach(l => {
+      const href = l.match(/href="([^"]+)"/)[1].replace(/&amp;/g, '&'); if(loadedFonts.has(href)) return; loadedFonts.add(href);
+      const el = document.createElement('link'); el.rel = 'stylesheet'; el.href = href; document.head.appendChild(el); });
+  }
+  function getDesign(file){
+    if(html[file]) return Promise.resolve(html[file]);
+    return fetch(LIB + file).then(r => r.text()).then(t => { fonts(t); html[file] = t;
+      return new Promise(res => setTimeout(res, 150)).then(() => t); });
+  }
+  const size = () => $('size').querySelector('[aria-pressed="true"]').dataset.v;
+  const edits = {}, spotInfo = {};   // the agent's text changes, per card version
+  const editKey = () => cur.id;
+  const myEdits = () => edits[editKey()] || (edits[editKey()] = {});
+  function scaleFrames(){ document.querySelectorAll('.frame').forEach(f => { const h = f.querySelector('.host'); h.style.transform = `scale(${f.clientWidth / (size() === '6x11' ? 1056 : 864)})`; }); }
+  window.addEventListener('resize', scaleFrames);
+  function showChecks(box, r){
+    const long = r.issues.some(c => c.kind === 'name-too-long');
+    const bad = r.issues.filter(c => WORDS[c.kind] && c.kind !== 'photo-under-300ppi' && !(long && c.kind !== 'name-too-long' && c.text && /overflow|safe-area|mail-zone/.test(c.kind)));
+    box.className = 'checks ' + (bad.length ? 'bad' : 'ok');
+    box.innerHTML = bad.length ? '<b>Needs attention before printing:</b><ul>' + bad.map(c => '<li>' + WORDS[c.kind](c).replace(/</g,'&lt;') + '</li>').join('') + '</ul>'
+                               : 'Print checks pass.';
+  }
+  function render(){
+    if(!cur) return; const my = ++seq; $('busy').style.display = 'block';
+    readForm();
+    const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
+    d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
+    $('t-hs').textContent = d.agent.headshot ? '· with headshot' : '· no headshot';
+    $('t-draft').style.display = size() === '6x11' && (cur.no11 || /[?&]all=1/.test(location.search)) ? 'block' : 'none';
+    getDesign(cur.file).then(t => Promise.all(['front','back'].map(side => {
+      const el = document.querySelector(`.side[data-side="${side}"]`), host = el.querySelector('.host');
+      el.querySelector('.frame').classList.toggle('wide', size() === '6x11');
+      host.style.transform = 'none';
+      return JLLib.mount(host, t, d, {side, size:size()}).then(r => { if(my !== seq) return; spotInfo[side] = r; showChecks(el.querySelector('.checks'), r); });
+    }))).then(() => { if(my === seq){ scaleFrames(); $('busy').style.display = 'none'; } })
+      .catch(e => { $('busy').textContent = 'Something went wrong: ' + e.message; });
+  }
+  function pick(id){
+    cur = spec.designs.find(x => x.id === id);
+    const b11 = $('size').querySelector('[data-v="6x11"]');   // a design whose 6 x 11 isn't approved shows only its 6 x 9
+    if(b11){ b11.hidden = !!cur.no11; if(cur.no11 && size() === '6x11') $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === '6x9'))); }
+    document.querySelectorAll('.list button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+    $('t-name').textContent = cur.id + (cur.title ? ' · ' + cur.title : '');
+    $('t-sub').textContent = ''; $('t-note').textContent = '';
+    try{ history.replaceState(null, '', '#' + id); }catch(e){}
+    render();
+  }
+  function printSide(side){
+    $('busy').style.display = 'block'; $('busy').textContent = 'Getting the print file ready…';
+    readForm(); const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
+    d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
+    const wide = size() === '6x11', box = $('print'); box.innerHTML = '<div class="page' + (wide ? ' wide' : '') + '"></div>';
+    let ps = document.getElementById('pagesize'); if(!ps){ ps = document.createElement('style'); ps.id = 'pagesize'; document.head.appendChild(ps); }
+    ps.textContent = `@media print{@page{size:${wide ? '11.25in' : '9.25in'} 6.25in;margin:0}}`;
+    box.style.display = 'block'; box.style.position = 'absolute'; box.style.left = '-10000px';
+    JLLib.mount(box.firstChild, html[cur.file], d, {side, print:true, size:size()}).then(r => {
+      box.firstChild.style.background = getComputedStyle(r.card).backgroundColor;
+      box.style.cssText = ''; $('busy').style.display = 'none'; $('busy').textContent = 'Drawing the cards…';
+      document.title = `${cur.id} ${side} - ${d.listing.address}`;
+      window.print();
+      document.title = 'Just Listed postcards · test';
+    });
+  }
+  document.querySelectorAll('[data-print]').forEach(b => b.onclick = () => printSide(b.dataset.print));
+  // click any text on a card to change its wording, font, color or size (print checks still run)
+  let editing = null;
+  const hex = c => { const m = (c || '').match(/\d+/g); return m ? '#' + m.slice(0, 3).map(x => (+x).toString(16).padStart(2, '0')).join('') : '#000000'; };
+  document.querySelectorAll('.side .host').forEach(host => host.addEventListener('click', e => {
+    const el = e.target.closest('[data-spot]'); if(!el) return; const side = el.dataset.spot.split(':')[0], r = spotInfo[side]; if(!r) return;
+    const sp = r.spots.find(x => x.id === el.dataset.spot); if(!sp) return;
+    document.querySelectorAll('.host .sel').forEach(x => x.classList.remove('sel')); el.classList.add('sel');
+    const ed = myEdits()[sp.id] || {}; editing = sp.id;
+    $('e-text').value = ed.text != null ? ed.text : sp.text; $('e-text').disabled = sp.locked; $('e-lock').style.display = sp.locked ? 'block' : 'none';
+    $('e-font').innerHTML = '<option value="">Design’s font (' + sp.font + ')</option>' + r.fonts.map(f => `<option${ed.font === f ? ' selected' : ''}>${f}</option>`).join('');
+    $('e-color').value = ed.color || hex(sp.color); $('e-size').value = Math.round((ed.size || 1) * 100); $('e-sizev').textContent = $('e-size').value + '%';
+    $('editor').style.display = 'block';
+  }));
+  $('e-size').oninput = () => { $('e-sizev').textContent = $('e-size').value + '%'; };
+  $('e-apply').onclick = () => { if(!editing) return; const side = editing.split(':')[0], sp = spotInfo[side].spots.find(x => x.id === editing), ed = {};
+    if(!sp.locked && $('e-text').value !== sp.text) ed.text = $('e-text').value;
+    if($('e-font').value) ed.font = $('e-font').value;
+    if($('e-color').value !== hex(sp.color) || (myEdits()[editing] || {}).color) ed.color = $('e-color').value;
+    if(+$('e-size').value !== 100) ed.size = +$('e-size').value / 100;
+    const prev = myEdits()[editing] || {}; if(prev.text != null && ed.text == null && $('e-text').value === sp.text) ed.text = prev.text;
+    if(Object.keys(ed).length) myEdits()[editing] = ed; else delete myEdits()[editing]; render(); };
+  $('e-reset').onclick = () => { if(editing) delete myEdits()[editing]; $('editor').style.display = 'none'; editing = null; render(); };
+  $('e-close').onclick = () => { $('editor').style.display = 'none'; editing = null; document.querySelectorAll('.host .sel').forEach(x => x.classList.remove('sel')); };
+  $('size').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('size').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
+  $('hs').onclick = e => { const b = e.target.closest('button'); if(!b) return; $('hs').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); render(); };
+  $('longname').onclick = () => { $('f-mailer').value = ''; $('f-name').value = 'Alexandra Montgomery-Castellanos'; $('f-email').value = 'alexandra@anybrokerage.com'; $('f-web').value = 'alexandramc.com'; render(); };
+  $('longname2').onclick = () => { $('f-mailer').value = ''; $('f-name').value = 'Christopher Vanderbilt'; $('f-email').value = 'chris@anybrokerage.com'; $('f-web').value = 'christophervanderbilt.com'; render(); };
+  $('f-pool').addEventListener('input', () => { poolEdited = true; });
+  $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
+  let t; document.querySelectorAll('aside input, aside textarea').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
+  Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
+    const all = /[?&]all=1/.test(location.search), ok = (id, sz) => { const ps = s.pieces.filter(p => p.design === id && p.size === sz); return ps.length && ps.every(p => p.approved); };
+    if(!all) s.designs = s.designs.filter(d => ok(d.id, '6x9'));
+    if(!all && !s.designs.some(d => ok(d.id, '6x11'))){ const b = $('size').querySelector('[data-v="6x11"]'); if(b) b.remove(); }
+    else if(!all) s.designs.forEach(d => { d.no11 = !ok(d.id, '6x11'); });
+    spec = s; sample = fix(smp); data = JSON.parse(JSON.stringify(sample)); fillForm();
+    for(const d of spec.designs){ const b = document.createElement('button'); b.type = 'button'; b.dataset.id = d.id; b.textContent = d.id.replace('M','');
+      b.title = d.id + (d.title ? ' · ' + d.title : ''); b.onclick = () => pick(d.id);
+      $('list-' + d.group).appendChild(b); }
+    const h = decodeURIComponent(location.hash.slice(1));
+    pick(spec.designs.some(d => d.id === h) ? h : spec.designs[0].id);
+  });
+})();
+</script>
+<script src="/preview/socials.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Angle</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Angle (from reference P17). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner loves the angle and shoots his listings at angles. A corner view of the house fills the top; its bottom edge
+  is cut on a diagonal that only ever crosses lawn (the mask check proves the house stays whole). The brand's main
+  color takes the rest: a tall condensed headline, an accent ribbon set on the same angle carrying the writer's
+  kicker (or the facts), the date and time big, and a light band with the address and the agent.
+  Type: Asap Condensed (headline, date, address), Outfit (details).
+-->
+<style>
+  .sheet{background:var(--main);color:var(--on-main)}
+  .hl{font:700 86pt/74pt 'Asap Condensed';text-transform:uppercase;white-space:nowrap;overflow:hidden;letter-spacing:.5pt}
+  .rib{position:absolute;background:var(--accent);color:var(--on-accent);transform-origin:0 0;display:flex;align-items:center;padding-left:22pt}
+  .rib span{display:block;font:600 13pt/16pt Outfit;letter-spacing:2.2pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .date{font:700 36pt/42pt 'Asap Condensed';text-transform:uppercase;white-space:nowrap;overflow:hidden;letter-spacing:.4pt}
+  .time{font:500 24pt/29pt 'Asap Condensed';text-transform:uppercase;color:var(--accent-on-main);white-space:nowrap;overflow:hidden;letter-spacing:1pt}
+  .ev{font:400 10pt/13pt Outfit;opacity:.92}
+  .band{position:absolute;left:0;width:612pt;background:var(--paper);color:var(--ink)}
+  .addr{font:700 24pt/28pt 'Asap Condensed';color:var(--main-on-paper);white-space:nowrap;overflow:hidden}
+  .band~.place,.band~.crow,.band~.fine{color:var(--ink)}
+  .facts{font:600 10.5pt/15pt Outfit;letter-spacing:1.8pt;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:hidden}
+  .place{font:400 9.5pt/12pt Outfit;letter-spacing:1.4pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .crow{font:400 10pt/14pt Outfit;white-space:nowrap;overflow:hidden}
+  .crow b{font:600 13pt/14pt Outfit;margin-right:10pt}
+  .crow i{font-style:normal;display:inline-block;width:1pt;height:10pt;background:currentColor;opacity:.35;margin:0 9pt;vertical-align:-1pt}
+  .fine{font:400 6.6pt/8pt Outfit;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Asap Condensed"', '500 10pt "Asap Condensed"', '400 10pt Outfit', '600 10pt Outfit'], D => {
+  const esc = Ivory.esc, L = D.listing, A = D.agent || {}, b = D.brand || {}, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'angled');
+  let h = '';
+  // the house; the diagonal runs from 100% height at left to 78% at right, so 78% down is always clear
+  const evNeed = [E.note, E.refreshments].filter(Boolean).reduce((a,t)=>a + Ivory.linesNeeded('ev', t, 144, 13)*13 + 4, 0);
+  // a house that sits low in its photo keeps its room; the headline lines get shorter instead
+  const base = 376 - Math.min(56, Math.max(0, evNeed - 22)), ph = Math.max(OHL.minFrameH(D, hero, 612, 420), base), cut = 0.78;
+  const lines = OHL.labelLines(E.label);
+  const angled = OHL.maskFits(D, hero, 612, ph, cut);   // no proof the diagonal misses the house: a straight edge
+  h += angled ? OHL.photo(D, hero, `left:0;top:0;width:612pt;height:${ph}pt;clip-path:polygon(0 0,100% 0,100% ${cut*100}%,0 100%)`).replace('class="photo ', `data-clear="0,0,1,${cut}" class="photo `)
+              : OHL.photo(D, hero, `left:0;top:0;width:612pt;height:${ph}pt`);
+  const ang = (angled ? 1 : 0.5) * Math.atan2(ph*(1-cut), 612) * 180/Math.PI;   // the diagonal's angle, reused by the ribbon
+
+  // headline
+  const LH = Math.max(50, 74 - (ph - base)/lines.length), ht = ph + 14 + (2 - lines.length)*37;
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:32pt;top:${ht + i*LH}pt;width:330pt;height:${LH+4}pt;line-height:${LH}pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  // ribbon on the diagonal's angle, running off the right edge
+  const rib = String((C.listing||{}).kicker || '').trim() || Ivory.factsShort(L).replace(/  \/  /g, '  ·  ');
+  h += `<div class="rib" style="left:330pt;top:${ph - 2}pt;width:320pt;height:34pt;transform:rotate(${-ang}deg)"><span data-slot="kicker" data-lines="1" style="width:270pt;height:16pt">${esc(rib)}</span></div>`;
+
+  // date and time
+  let y = ht + lines.length*LH + 14;
+  h += `<div class="abs" style="left:36pt;top:${y}pt;width:540pt;height:1pt;background:var(--on-main);opacity:.35"></div>`;
+  y += 14;
+  h += `<div class="abs date" style="left:36pt;top:${y}pt;width:380pt;height:42pt" data-fit="36,26" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:36pt;top:${y+42}pt;width:380pt;height:29pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  // facts stacked at right, the event lines under them
+  // the facts column is extra: it goes when the event lines need its room
+  let fl = Ivory.facts(L).map(t => t.replace(' square feet', ' sq ft'));
+  if(y + 14 + fl.length*14 + evNeed > 654) fl = [];
+  if(fl.length) h += `<div class="abs" style="left:424pt;top:${y+4}pt;width:.9pt;height:${fl.length*14+2}pt;background:var(--accent-on-main)"></div>`;
+  fl.forEach((t, i) => h += `<div class="abs facts" style="left:432pt;top:${y+4+i*14}pt;width:144pt;height:15pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 432, y + 8 + (fl.length ? fl.length*14 + 6 : 0), 144, 13, 4, 'text-align:right');
+  h += ev.html;
+  const issues = (y + 14 + fl.length*14 + ev.h > 654) ? [{slot:'oh.note', kind:'overflow', detail:'event lines run into the address band'}] : [];
+
+  // address and agent band (the one logo)
+  const by = 660;
+  h += `<div class="band" style="top:${by}pt;height:${792-by}pt"></div>`;
+  h += `<div class="abs addr" style="left:36pt;top:${by+10}pt;width:330pt;height:28pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${by+38}pt;width:330pt;height:12pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += OHL.contact(D, {x:36, y:by+54, w:540, h:60, tone:'light', nameSize:18, logoW:176, logoH:46, nameFont:"'Asap Condensed'", nameWeight:700, bodyFont:'Outfit'});
+  h += `<div class="abs fine" style="left:36pt;top:${by+118}pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => {
+    const els = [...document.querySelectorAll('.hl')];
+    const s = Math.min(...els.map(el => OHL.fit(el, 86, 44)));
+    els.forEach(el => el.style.fontSize = s+'pt');
+  };
+  return f;
+});
+</script>
+</body>
+</html>

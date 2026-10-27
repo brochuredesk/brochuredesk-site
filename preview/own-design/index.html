@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Want your own design? | BrochureDesk</title>
+<meta name="description" content="We'll build a full matching set around your brand and keep it in your account.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;1,6..96,400&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root{
+  --marble:#ECECE9; --paper:#FBFBF9; --ink:#1E2226; --slate:#4A5157; --emerald:#1F4D3F; --brass:#9C7B45;
+  --line:#D5D6D1;
+  --display:"Bodoni Moda", Georgia, "Times New Roman", serif;
+  --body:"Figtree", system-ui, -apple-system, sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--marble);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+.in{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:clamp(36px,5vw,56px);line-height:1.02}
+h2{font-size:clamp(28px,3.2vw,40px);line-height:1.05}
+p{margin:0}
+a{color:var(--emerald)}
+:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}
+header.top{position:sticky;top:0;z-index:5;background:rgba(236,236,233,.94);backdrop-filter:saturate(1.2);padding-top:env(safe-area-inset-top,0px)}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-block:16px}
+.brand{font-family:var(--display);font-size:22px;color:var(--ink);text-decoration:none}
+.nav a.back{font-size:15px;color:var(--ink);text-decoration:none}
+.intro{display:grid;gap:12px;padding-block:48px 28px;max-width:62ch}
+.intro p{color:var(--slate);font-size:18px}
+section.s{padding-block:12px 72px}
+section.how{background:var(--paper);border-block:1px solid var(--line);padding-block:56px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;counter-reset:st;list-style:none;margin:28px 0 0;padding:0}
+@media (max-width:760px){.steps{grid-template-columns:minmax(0,1fr)}}
+.steps li{display:grid;gap:10px;align-content:start;border-top:1px solid var(--ink);padding-top:16px;counter-increment:st;font-size:16px;color:var(--slate)}
+.steps li::before{content:counter(st);font-family:var(--display);font-size:34px;line-height:1;color:var(--brass)}
+footer{border-top:1px solid var(--line);padding-block:34px 44px;font-size:14px;color:var(--slate)}
+footer .in{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in nav">
+    <a class="brand" href="/preview/">BrochureDesk</a>
+    <a class="back" href="/preview/">Back to the home page</a>
+  </div>
+</header>
+
+<main>
+  <div class="in">
+    <div class="intro">
+      <h1>Want your own design?</h1>
+      <p>We'll build a full matching set around your brand and keep it in your account.</p>
+    </div>
+  </div>
+  <section class="s"><div class="in"><div id="od-root"></div></div></section>
+  <section class="how">
+    <div class="in">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li>Send your logo and a piece or two you like.</li>
+        <li>See your fold-over in 2 business days.</li>
+        <li>Approve it, and the rest of your set follows within 3 business days.</li>
+        <li>Approve the set, then pay. It's in your account for every listing after.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="in">
+    <span>© 2026 BrochureDesk</span>
+    <span>support@brochuredesk.com</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/preview/own-design.js?v=1"></script>
+<script>
+(async () => {
+  const qs = new URLSearchParams(location.search);
+  const as = qs.get('as');
+  const mode = as === 'agent' ? 'agent' : as === 'broker' ? 'broker' : 'public';
+  const ctx = { mode };
+  // If someone is signed in here, pass their session along. Nothing else is read.
+  try {
+    if (window.supabase) {
+      const sb = window.supabase.createClient('https://depwvwewbmxspoxidxrx.supabase.co', 'sb_publishable_mF60NaxAKLQV_pDLBoR2og_PzJ9fxxH');
+      const { data } = await sb.auth.getSession();
+      const s = data && data.session;
+      if (s) {
+        ctx.accessToken = s.access_token;
+        const email = s.user && s.user.email;
+        if (email) ctx.person = { name: '', preferred: '', email, brokerage: '' };
+      }
+    }
+  } catch (e) { /* signed out is fine */ }
+  // With an email but no name, the form still asks for the name and fills in the email.
+  window.OwnDesign.mount(document.getElementById('od-root'), ctx);
+})();
+</script>
+</body>
+</html>

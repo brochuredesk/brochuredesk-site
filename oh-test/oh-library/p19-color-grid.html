@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Color Grid</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Color Grid (from reference P19). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: clean, neat and straightforward. Blocks of the agent's main color give a plain photo grid one structure: the
+  event wording and the date and time in two header blocks, the house and four rooms in a grid, and a features block
+  with the listing facts. No price. Agent and logo along the foot.
+  Type: Schibsted Grotesk.
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .blk{position:absolute;background:var(--main)}
+  .on{color:var(--on-main)}
+  .hl{font:700 30pt/33pt 'Schibsted Grotesk';white-space:nowrap;overflow:hidden}
+  .date{font:700 20pt/25pt 'Schibsted Grotesk';text-align:right;white-space:nowrap;overflow:hidden}
+  .time{font:500 18pt/23pt 'Schibsted Grotesk';text-align:right;white-space:nowrap;overflow:hidden}
+  .addr{font:500 10.5pt/14pt 'Schibsted Grotesk';text-align:right;white-space:nowrap;overflow:hidden}
+  .k{font:700 10pt/13pt 'Schibsted Grotesk';letter-spacing:2.4pt;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .f{font:500 11pt/16pt 'Schibsted Grotesk';text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10pt/13pt 'Schibsted Grotesk'}
+  .oh-agent-name{font-family:'Schibsted Grotesk';font-weight:700}
+  .oh-agent{font-family:'Schibsted Grotesk'}
+  .fine{font:400 6.6pt/8pt 'Schibsted Grotesk';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Schibsted Grotesk"', '500 10pt "Schibsted Grotesk"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 4);
+  const X = 24, G = 8, W = 612 - 2*X, HW = (W - G)/2;
+  let h = '';
+  // two header blocks
+  const hh = 104;
+  h += `<div class="blk" style="left:${X}pt;top:${X}pt;width:${HW}pt;height:${hh}pt"></div><div class="blk" style="left:${X+HW+G}pt;top:${X}pt;width:${HW}pt;height:${hh}pt"></div>`;
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs on hl" style="left:${X+16}pt;top:${X + 16 + i*34}pt;width:${HW-28}pt;height:36pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  const rx = X + HW + G + 12, rw = HW - 26;
+  h += `<div class="abs on date" style="left:${rx}pt;top:${X+12}pt;width:${rw}pt;height:25pt" data-fit="20,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs on time" style="left:${rx}pt;top:${X+38}pt;width:${rw}pt;height:23pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  h += `<div class="abs on addr" style="left:${rx}pt;top:${X+64}pt;width:${rw}pt;height:14pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs on addr" style="left:${rx}pt;top:${X+79}pt;width:${rw}pt;height:14pt;opacity:.9" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', '))}</div>`;
+  // grid: house full width, then rooms 2 x 2 with the features block in the last cell
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, 0, W, 13, 2);
+  const gy = X + hh + G, bottom = 690 - (ev.h ? ev.h + 10 : 0);
+  const rowH = 128, houseH = bottom - gy - 2*(rowH + G);
+  const fr = OHL.fitHero(D, hero, W, houseH);
+  if(fr.w < W) h += `<div class="blk" style="left:${X}pt;top:${gy}pt;width:${W}pt;height:${houseH}pt;opacity:.12"></div>`;
+  h += OHL.photo(D, hero, `left:${X + (W - fr.w)/2}pt;top:${gy}pt;width:${fr.w}pt;height:${houseH}pt`);
+  const r1 = gy + houseH + G, r2 = r1 + rowH + G;
+  [[X, r1], [X+HW+G, r1], [X, r2]].forEach(([x, y], i) => { if(rooms[i]) h += OHL.photo(D, rooms[i], `left:${x}pt;top:${y}pt;width:${HW}pt;height:${rowH}pt`); });
+  h += `<div class="blk" style="left:${X+HW+G}pt;top:${r2}pt;width:${HW}pt;height:${rowH}pt"></div>`;
+  h += `<div class="abs on k" style="left:${X+HW+G}pt;top:${r2+16}pt;width:${HW}pt;height:13pt">Features</div>`;
+  const facts = [...Ivory.facts(L), L.neighborhood && `In ${L.neighborhood}`].filter(Boolean).slice(0, 5);
+  facts.forEach((t, i) => h += `<div class="abs on f" style="left:${X+HW+G+10}pt;top:${r2 + 36 + i*16}pt;width:${HW-20}pt;height:16pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  if(ev.h) h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + r2 + rowH + 10}pt`);
+  const issues = houseH < 150 ? [{slot:'oh.note', kind:'overflow', detail:'the house photo is squeezed too small'}] : [];
+  h += OHL.contact(D, {x:X, y:702, w:W, h:62, tone:'light', nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 30, 18, X + (lines.length > 1 ? 16 : 32), 1.08);
+  return f;
+});
+</script>
+</body>
+</html>

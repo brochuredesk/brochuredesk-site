@@ -67,15 +67,16 @@
             openHouse: null, mailVendor: null, photos: P, companion: {fineprint: E.FINE_PRINT}, copy: E.pendingCopy(L, ids), copyPending: true};
   }
 
-  // the set, in the same groups the public preview shows
+  // the set, in the same groups the public preview's try-it set shows
   function setMarkup(spec){
     const fold = spec.pieces.find(p => p.id === 'foldover');
     const panels = fold && fold.panels ? fold.panels : [{id: 'front', label: 'Front'}, {id: 'back', label: 'Back'}, {id: 'top', label: 'Inside, top'}, {id: 'bottom', label: 'Inside, bottom'}];
     const fig = (piece, label, panel) => `<figure><div class="sheet" data-piece="${piece}"${panel ? ` data-panel="${panel}"` : ''} data-label="${esc(label)}"></div><figcaption>${esc(label)}</figcaption></figure>`;
     return `<div class="fl-set">
       <h3>11 x 17 fold-over brochure</h3><div class="fl-grid two${fold && fold.panels ? ' portrait' : ''}">${panels.map(x => fig('foldover', x.label, x.id)).join('')}</div>
-      <h3>Flyers, 8.5 x 11</h3><div class="fl-grid three">${fig('listing-flyer', 'Listing')}${fig('just-listed-flyer', 'Just Listed')}${fig('open-house-flyer', 'Open House')}</div>
-      <h3>Just Listed postcard</h3><div class="fl-grid two">${fig('postcard-6x11-front', '6 x 11, front')}${fig('postcard-6x11-back', '6 x 11, back')}${fig('postcard-6x9-front', '6 x 9, front')}${fig('postcard-6x9-back', '6 x 9, back')}</div></div>`;
+      <h3>Open House flyer, 8.5 x 11</h3><div class="fl-grid three">${fig('open-house-v1', 'Open House. You set the date and time later.')}</div>
+      <h3>Just Listed postcard</h3><div class="fl-grid two">${fig('postcard-6x11-front', '6 x 11, front')}${fig('postcard-6x11-back', '6 x 11, back')}${fig('postcard-6x9-front', '6 x 9, front')}${fig('postcard-6x9-back', '6 x 9, back')}</div>
+      <h3>Just Sold postcard</h3><div class="fl-grid two">${fig('just-sold-6x11-front', '6 x 11, front. Yours to pick up after the sale.')}${fig('just-sold-6x11-back', '6 x 11, back')}${fig('just-sold-6x9-front', '6 x 9, front')}${fig('just-sold-6x9-back', '6 x 9, back')}</div></div>`;
   }
   async function drawSet(box, design, data){
     const spec = await E.pieces(design.id);

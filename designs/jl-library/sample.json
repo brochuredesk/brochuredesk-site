@@ -1,0 +1,139 @@
+{
+ "brand": {
+  "brokerage": "Any Brokerage",
+  "logo": "/designs/samples/larkspur/AnyBrokerage_black.png",
+  "logoOnDark": "/designs/samples/larkspur/AnyBrokerage_gold-on-dark.png",
+  "logoKnockout": "/designs/samples/larkspur/AnyBrokerage_white.png",
+  "returnAddress": [
+   "1200 Heights Blvd",
+   "Houston, TX 77008"
+  ],
+  "logoAccent": "/designs/samples/larkspur/AnyBrokerage_gold.png"
+ },
+ "agent": {
+  "name": "Jordan Reyes",
+  "designation": "REALTOR\u00ae",
+  "phone": "832.555.0188",
+  "email": "jordan@anybrokerage.com",
+  "web": "jordanreyes.com",
+  "headshot": null
+ },
+ "listing": {
+  "address": "2614 Calder Street",
+  "city": "Houston",
+  "state": "Texas",
+  "zip": "77023",
+  "beds": 3,
+  "baths": 2,
+  "yearBuilt": 1940,
+  "stories": 1,
+  "sqft": 1385
+ },
+ "copy": {
+  "headline": "Just Listed",
+  "pool": [
+   "This {{yearBuilt}} {{storiesW}}-story has a new roof, siding, wiring and plumbing.",
+   "The house has {{bedsW}} bedrooms and {{bathsW}} full baths in {{sqft}} square feet.",
+   "The kitchen has white uppers, dark lowers, marble-look counters and stainless appliances.",
+   "A bar seats three and opens to the dining table.",
+   "Living and dining share one open room.",
+   "The breakfast nook has windows on two sides.",
+   "The hall bath has a walk-in shower and a lit mirror.",
+   "The third bedroom has room for a desk.",
+   "The primary bedroom has a vaulted ceiling and a double-door closet.",
+   "Out back is a covered patio."
+  ],
+  "captions": {
+   "kitchen2": [
+    "The kitchen bar seats three and opens to the round dining table, with pendant lights hanging over both.",
+    "A bar that seats three opens to the round dining table, and pendant lights hang over the bar and the table.",
+    "The kitchen bar seats three and looks over the dining table, with pendant lights above the bar and table.",
+    "The kitchen bar seats three and opens to the dining table under pendant lights.",
+    "The bar seats three and opens to the dining table and its pendant lights.",
+    "The kitchen bar seats three, with pendant lights over the dining table beside it.",
+    "A bar that seats three opens to the dining table, lit by a row of pendants."
+   ],
+   "primary": [
+    "The primary bedroom has a vaulted ceiling and a ceiling fan, with a wide double-door closet along one wall.",
+    "The primary bedroom has a vaulted ceiling with a ceiling fan, and a double-door closet runs along one wall.",
+    "Under a vaulted ceiling, the primary bedroom has a ceiling fan and a wide double-door closet on one wall.",
+    "The primary bedroom has a vaulted ceiling, a ceiling fan and a double-door closet.",
+    "The primary bedroom has a vaulted ceiling and a double-door closet.",
+    "The vaulted primary bedroom has a ceiling fan and a double-door closet.",
+    "The primary bedroom has a vaulted ceiling, a fan and a wide double-door closet."
+   ]
+  }
+ },
+ "photos": {
+  "front": {
+   "src": "/designs/samples/larkspur/front.jpg",
+   "tags": "front exterior, 1940 bungalow, new siding",
+   "house": {
+    "left": 0.12,
+    "top": 0.045,
+    "right": 0.9,
+    "bottom": 0.73
+   }
+  },
+  "kitchen": {
+   "src": "/designs/samples/larkspur/kitchen.jpg",
+   "tags": "kitchen, new cabinets"
+  },
+  "living": {
+   "src": "/designs/samples/larkspur/living.jpg",
+   "tags": "living room, open to dining"
+  },
+  "dining": {
+   "src": "/designs/samples/larkspur/dining.jpg",
+   "tags": "dining area"
+  },
+  "nook": {
+   "src": "/designs/samples/larkspur/nook.jpg",
+   "tags": "breakfast nook"
+  },
+  "primary": {
+   "src": "/designs/samples/larkspur/primary.jpg",
+   "tags": "primary bedroom"
+  },
+  "study": {
+   "src": "/designs/samples/larkspur/study.jpg",
+   "tags": "bedroom three"
+  },
+  "kitchen2": {
+   "src": "/designs/samples/larkspur/kitchen2.jpg",
+   "tags": "kitchen bar seating"
+  },
+  "family": {
+   "src": "/designs/samples/larkspur/family.jpg",
+   "tags": "front exterior, side angle",
+   "house": {
+    "left": 0.19,
+    "top": 0.2,
+    "right": 0.84,
+    "bottom": 0.67
+   }
+  },
+  "hall": {
+   "src": "/designs/samples/larkspur/hall.jpg",
+   "tags": "entry"
+  },
+  "bedroom2": {
+   "src": "/designs/samples/larkspur/bedroom2.jpg",
+   "tags": "bedroom two"
+  },
+  "office": {
+   "src": "/designs/samples/larkspur/office.jpg",
+   "tags": "primary bath"
+  },
+  "lawn": {
+   "src": "/designs/samples/larkspur/lawn.jpg",
+   "tags": "backyard",
+   "house": {
+    "left": 0.0,
+    "top": 0.29,
+    "right": 1.0,
+    "bottom": 0.7
+   }
+  }
+ }
+}

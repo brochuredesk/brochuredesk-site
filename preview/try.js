@@ -165,7 +165,9 @@
     const fit = $('#try-fit'); if(!fit) return;
     const frames = [...out.querySelectorAll('iframe')];
     let long = 0;
-    for(const f of frames){ try { const w = f.contentWindow; if(w.brochureCheck) long += w.brochureCheck().filter(c => c.kind === 'overflow').length; } catch(e) {} }
+    // each fold-over panel draws the whole piece with the other panels hidden; count only what's on the panel shown
+    const shown = (doc, slot) => { const el = doc.querySelector(`[data-slot="${CSS.escape(slot || '')}"]`) || (slot === 'contact-card' && doc.querySelector('.card')); return !el || el.getClientRects().length > 0; };
+    for(const f of frames){ try { const w = f.contentWindow; if(w.brochureCheck) long += w.brochureCheck().filter(c => c.kind === 'overflow' && shown(f.contentDocument, c.slot)).length; } catch(e) {} }
     const changed = Object.values(fonts).some(Boolean);
     fit.textContent = !changed ? 'These are the design\'s original fonts.' : long ? 'With these fonts some lines run long. Before your proof, our writer shortens them so everything fits.' : 'Everything still fits with these fonts.';
   }

@@ -206,10 +206,9 @@
   let M, urls = {}, state = 'pending', current = 'foldover', cardSize = '6x11';
   const tabs = [
     {key:'foldover', label:'Fold-over brochure', sz:'11 x 17', parts:['foldover']},
-    {key:'listing', label:'Listing flyer', sz:'8.5 x 11', parts:['listing-flyer']},
-    {key:'justlisted', label:'Just Listed flyer', sz:'8.5 x 11', parts:['just-listed-flyer']},
-    {key:'openhouse', label:'Open House flyer', sz:'8.5 x 11', parts:['open-house-flyer']},
-    {key:'postcard', label:'Just Listed postcard', sz:'6 x 11 or 6 x 9', parts:['postcard-6x11-front','postcard-6x11-back','postcard-6x9-front','postcard-6x9-back']}
+    {key:'openhouse', label:'Open House flyer', sz:'8.5 x 11', parts:['open-house-v1']},
+    {key:'postcard', label:'Just Listed postcard', sz:'6 x 11 or 6 x 9', parts:['postcard-6x11-front','postcard-6x11-back','postcard-6x9-front','postcard-6x9-back'], prefix:'postcard'},
+    {key:'sold', label:'Just Sold postcard', sz:'6 x 11 or 6 x 9', parts:['just-sold-6x11-front','just-sold-6x11-back','just-sold-6x9-front','just-sold-6x9-back'], prefix:'just-sold'}
   ];
   const panelNames = {'panel-1-front':'Front cover','panel-2-top':'Inside, top','panel-3-bottom':'Inside, bottom','panel-4-back':'Back cover'};
 
@@ -223,7 +222,9 @@
     (signed||[]).forEach(s => { if(s.signedUrl) urls[s.path] = s.signedUrl; });
     $('title').textContent = `${M.design} design set`;
     $('sub').textContent = `Sample listing ${M.address} for ${M.agent}, ${M.brokerage}. Switch between the preview an agent sees first and the finished copy.`;
-    $('tabs').innerHTML = tabs.map(t => `<button class="tab" role="tab" data-key="${t.key}">${t.label}<span class="sz">${t.sz}</span></button>`).join('');
+    // a set uploaded before a piece existed has no tab for it
+    const have = new Set(M.pieces.map(p => p.id));
+    $('tabs').innerHTML = tabs.filter(t => t.parts.every(id => have.has(id))).map(t => `<button class="tab" role="tab" data-key="${t.key}">${t.label}<span class="sz">${t.sz}</span></button>`).join('');
     $('tabs').onclick = e => { const b = e.target.closest('.tab'); if(b){ current = b.dataset.key; draw(); } };
     show('gate', false); show('app', true); draw();
   }
@@ -235,7 +236,7 @@
     $('pieceTitle').textContent = t.label;
     const issues = t.parts.reduce((n,id) => n + (P[id] ? P[id].issues : 0), 0);
     let tools = `<div class="seg" role="group" aria-label="Copy"><button data-s="pending" aria-pressed="${state==='pending'}">Preview</button><button data-s="final" aria-pressed="${state==='final'}">With copy</button></div>`;
-    if(current === 'postcard') tools += `<div class="seg" role="group" aria-label="Postcard size"><button data-z="6x11" aria-pressed="${cardSize==='6x11'}">6 x 11</button><button data-z="6x9" aria-pressed="${cardSize==='6x9'}">6 x 9</button></div>`;
+    if(t.prefix) tools += `<div class="seg" role="group" aria-label="Postcard size"><button data-z="6x11" aria-pressed="${cardSize==='6x11'}">6 x 11</button><button data-z="6x9" aria-pressed="${cardSize==='6x9'}">6 x 9</button></div>`;
     tools += `<span class="chk ${issues?'bad':''}">${issues ? issues + ' print check issue(s)' : 'Passes print checks'}</span>`;
     $('tools').innerHTML = tools;
     $('tools').querySelectorAll('[data-s]').forEach(b => b.onclick = () => { state = b.dataset.s; draw(); });
@@ -243,7 +244,7 @@
     const img = (name, w, h, alt, max) => `<img src="${urls[`${state}-${name}.jpg`]||''}" width="${w}" height="${h}" alt="${alt}" style="width:min(100%, ${max}px)">`;
     let html = '', cls = '';
     if(current === 'foldover'){ cls = 'two'; P.foldover.images.forEach(im => html += `<figure>${img(im.name, im.w, im.h, panelNames[im.name], 600)}<figcaption>${panelNames[im.name]}</figcaption></figure>`); }
-    else if(current === 'postcard'){ ['front','back'].forEach(side => { const p = P[`postcard-${cardSize}-${side}`], im = p.images[0]; html += `<figure>${img(im.name, im.w, im.h, p.label, cardSize==='6x11'?760:660)}<figcaption>${side==='front'?'Front':'Back, with the mailing area'}</figcaption></figure>`; }); }
+    else if(t.prefix){ ['front','back'].forEach(side => { const p = P[`${t.prefix}-${cardSize}-${side}`], im = p.images[0]; html += `<figure>${img(im.name, im.w, im.h, p.label, cardSize==='6x11'?760:660)}<figcaption>${side==='front'?'Front':'Back, with the mailing area'}</figcaption></figure>`; }); }
     else { const p = P[t.parts[0]], im = p.images[0]; html = `<figure>${img(im.name, im.w, im.h, p.label, 600)}</figure>`; }
     $('sheets').className = 'sheets ' + cls; $('sheets').innerHTML = html;
   }
