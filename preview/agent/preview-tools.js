@@ -221,15 +221,16 @@
     if(VOID.test(n) || /stair/.test(n)) return 'void';   // open to below, and a stairwell (white, the owner 10/28)
     if(kind === 'outdoor' || kind === 'garage') return kind;
     if(kind === 'wet' || /bath|powder|shower|toilet|\bw\.?c\.?\b/.test(n)) return 'bath';
+    if(/\bchase\b/.test(n)) return 'chase';                               // a chase: hatched (the owner 10/28)
     if(/storage|\bshop\b|workshop/.test(n)) return 'paper';
-    if(/closet|wardrobe|linen|pantry|chase|\bw\.?i\.?c\b/.test(n)) return 'inherit';
+    if(/closet|wardrobe|linen|pantry|\bw\.?i\.?c\b/.test(n)) return 'inherit';
     if(/bed|primary|suite|guest|nursery/.test(n)) return 'sleep';
     // a laundry, utility or mud room big enough to stand in is a room; a W/D spot takes the room it opens into
     if(kind === 'closet') return big ? 'living' : 'inherit';
     return 'living';                                                    // rooms, and the foyer, halls and landings
   };
   // 'paper': storage, a shop, a room off the garage (the owner 10/28: paper like the garage and porches); stairwells take 'void'
-  const ZONES = ['living', 'sleep', 'bath', 'garage', 'outdoor', 'void', 'paper'];
+  const ZONES = ['living', 'sleep', 'bath', 'garage', 'outdoor', 'void', 'paper', 'chase'];
   const TINTED = ['living', 'sleep', 'bath'];
   // square dilation by r (separable running max), on a 0/1 mask
   function dilate(m, W, H, r){
@@ -264,6 +265,8 @@
     g.putImageData(id, 0, 0); return c.toDataURL('image/png');
   };
   // 8-connected pieces of a mask: calls f(pixels, x0, y0, x1, y1) for each
+  // why a rule took a listing line out (kept per pixel, sent with the floor for the before-and-after check)
+  const WHY = {ceiling: 1, fixture: 2, drop: 3, openLine: 4, rods: 5, stairs: 6, outside: 7, door: 8, voidLine: 9};
   function pieces(m, W, H, f){
     const seen = new Uint8Array(W * H), stack = new Int32Array(W * H), comp = [];
     for(let s = 0; s < W * H; s++){
@@ -313,6 +316,13 @@
     }
     return {finished: colored > 0.1 && marks < 0.08, colored: +colored.toFixed(3), watermark: marks >= 0.08, texture: +marks.toFixed(3)};
   };
+  // a listing's own drawing keeps its own labels; a walk-in closet it left unnamed gets ours (the owner 10/28: label Eubanks'
+  // primary closet WIC), at its center, in the room's own space
+  const unnamed = (F, L) => L.rooms.filter(r => r.printed === false && /walk-?in closet|\bw\.?i\.?c\b/i.test(r.name)).map(r => { const B = F.T(F.P(r.box)), W = F.W, H = F.H;
+    const cx = (B.x + B.r) / 2, cy = (B.y + B.z) / 2, hw = 0.4 * (B.r - B.x), hh = 0.4 * (B.z - B.y);
+    return {name: 'Walk-In Closet', short: 'WIC', dims: '', kind: 'closet', zone: 'inherit', x: +(cx / W).toFixed(4), y: +(cy / H).toFixed(4),
+      bx: +(B.x / W).toFixed(4), by: +(B.y / H).toFixed(4), w: +((B.r - B.x) / W).toFixed(4), h: +((B.z - B.y) / H).toFixed(4),
+      c: [{x: +(cx / W).toFixed(4), y: +(cy / H).toFixed(4), p: [[+(hh / H).toFixed(4), +(hw / W).toFixed(4)]]}]}; });
   function finishedFloor(page, L){
     const F = floorCrop(page, L, true);
     // the listing's white paper goes clear, so the plan sits on the design's own paper (no white box on a tinted panel)
@@ -342,7 +352,7 @@
           if(best && bd < 0.5 * ppf){ if(Math.abs(best[0]) > Math.abs(best[1])) hz++; else vt++; } } } }
     return {kind: 'image', textDir: vt > hz ? 'v' : 'h', name: L.name, floor: L.floor, roof: !!L.roof, front: L.front || 'bottom', w: F.W, h: F.H, pageScale: +(1 / F.k).toFixed(4),
       feet: L.feet ? {w: +(F.W / ((F.T(F.o).r - F.T(F.o).x) / L.feet.w)).toFixed(1), d: +(F.H / ((F.T(F.o).r - F.T(F.o).x) / L.feet.w)).toFixed(1)} : null,
-      src: F.c.toDataURL('image/png'), labels: [], issues: []};
+      src: F.c.toDataURL('image/png'), labels: unnamed(F, L), issues: []};
   }
   function colorFloor(page, L){
     const F = floorCrop(page, L, false), {b, P, T, c, W, H, k, x0, y0} = F, o = F.o, outside = F.outside, N = W * H, issues = [];
@@ -378,8 +388,14 @@
       // a hatching stroke runs a foot or more; the strokes of small type are shorter (Marshall's turned names packed
       // close looked like hatching and were kept as a fireplace)
       const longS = new Uint8Array(N);
-      pieces(thin, W, H, (comp, ax, ay, bx, by) => { const a = bx - ax + 1, c = by - ay + 1;   // and it runs on a slant
-        if(Math.max(a, c) >= 0.8 * ppf && Math.min(a, c) >= 0.4 * Math.max(a, c)) for(const p of comp) longS[p] = 1; });
+      // and it runs on a slant: its own direction 25 to 65 degrees off square (a letter's strokes joined into a squarish
+      // piece are square to the page: Beulah's "TH" passed for hatching by its box alone, 10/28)
+      pieces(thin, W, H, (comp, ax, ay, bx, by) => { const a = bx - ax + 1, c = by - ay + 1;
+        if(Math.max(a, c) < 0.8 * ppf || Math.min(a, c) < 0.4 * Math.max(a, c)) return;
+        let mx = 0, my = 0; for(const p of comp){ mx += p % W; my += (p - p % W) / W; } mx /= comp.length; my /= comp.length;
+        let sxx = 0, syy = 0, sxy = 0; for(const p of comp){ const x = p % W - mx, y = (p - p % W) / W - my; sxx += x * x; syy += y * y; sxy += x * y; }
+        const ang = Math.abs(0.5 * Math.atan2(2 * sxy, sxx - syy)) * 180 / Math.PI, el = Math.sqrt((sxx - syy) ** 2 + 4 * sxy * sxy) / (sxx + syy + 1e-9);
+        if(ang >= 25 && ang <= 65 && el >= 0.5) for(const p of comp) longS[p] = 1; });
       const I = new Float64Array((W + 1) * (H + 1));   // summed area of thin strokes
       for(let y = 0; y < H; y++){ let row = 0; for(let x = 0; x < W; x++){ row += thin[y * W + x]; I[(y + 1) * (W + 1) + x + 1] = I[y * (W + 1) + x + 1] + row; } }
       const r = Math.max(2, Math.round(0.6 * ppf)), hatch = new Uint8Array(N);
@@ -390,9 +406,11 @@
       const zone = dilate(hatch, W, H, Math.round(0.5 * ppf));
       pieces(zone, W, H, (comp, ax, ay, bx, by) => {
         let hs = 0, ls = 0; for(const p of comp) if(hatch[p]){ hs++; if(longS[p]) ls++; }
-        const w = (bx - ax + 1) / ppf, h = (by - ay + 1) / ppf, small = Math.max(w, h) <= 9 && w * h <= 45 && ls >= 0.5 * hs;
+        // (a fireplace's hatch is a foot or more each way; a pair of bold letters is smaller: Beulah's "TH", 10/28)
+        const w = (bx - ax + 1) / ppf, h = (by - ay + 1) / ppf, small = Math.max(w, h) <= 9 && w * h <= 45 && ls >= 0.5 * hs && Math.min(w, h) >= 1;
         if(Math.max(w, h) <= 9 && w * h <= 45 && !small) return;   // type: the text pass takes it
-        for(const p of comp) if(dark[p]){ if(small) protect[p] = 1; else if(hatch[p]){ dark[p] = 0; shading[p] = 1; } }
+        // (a small patch protects its own slanted strokes only, never type beside them)
+        for(const p of comp) if(dark[p] && !protect[p]){ if(small){ if(longS[p]) protect[p] = 1; } else if(hatch[p]){ dark[p] = 0; shading[p] = 1; } }
       });
     }
     // the lines as drawn, for the check that no long line lost a large part of itself (a half-drawn room)
@@ -412,22 +430,48 @@
     // (solid: ink all the way through a 0.2 ft square, a wall's thickness: a short support wall stays (Stoney Brook's
     // dining room, 10/28); a bold letter's strokes are thinner)
     const core = (() => { const paper = new Uint8Array(N); for(let i = 0; i < N; i++) paper[i] = dark[i] ? 0 : 1; const g = dilate(paper, W, H, Math.max(1, Math.round(0.1 * ppf))); for(let i = 0; i < N; i++) g[i] = g[i] ? 0 : 1; return g; })();
+    // (a post or support wall is ink about 0.3 ft through; a bold letter's stroke is thinner: Beulah's bedroom names stayed
+    // as bars when the post test used 0.2 ft, 10/28)
+    // A post or a short support wall is one solid straight bar, at any angle: its ink fills its own turned box (Stoney Brook's
+    // diagonal dining-room post); bold letters ("TH", "87", Beulah's bedroom names) have gaps and branches and don't
+    const postLike = comp => { const n = comp.length; if(n < 4) return false; let mx = 0, my = 0; for(const p of comp){ mx += p % W; my += (p - p % W) / W; } mx /= n; my /= n;
+      let sxx = 0, syy = 0, sxy = 0; for(const p of comp){ const x = p % W - mx, y = (p - p % W) / W - my; sxx += x * x; syy += y * y; sxy += x * y; }
+      const th = 0.5 * Math.atan2(2 * sxy, sxx - syy), c = Math.cos(th), sn = Math.sin(th); let a0 = 1e9, a1 = -1e9, b0 = 1e9, b1 = -1e9;
+      for(const p of comp){ const x = p % W - mx, y = (p - p % W) / W - my, u = x * c + y * sn, v = -x * sn + y * c; a0 = Math.min(a0, u); a1 = Math.max(a1, u); b0 = Math.min(b0, v); b1 = Math.max(b1, v); }
+      const l1 = Math.max(a1 - a0, b1 - b0) + 1, l2 = Math.min(a1 - a0, b1 - b0) + 1;
+      return l1 >= 0.8 * ppf && l2 >= 0.25 * ppf && n >= 0.75 * l1 * l2; };
     const furniture = (comp, ax, ay, bx, by) => {
       let edge = 0;
       const long = Math.max(bx - ax, by - ay) + 1 >= 0.8 * ppf;   // a support wall runs a foot or so; a bold letter's blob is shorter
-      for(const p of comp){ if(core[p] && long) return true; const x = p % W, y = (p - x) / W; if(x - ax < 3 || bx - x < 3 || y - ay < 3 || by - y < 3) edge++; }
+      if(long && postLike(comp)) return true;
+      for(const p of comp){ const x = p % W, y = (p - x) / W; if(x - ax < 3 || bx - x < 3 || y - ay < 3 || by - y < 3) edge++; }
       return Math.min(bx - ax, by - ay) + 1 >= 0.5 * ppf && edge >= 0.85 * comp.length && closes(comp, ax, ay, bx, by);
     };
     // the listing's text out: a letter is under about a foot tall and wide; near a room's label, pieces up to 2.6 ft
     // (letters run together in bold type). Walls, door swings and fixtures are larger and stay.
     const stB = L.stairs ? T(P(L.stairs)) : null;
     const rbs = L.rooms.map(r => T(P(r.box))).concat(stB ? [stB] : []), inRoomBox = (ax, ay, bx, by) => rbs.some(e => ax >= e.x && bx <= e.r && ay >= e.y && by <= e.z);
-    const wins = L.rooms.map(r => { const B = T(P(r.box)), lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k,
-      hw = Math.max(2.5 * ppf, (B.r - B.x) / 2), hh = 2.5 * ppf; return {x: lx - hw, r: lx + hw, y: ly - hh, z: ly + hh}; });
+    // (a name printed across, and one printed turned up the page: Beulah's "PRIMARY BATH" ran past the across window, 10/28)
+    // (which way a room's printed name runs: around its label, each letter's nearest letter sits beside it or above it)
+    const turned = (lx, ly) => { const r = Math.round(2 * ppf), x0_ = Math.max(0, Math.round(lx - r)), y0_ = Math.max(0, Math.round(ly - r)), w = Math.min(W, Math.round(lx + r)) - x0_, h = Math.min(H, Math.round(ly + r)) - y0_;
+      if(w < 4 || h < 4) return false; const m = new Uint8Array(w * h); for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(dark[(y + y0_) * W + x + x0_]) m[y * w + x] = 1;
+      const c = []; pieces(m, w, h, (comp, a0, b0, a1, b1) => { const big = Math.max(a1 - a0, b1 - b0) + 1; if(big < 0.8 * ppf && big > 0.1 * ppf) c.push([(a0 + a1) / 2, (b0 + b1) / 2]); });
+      let hz = 0, vt = 0; for(const [px, py] of c){ let best = null, bd = 1e9; for(const [qx, qy] of c){ const dd = Math.hypot(qx - px, qy - py); if(dd > 0 && dd < bd){ bd = dd; best = [qx - px, qy - py]; } }
+        if(best && bd < 0.6 * ppf){ if(Math.abs(best[0]) > Math.abs(best[1])) hz++; else vt++; } }
+      return vt > hz && vt >= 3; };
+    const wins = L.rooms.flatMap(r => { const B = T(P(r.box)), lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k,
+      hw = Math.max(2.5 * ppf, (B.r - B.x) / 2), hh = Math.max(2.5 * ppf, (B.z - B.y) / 2), s2 = 2.5 * ppf;
+      return [{x: lx - hw, r: lx + hw, y: ly - s2, z: ly + s2}].concat(turned(lx, ly) ? [{x: lx - s2, r: lx + s2, y: ly - hh, z: ly + hh, v: 1}] : []); });
+    // ink the read places a fixture on (a toilet drawn as an open box against the wall, a tub's edge) is never type
+    const fxBoxes = (L.fixtures || []).filter(q => q.box && q.type !== 'drop' && q.type !== 'door').map(q => T(P(q.box)));
+    const onFixture = (ax, ay, bx, by) => fxBoxes.some(B => inBox(B, (ax + bx) / 2, (ay + by) / 2, 0.2 * ppf));
     pieces(dark, W, H, (comp, ax, ay, bx, by) => {
       const big = Math.max(bx - ax, by - ay) + 1;
-      if(comp.some(p => protect[p])) return;
-      const inWin = wins.some(w => ax >= w.x && bx <= w.r && ay >= w.y && by <= w.z);
+      if(comp.some(p => protect[p]) || (big >= 0.5 * ppf && onFixture(ax, ay, bx, by))) return;
+      // (the stairs' own marks are not type: the break line stays; step numbers go by the read's drop list)
+      if(stairsB && big >= 1.2 * ppf && inBox(stairsB, (ax + bx) / 2, (ay + by) / 2, 2.5 * ppf)) return;
+      // (the up-the-page window runs the room's length: a fixture in it (a toilet, a tub) closes a real shape and stays)
+      const inWin = wins.some(w => ax >= w.x && bx <= w.r && ay >= w.y && by <= w.z && (!w.v || !closes(comp, ax, ay, bx, by, (0.45 * ppf) ** 2)));
       // anywhere in a room, a piece up to 2.6 ft that closes no shape and is mostly air is type too (a listing that
       // prints its names turned, Marshall's: "RA", the lift's "STOR/FUTURE LIFT", a ceiling height; a bold letter's
       // counter is under half a foot, a toilet's bowl is more)
@@ -453,7 +497,8 @@
         const xa = Math.max(0, Math.ceil(B.x)), xb = Math.min(W, Math.floor(B.r)), ya = Math.max(0, Math.ceil(B.y)), yb = Math.min(H, Math.floor(B.z));
         for(let y = ya; y < yb; y++) inRooms.fill(1, y * W + xa, y * W + Math.max(xa, xb)); });
       pieces(short, W, H, (comp, ax, ay, bx, by) => {
-        if(Math.min(bx - ax, by - ay) + 1 >= 0.9 * ppf) return;
+        if(Math.min(bx - ax, by - ay) + 1 >= 0.9 * ppf || (Math.max(bx - ax, by - ay) + 1 >= 0.5 * ppf && onFixture(ax, ay, bx, by))) return;
+        if(stairsB && Math.max(bx - ax, by - ay) + 1 >= 0.9 * ppf && inBox(stairsB, (ax + bx) / 2, (ay + by) / 2, 2.5 * ppf) && comp.length < 0.25 * (bx - ax + 1) * (by - ay + 1)) return;   // (a stair's break line: a thin slant, never a word's dense block)
         for(const p of comp) if(inRooms[p]) dark[p] = 0;
       });
     }
@@ -492,7 +537,7 @@
       // (a fireplace's hatching is part of the walls, never a piece standing alone; the X's crossings look like hatching)
       pieces(walls, W, H, comp => {
         if(comp.length >= main * 0.999 || !comp.some(p => sh[p]) || comp.some(p => net2[p])) return;
-        for(const p of comp){ walls[p] = 0; ceilGone[p] = 1; } ceil++; });
+        for(const p of comp){ walls[p] = 0; ceilGone[p] = WHY.ceiling; } ceil++; });
       if(ceil) issues.push({kind: 'plan-ceiling-detail-removed', pieces: ceil});
     }
     // our own fixtures (the owner 10/28): the read lists the kitchen's counters, range, sink and island and each bath's
@@ -502,13 +547,23 @@
     const fx = (L.fixtures || []).map(q => Object.assign({}, q, q.box ? {B: T(P(q.box))} : {}));
     // (a wall is never erased: ink a wall's thickness through, and the outer walls' line, stay; a shower box drawn to the
     // outside wall took Beulah's primary bath outdoors, 10/28)
-    { const ob = 0.3 * ppf, onOuter = (x, y) => (Math.abs(x - O.x) < ob || Math.abs(x - O.r) < ob) && y > O.y - ob && y < O.z + ob || (Math.abs(y - O.y) < ob || Math.abs(y - O.z) < ob) && x > O.x - ob && x < O.r + ob;
-      const clear = (x0_, y0_, x1_, y1_, keepSide, all) => { const e = 0.12 * ppf;
-        let a = x0_, b2 = x1_, t = y0_, z = y1_;
-        if(keepSide === 'left') a += e; if(keepSide === 'right') b2 -= e; if(keepSide === 'top') t += e; if(keepSide === 'bottom') z -= e;
-        for(let y = Math.max(0, Math.floor(t)); y < Math.min(H, Math.ceil(z)); y++) for(let x = Math.max(0, Math.floor(a)); x < Math.min(W, Math.ceil(b2)); x++){ const i = y * W + x;
-          if(walls[i] && (all || (!core[i] && !onOuter(x, y)))){ walls[i] = 0; ceilGone[i] = 1; } } };
-      const pad = 0.08 * ppf;
+    // (a box from the read is only roughly where the fixture is: only ink pieces that lie inside the box go, whole; a piece
+    // that runs on out of it (a wall, the stairs' treads and stringers, a door's swing, a counter run on to a wall) is the
+    // listing's and stays. the owner 10/28: the first version cleared everything in each box, and boxes read a little off took
+    // Aston Pine's stairs and garage door and part of Second Suite's wall.) Our symbol is drawn only where the listing's
+    // own drawing of it went (or where the listing drew none), so a fixture is never drawn twice.
+    { const pid = new Int32Array(N), psz = [0]; let np = 0;
+      pieces(walls, W, H, comp => { np++; psz.push(comp.length); for(const p of comp) pid[p] = np; });
+      const take = (B, g, why, wallsToo) => { const a = Math.max(0, Math.floor(B.x - g)), bb = Math.min(W, Math.ceil(B.r + g)), t = Math.max(0, Math.floor(B.y - g)), z = Math.min(H, Math.ceil(B.z + g));
+        const cnt = new Map(), hasCore = new Set(); let ink = 0;
+        for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(!walls[i]) continue; cnt.set(pid[i], (cnt.get(pid[i]) || 0) + 1); if(core[i]) hasCore.add(pid[i]);
+          if(x >= B.x && x <= B.r && y >= B.y && y <= B.z) ink++; }
+        const go = new Set([...cnt].filter(([id, c]) => c >= 0.9 * psz[id] && (wallsToo || !hasCore.has(id) || psz[id] < 0.5 * ppf * ppf)).map(([id]) => id));
+        let gone = 0;
+        for(let y = Math.ceil(B.y); y < B.z; y++) for(let x = Math.ceil(B.x); x < B.r; x++){ const i = y * W + x; if(walls[i] && go.has(pid[i])) gone++; }
+        const cut = () => { if(go.size) for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(walls[i] && go.has(pid[i])){ walls[i] = 0; ceilGone[i] = why; } } };
+        return {ink, gone, cut}; };
+      const pad = 0.25 * ppf;
       for(const q of fx){
         if(q.type === 'stairs-curved' && q.center){
           const c = T(P({left: q.center.x, right: q.center.x, top: q.center.y, bottom: q.center.y})), r0 = q.r0 * b.w * k, r1 = q.r1 * b.w * k;
@@ -516,17 +571,57 @@
           const a0 = q.a0 * Math.PI / 180, a1 = q.a1 * Math.PI / 180, lo = Math.min(a0, a1) - 0.1, hi = Math.max(a0, a1) + 0.1;
           for(let y = Math.max(0, Math.floor(c.y - r1)); y < Math.min(H, c.y + r1); y++) for(let x = Math.max(0, Math.floor(c.x - r1)); x < Math.min(W, c.x + r1); x++){
             const dx = x - c.x, dy = y - c.y, rr = Math.hypot(dx, dy); let an = Math.atan2(dy, dx); while(an < lo) an += 2 * Math.PI; while(an > hi + 2 * Math.PI) an -= 2 * Math.PI;
-            if(rr > r0 - 0.3 * ppf && rr < r1 - 0.2 * ppf && an >= lo && an <= hi){ const i = y * W + x; if(walls[i]){ walls[i] = 0; ceilGone[i] = 1; } } }
+            if(rr > r0 - 0.3 * ppf && rr < r1 - 0.2 * ppf && an >= lo && an <= hi){ const i = y * W + x; if(walls[i]){ walls[i] = 0; ceilGone[i] = WHY.stairs; } } }
           continue; }
         if(!q.B) continue;
-        // (a drop box is drawn just inside the mark: its own edge lines go with a little give)
-        if(q.type === 'drop'){ const g = 0.25 * ppf; clear(q.B.x - g, q.B.y - g, q.B.r + g, q.B.z + g, null, !onOuter((q.B.x + q.B.r) / 2, (q.B.y + q.B.z) / 2)); continue; }
-        clear(q.B.x - pad, q.B.y - pad, q.B.r + pad, q.B.z + pad, q.back);
+        if(q.type === 'door') continue;   // (doors below)
+        if(q.type === 'drop'){ take(q.B, 0.25 * ppf, WHY.drop, true).cut(); continue; }
+        const r = take(q.B, pad, WHY.fixture, false);
+        // drawn when the listing's own drawing of it went, or it drew almost nothing there
+        q.draw = r.gone >= 0.5 * r.ink || r.ink < 0.02 * (q.B.r - q.B.x) * (q.B.z - q.B.y);
+        if(q.draw) r.cut();
       }
+    }
+    // doors (the owner 10/28: every door a clean, proper swing; a door opening takes the color of the room it opens into). The
+    // read gives each hinged door's hinge, the other jamb and a point on its swing. Each end snaps to the wall ink within
+    // half a foot; a door 1 to 4 ft wide (a leaf of a double door is narrow) is redrawn: the listing's swing (the thin ink in its quarter circle) goes and
+    // the template draws ours. Anything else keeps the listing's drawing.
+    const doors = [];
+    { const snap = (x, y) => { const R = Math.round(0.5 * ppf); let best = null, bd = 1e9;
+        for(let v = -R; v <= R; v++) for(let u = -R; u <= R; u++){ const X = Math.round(x + u), Y = Math.round(y + v); if(X < 0 || Y < 0 || X >= W || Y >= H || !walls[Y * W + X]) continue;
+          const d2 = u * u + v * v; if(d2 < bd){ bd = d2; best = [X, Y]; } }
+        return best; };
+      const pt = q => { const e = T(P({left: q.x, right: q.x, top: q.y, bottom: q.y})); return [e.x, e.y]; };
+      for(const q of fx){ if(q.type !== 'door' || !q.hinge || !q.latch || !q.into) continue;
+        const h0 = pt(q.hinge), l0 = pt(q.latch), i0 = pt(q.into), h = snap(...h0) || h0, l = snap(...l0) || l0;
+        const w = Math.hypot(l[0] - h[0], l[1] - h[1]);
+        if(w < 1 * ppf || w > 4 * ppf){ issues.push({kind: 'plan-door-kept', why: 'width', ft: +(w / ppf).toFixed(1)}); continue; }
+        const ux = (l[0] - h[0]) / w, uy = (l[1] - h[1]) / w, side = Math.sign((i0[0] - h[0]) * uy - (i0[1] - h[1]) * ux) || 1;
+        const nx = -uy * -side, ny = ux * -side;   // the leaf, open: from the hinge into the room
+        // (the swing side: the into point's side of the opening)
+        const sx = (i0[0] - h[0]) * nx + (i0[1] - h[1]) * ny >= 0 ? 1 : -1, px = nx * sx, py = ny * sx;
+        const R = w * 1.12 + 2, eps = 0.06 * ppf;
+        for(let y = Math.max(0, Math.floor(h[1] - R)); y < Math.min(H, h[1] + R); y++) for(let x = Math.max(0, Math.floor(h[0] - R)); x < Math.min(W, h[0] + R); x++){
+          const i = y * W + x; if(!walls[i] || core[i]) continue;
+          const dx = x - h[0], dy = y - h[1], a = dx * ux + dy * uy, b2 = dx * px + dy * py;
+          if(Math.hypot(dx, dy) <= R && a >= -eps && b2 >= eps){ walls[i] = 0; ceilGone[i] = WHY.door; } }
+        doors.push({h, l, p: [px, py], w, into: i0});
+      }
+      // bits the old swing held together (a door stop, letters that touched its arc: Beulah's "TH"), now loose: out. Pieces
+      // under 1.2 ft within the door's reach that touch no wall.
+      if(doors.length){ let big = new Uint8Array(N); pieces(walls, W, H, (comp, ax, ay, bx, by) => { if(Math.max(bx - ax, by - ay) + 1 >= 3 * ppf) for(const p of comp) big[p] = 1; });
+        big = dilate(big, W, H, Math.max(1, Math.round(0.15 * ppf)));
+        pieces(walls, W, H, (comp, ax, ay, bx, by) => { if(Math.max(bx - ax, by - ay) + 1 >= 1.2 * ppf || comp.some(p => big[p] || protect[p])) return;
+          const cx2 = (ax + bx) / 2, cy2 = (ay + by) / 2;
+          if(!doors.some(dr => Math.hypot(cx2 - dr.h[0], cy2 - dr.h[1]) <= dr.w * 1.25 + 0.5 * ppf)) return;
+          if(closes(comp, ax, ay, bx, by) || fx.some(q => q.B && q.type !== 'drop' && q.type !== 'door' && inBox(q.B, (ax + bx) / 2, (ay + by) / 2, 0.3 * ppf))) return;   // (a fixture, never: Beulah's toilet)
+          for(const p of comp){ walls[p] = 0; ceilGone[p] = WHY.door; } }); }
     }
     // no wall between open living spaces unless it's a real wall (the owner 10/28): a hairline along the shared edge of two
     // open living rooms the read marked open (Aston Pine's kitchen and breakfast) is a builder's line, and goes
     { const [hr, vr] = runs(), thin = 0.22 * ppf, op = L.rooms.filter(r => r.open && ZONE(r.name, r.kind) === 'living').map(r => T(P(r.box)));
+      // (never a fixture's own edge: a counter run along the line between kitchen and dining stays)
+      const fxIn = (x, y) => fx.some(q => q.B && q.type !== 'drop' && q.type !== 'door' && x >= q.B.x - 0.3 * ppf && x <= q.B.r + 0.3 * ppf && y >= q.B.y - 0.3 * ppf && y <= q.B.z + 0.3 * ppf);
       for(let i = 0; i < op.length; i++) for(let j = i + 1; j < op.length; j++){
         const p = op[i], q = op[j], g = 1 * ppf;
         const ovY = [Math.max(p.y, q.y) + ppf, Math.min(p.z, q.z) - ppf], ovX = [Math.max(p.x, q.x) + ppf, Math.min(p.r, q.r) - ppf];
@@ -537,14 +632,14 @@
           const [lo, hi] = vert ? ovY : ovX, w0 = Math.round(m - 0.6 * ppf), w1 = Math.round(m + 0.6 * ppf);
           for(let u = Math.ceil(lo); u < hi; u++) for(let v = w0; v <= w1; v++){
             const x = vert ? v : u, y = vert ? u : v; if(x < 0 || y < 0 || x >= W || y >= H) continue; const i = y * W + x;
-            if(walls[i] && (vert ? hr[i] <= thin && vr[i] >= 2 * ppf : vr[i] <= thin && hr[i] >= 2 * ppf)){ walls[i] = 0; ceilGone[i] = 1; } } }
+            if(walls[i] && (vert ? hr[i] <= thin && vr[i] >= 2 * ppf : vr[i] <= thin && hr[i] >= 2 * ppf) && !fxIn(x, y)){ walls[i] = 0; ceilGone[i] = WHY.openLine; } } }
       }
     }
     // closet rods: straight hairlines inside a closet, off its walls (the owner 10/28: rooms, door swings, fixtures, labels only)
     { const [hr, vr] = runs(), thin = 0.15 * ppf, off = 0.45 * ppf;
       for(const r of L.rooms){ if(!/closet|wardrobe|\bw\.?i\.?c\b|pantry/i.test(r.name)) continue; const B = T(P(r.box));
         for(let y = Math.ceil(B.y + off); y < B.z - off; y++) for(let x = Math.ceil(B.x + off); x < B.r - off; x++){ const i = y * W + x;
-          if(walls[i] && ((hr[i] >= ppf && vr[i] <= thin) || (vr[i] >= ppf && hr[i] <= thin))){ walls[i] = 0; ceilGone[i] = 1; } } }
+          if(walls[i] && ((hr[i] >= ppf && vr[i] <= thin) || (vr[i] >= ppf && hr[i] <= thin))){ walls[i] = 0; ceilGone[i] = WHY.rods; } } }
     }
     // stray pieces: a line piece standing alone in a room, touching no wall, closing no shape (an island, a tub and a table
     // close a shape; a column is solid): the leftover of a table or a label's underline (Westheimer's dining area). Out.
@@ -555,11 +650,16 @@
       pieces(walls, W, H, (comp, ax, ay, bx, by) => {
         const bw = bx - ax + 1, bh = by - ay + 1;
         if(Math.max(bw, bh) >= 6 * ppf || comp.some(p => net[p] || protect[p])) return;
-        if(inBox(stairsB, (ax + bx) / 2, (ay + by) / 2, 0)) return;
+        // (the stairs' own marks stay, the break line among them, even when taking out the step numbers left it standing
+        // alone: Aston Pine, 10/28)
+        if(inBox(stairsB, (ax + bx) / 2, (ay + by) / 2, 2.5 * ppf) && Math.max(bw, bh) >= 1.2 * ppf) return;
         // solid: a column, a post, a short support wall, at any angle: ink a wall's thickness through and a foot or more
         // long (Stoney Brook's diagonal dining-room post fills under half its box and was dropped here, 10/28); a letter's
         // bar is thinner
-        if(comp.some(p => core[p]) && Math.max(bw, bh) >= 0.8 * ppf) return;
+        // a thin straight bar standing alone in a room, under 2.6 ft, square to the page, is what's left of the listing's bold
+        // type (Beulah's bedrooms, 10/28); a post or a support wall is thicker, or at an angle (Stoney Brook's), and stays
+        if(Math.min(bw, bh) < 0.4 * ppf && Math.max(bw, bh) < 2.6 * ppf && inRoomBox(ax, ay, bx, by)){ for(const p of comp) walls[p] = 0; gone++; return; }
+        if(postLike(comp)) return;
         if(closes(comp, ax, ay, bx, by)) return;
         for(const p of comp) walls[p] = 0; gone++;
       });
@@ -589,7 +689,13 @@
       // a support wall is larger (Stoney Brook's dining room, about 1.7 ft)
       if(big < 1.2 * ppf && inRoomBox(ax, ay, bx, by) && !comp.some(p => protect[p])) for(const p of comp) walls[p] = 0; });
     // rooms are split by walls, not by a ceiling grid's lines
-    const solid = walls.map((v, i) => v && !soft[i] ? 1 : 0), rD = Math.max(1, Math.round(0.15 * ppf)), blocked = dilate(solid, W, H, rD);
+    const solid = walls.map((v, i) => v && !soft[i] ? 1 : 0), rD = Math.max(1, Math.round(0.15 * ppf));
+    // color stops at a door (the owner 10/27): each redrawn door's threshold, hinge to the other jamb, closes the doorway for the
+    // fill (not drawn; the opening takes the color of the room the door swings into, below). The listing's own swing used to
+    // do this; taking it out let a hall's color into Westheimer's primary-suite entry, 10/28.
+    for(const dr of doors){ const [hx, hy] = dr.h, ux = (dr.l[0] - hx) / dr.w, uy = (dr.l[1] - hy) / dr.w;
+      for(let t2 = -1; t2 <= dr.w + 1; t2 += 0.5){ const X = Math.round(hx + ux * t2), Y = Math.round(hy + uy * t2); if(X >= 0 && Y >= 0 && X < W && Y < H) solid[Y * W + X] = 1; } }
+    const blocked = dilate(solid, W, H, rD);
     // inside the house: everything the outdoors can't reach with the door and window gaps closed (up to 6 ft: a double
     // front door, a wide slider; Stoney Brook's front door let the outdoors in at 3 ft), so the
     // color follows angled walls and bays to the wall itself. If the walls leak (a plan drawn with open corners), the
@@ -630,6 +736,25 @@
       return inside;
     };
     let inside = insideOf();
+    // a roof drawn against the house closes a pocket of its own: no room in it, and the rooms reach it only through the thick
+    // outer wall, never across a thin line or through an opening. It's outside (Aston Pine's porch roof, 10/28).
+    const roofPockets = () => { const fl = new Uint8Array(N); for(let i = 0; i < N; i++) if(inside[i] && !walls[i]) fl[i] = 1;
+      const labelAt = new Set(L.rooms.map(r => Math.round((b.y + r.label.y * b.h - y0) * k) * W + Math.round((b.x + r.label.x * b.w - x0) * k)));
+      const reachR = Math.round(0.6 * ppf); let n = 0;
+      const rbm = new Uint8Array(N); L.rooms.forEach(r => { const B = T(P(r.box)); for(let y = Math.max(0, Math.floor(B.y)); y < Math.min(H, B.z); y++) rbm.fill(1, y * W + Math.max(0, Math.floor(B.x)), y * W + Math.min(W, Math.ceil(B.r))); });
+      pieces(fl, W, H, (comp, ax, ay, bx, by) => {
+        if(comp.length > 150 * ppf * ppf || comp.some(p => labelAt.has(p))) return;
+        const cxp = (ax + bx) / 2, cyp = (ay + by) / 2;
+        if(L.rooms.some(r => { const B = T(P(r.box)); return inBox(B, cxp, cyp, 0); }) || inBox(stairsB, cxp, cyp, 0)) return;
+        // walk out from it through floor and thin ink only, up to 0.6 ft: does it meet other floor?
+        const own = new Set(comp), seen = new Map(), q = []; for(const p of comp){ seen.set(p, 0); q.push(p); }
+        let hit = false;
+        for(let h = 0; h < q.length && !hit; h++){ const p = q[h], d = seen.get(p), x = p % W;
+          for(const n2 of [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W]){ if(n2 < 0 || n2 >= N || seen.has(n2) || d + 1 > reachR) continue;
+            if(walls[n2] && core[n2]) continue; seen.set(n2, d + 1); if(fl[n2] && !own.has(n2) && rbm[n2]){ hit = true; break; } q.push(n2); } }
+        if(!hit){ for(const p of comp) inside[p] = 0; n++; } });
+      return n; };
+    if(roofPockets()) issues.push({kind: 'plan-roof-pocket-outside'});
     const outs = outside.map(T), held = (x, y) => outs.some(e => x >= e.x && x <= e.r && y >= e.y && y <= e.z);
     // marks outside the walls that aren't a porch, patio or garage, or in no room at all: the listing's floor title
     // ("2nd Floor", even in the notch of an L-shaped floor), a north arrow. Walls join into pieces far larger than 6 ft.
@@ -641,7 +766,7 @@
       for(const p of comp){ const x = p % W, y = (p - x) / W; if(inside[p] || held(x, y)) inn = 1; if(!room && inRoom(x, y)) room = 1; if(inn && room) return; }
       for(const p of comp) walls[p] = 0; gone2 = 1;
     });
-    if(gone2) inside = insideOf();   // a floor title's letters closed in a patch of paper outside the walls (Stoney Brook)
+    if(gone2){ inside = insideOf(); roofPockets(); }   // a floor title's letters closed in a patch of paper outside the walls (Stoney Brook)
     // open floor, split by the walls (4-connected; a door opening joins rooms, the room boxes keep each color in its room)
     const region = new Uint8Array(N); for(let i = 0; i < N; i++){ const x = i % W; if(inside[i] || held(x, (i - x) / W)) region[i] = 1; }
     const free = new Int32Array(N), stack = new Int32Array(N); let nid = 0;
@@ -674,11 +799,11 @@
     // rooms that share open floor through a doorway split at the doorway, not at a box's edge (the owner 10/27: shading stops at
     // a door; 10/28, Stoney Brook's angled bath spilled into the foyer): each pixel goes to the room whose label it is
     // nearest walking through the open floor
-    const near2 = new Int16Array(N).fill(-1);
+    const near2 = new Int16Array(N).fill(-1); let cellOf = null;
     { const q = new Int32Array(N); let h = 0, t = 0;
       // (with the door gaps closed (up to about 3 ft) the floor falls into rooms: a piece holding one room's label is that
       // room's from the start; a piece holding several (an open plan) starts from each label; the rest is walked out to)
-      const shutD = dilate(solid, W, H, Math.max(2, Math.round(1.5 * ppf))), cell = new Int32Array(N); let nc = 0;
+      const shutD = dilate(solid, W, H, Math.max(2, Math.round(1.5 * ppf))), cell = new Int32Array(N); let nc = 0; cellOf = cell;
       for(let s0 = 0; s0 < N; s0++){ if(shutD[s0] || cell[s0] || !free[s0]) continue; nc++; const st = [s0]; cell[s0] = nc;
         while(st.length){ const p = st.pop(), x = p % W; for(const n of [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W]) if(n >= 0 && n < N && !shutD[n] && !cell[n] && free[n]){ cell[n] = nc; st.push(n); } } }
       const at2 = (x, y) => { const X = Math.round(Math.min(W - 1, Math.max(0, x))), Y = Math.round(Math.min(H - 1, Math.max(0, y))); return Y * W + X; };
@@ -700,6 +825,10 @@
       const out = r.zone === 'outdoor' || r.zone === 'garage', w = bb - a, h = z - t, m = new Uint8Array(w * h);
       for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(free[i] === seed && (out || inside[i]) && (r.zone === 'inherit' || r.zone === 'void' || near2[i] < 0 || near2[i] === r.i || rooms[near2[i]].zone === r.zone)) m[(y - t) * w + x - a] = 1; }
       own[r.i] = {m, a, t, w, h};
+      if(r.zone === 'chase'){ const cz = ZONES.indexOf('chase') + 1, cap = 3 * (B.r - B.x + 2 * pd) * (B.z - B.y + 2 * pd), all = []; let ok = true;
+        for(let i = 0; i < N && ok; i++) if(free[i] === seed){ all.push(i); if(all.length > cap) ok = false; }
+        if(ok){ const mm = new Uint8Array(N); for(const i of all) mm[i] = 1; const g3 = dilate(mm, W, H, rD + 1); for(let i = 0; i < N; i++) if(g3[i] && !solid[i] && inside[i]){ zone[i] = cz; owner[i] = r.i; } }
+        if(ok) return; }
       if(r.zone === 'inherit') return;
       const zi = ZONES.indexOf(r.zone) + 1, g2 = dilate(m, w, h, rD + 1);
       for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(g2[(y - t) * w + x - a] && !solid[i] && (out || inside[i])){ zone[i] = zi; owner[i] = r.i; } }
@@ -709,12 +838,14 @@
     // ("Open to below" is the one area left white, and color never walks into it)
     { const q = new Int32Array(N); let h = 0, t = 0;
       const vz = ZONES.indexOf('void') + 1;
-      for(let i = 0; i < N; i++) if(zone[i] && zone[i] !== vz) q[t++] = i;
+      // (a chase's hatch stays in the chase)
+      const cz = ZONES.indexOf('chase') + 1;
+      for(let i = 0; i < N; i++) if(zone[i] && zone[i] !== vz && zone[i] !== cz) q[t++] = i;
       // a bath's or a bedroom's color walks only a little past its own room (into its closet, a bay), never down a hall
       // the read didn't box (Aston Pine's powder room colored the hall by the stairs, 10/28); the living color fills the rest
-      const bZ = ZONES.indexOf('bath') + 1, sZ0 = ZONES.indexOf('sleep') + 1, reach = 2 * ppf;
-      const mayGo = (p, n) => { const z = zone[p]; if(z !== bZ && z !== sZ0) return true; const r = rooms[owner[p]]; if(!r) return true;
-        const x = n % W, y = (n - x) / W; return x >= r.B.x - reach && x <= r.B.r + reach && y >= r.B.y - reach && y <= r.B.z + reach; };
+      // (a bath's color is no longer held to 2 ft past its box: that handed baths' back rooms to the hall, Aston Pine and
+      // Westheimer, 10/28; door openings now set the line)
+      const mayGo = () => true;
       while(h < t){ const p = q[h++], x = p % W;
         for(const n of [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W]) if(n >= 0 && n < N && !zone[n] && !solid[n] && inside[n] && mayGo(p, n)){ zone[n] = zone[p]; owner[n] = owner[p]; q[t++] = n; } }
       // a short hall that leads only to one bedroom (its suite's entry, with the suite's bath and closets off it) is part of
@@ -751,6 +882,7 @@
         for(const p of comp) zone[p] = zi;
       });
       const vZ = ZONES.indexOf('void') + 1, pZ = ZONES.indexOf('paper') + 1, sZ = ZONES.indexOf('sleep') + 1, gZ = ZONES.indexOf('garage') + 1, oZ = ZONES.indexOf('outdoor') + 1;
+      const nearBox2 = (p, q, g) => p.x <= q.r + g && q.x <= p.r + g && p.y <= q.z + g && q.y <= p.z + g;
       const regionOf = r => { const om = own[r.i]; if(!om) return []; const o = []; for(let y = 0; y < om.h; y++) for(let x = 0; x < om.w; x++) if(om.m[y * om.w + x]) o.push((y + om.t) * W + x + om.a); return o; };
       // what a room opens into: the colors just past its own floor, through its openings (never across a wall)
       const opensInto = px => { const set = new Set(px), c = new Map();
@@ -758,8 +890,14 @@
         return c; };
       // closets take their room's color: a closet that opens into a bedroom is the bedroom's, even when it also opens on a
       // hall (Beulah's primary closet, 10/28)
-      rooms.filter(r => r.zone === 'inherit').forEach(r => { const px = regionOf(r); if(!px.length) return; const c = opensInto(px);
-        const zi = c.get(sZ) ? sZ : [...c.entries()].filter(([z]) => z !== vZ).sort((a, b) => b[1] - a[1]).map(e => e[0])[0];
+      // (a closet whose own floor didn't come through takes its box; one that touches no color through an opening takes
+      // the color around its box, a bedroom's first: Beulah's southeast walk-in closet stayed white, 10/28)
+      // (a walk-in closet against exactly one bedroom is that bedroom's, even when its door opens on a hall: Beulah, 10/28)
+      const bedNext = r => rooms.filter(q => q.zone === 'sleep' && nearBox2(q.B, r.B, 0.8 * ppf));
+      rooms.filter(r => r.zone === 'inherit').forEach(r => { let px = regionOf(r); if(!px.length) px = boxOf(r); if(!px.length) return; const c = opensInto(px);
+        if(!c.size){ const g = 1.2 * ppf, B = r.B; for(let y = Math.max(0, Math.floor(B.y - g)); y < Math.min(H, B.z + g); y += 2) for(let x = Math.max(0, Math.floor(B.x - g)); x < Math.min(W, B.r + g); x += 2){
+          if(x >= B.x && x <= B.r && y >= B.y && y <= B.z) continue; const z = zone[y * W + x]; if(z) c.set(z, (c.get(z) || 0) + 1); } }
+        const zi = c.get(sZ) ? sZ : [...c.entries()].filter(([z]) => z !== vZ && z !== gZ && z !== oZ).sort((a, b) => b[1] - a[1]).map(e => e[0])[0];
         if(zi) for(const p of px) zone[p] = zi; });
       // storage, a shop, any room that opens only to the garage or outdoors: paper, like the garage (Beulah's storage,
       // Marshall's shop, 10/28)
@@ -770,17 +908,92 @@
       rooms.filter(r => r.zone !== 'garage' && r.zone !== 'outdoor' && r.zone !== 'void').forEach(r => { const px = r.zone === 'paper' ? boxOf(r) : regionOf(r); if(!px.length) return;
         const c = opensInto(px), only = [...c.keys()].every(z => z === gZ || z === oZ || z === pZ);
         if(r.zone === 'paper' || (c.size && only && r.ft.w * r.ft.d < 150)){ for(const p of px) zone[p] = pZ; r.zone = 'paper'; } });
+      // a walk-in closet against a bedroom is that bedroom's, even when its door opens on a hall (Beulah's southeast closet,
+      // the owner 10/28); last, so no other pass turns it paper or living
+      rooms.filter(r => r.zone === 'inherit' && /walk|w\.?i\.?c|wardrobe/i.test(r.name) && bedNext(r).length).forEach(r => { let px = regionOf(r); if(!px.length) px = boxOf(r); for(const p of px) zone[p] = sZ; });
       // stairwells white: the stairs, their landing and return (the owner 10/28)
-      if(stB) for(let y = Math.max(0, Math.floor(stB.y - 0.2 * ppf)); y < Math.min(H, stB.z + 0.2 * ppf); y++) for(let x = Math.max(0, Math.floor(stB.x - 0.2 * ppf)); x < Math.min(W, stB.r + 0.2 * ppf); x++){ const i = y * W + x; if(inside[i]) zone[i] = vZ; }
+      // (a bedroom's or a bath's own floor stays its color where the read's stairs box runs over it: Aston Pine's Second Suite)
+      if(stB) for(let y = Math.max(0, Math.floor(stB.y - 0.2 * ppf)); y < Math.min(H, stB.z + 0.2 * ppf); y++) for(let x = Math.max(0, Math.floor(stB.x - 0.2 * ppf)); x < Math.min(W, stB.r + 0.2 * ppf); x++){ const i = y * W + x; const ow = rooms[owner[i]];
+        if(inside[i] && !(ow && (ow.zone === 'sleep' || ow.zone === 'bath'))) zone[i] = vZ; }
       // a stairwell room and a curved stair's whole circle: white too
       rooms.filter(r => r.zone === 'void').forEach(r => { for(const p of boxOf(r)) zone[p] = vZ; });
       for(const q of fx) if(q.type === 'stairs-curved' && q.cx_ != null) for(let y = Math.max(0, Math.floor(q.cy_ - q.r1_)); y < Math.min(H, q.cy_ + q.r1_); y++) for(let x = Math.max(0, Math.floor(q.cx_ - q.r1_)); x < Math.min(W, q.cx_ + q.r1_); x++){ const i = y * W + x; if(inside[i] && Math.hypot(x - q.cx_, y - q.cy_) < q.r1_) zone[i] = vZ; }
-      // a scrap of floor in no room beside "Open to below" or the stairs (Stoney Brook's little triangle) is white with it
-      { const boxed = new Uint8Array(N); rooms.forEach(r => { if(r.zone === 'void') return; const B = r.B; for(let y = Math.max(0, Math.floor(B.y)); y < Math.min(H, B.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(B.x)), y * W + Math.min(W, Math.ceil(B.r))); });
+      // a scrap of floor in no room beside "Open to below" (Stoney Brook's little triangle) is white with it; beside the
+      // stairs it is not (Aston Pine's Second Suite lost a strip along its stair wall to this, 10/28)
+      { const ob = new Uint8Array(N); rooms.filter(r => r.zone === 'void' && VOID.test(r.name)).forEach(r => { for(const p of boxOf(r)) ob[p] = 1; });
+        const boxed = new Uint8Array(N); rooms.forEach(r => { if(r.zone === 'void') return; const B = r.B; for(let y = Math.max(0, Math.floor(B.y)); y < Math.min(H, B.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(B.x)), y * W + Math.min(W, Math.ceil(B.r))); });
         const u = new Uint8Array(N); for(let i = 0; i < N; i++) if(zone[i] && zone[i] !== vZ && !boxed[i] && inside[i]) u[i] = 1;
         pieces(u, W, H, comp => { if(comp.length > 40 * ppf * ppf) return; const set = new Set(comp); let v = 0;
-          for(const p of comp){ const x = p % W; for(const q of [x > 2 ? p - 3 : -1, x < W - 3 ? p + 3 : -1, p - 3 * W, p + 3 * W]) if(q >= 0 && q < N && !set.has(q) && zone[q] === vZ){ v = 1; break; } if(v) break; }
+          for(const p of comp){ const x = p % W; for(const q of [x > 2 ? p - 3 : -1, x < W - 3 ? p + 3 : -1, p - 3 * W, p + 3 * W]) if(q >= 0 && q < N && !set.has(q) && zone[q] === vZ && ob[q]){ v = 1; break; } if(v) break; }
           if(v) for(const p of comp) zone[p] = vZ; }); }
+      // a bath's or a bedroom's own box keeps its color where the walk out handed its floor to a living room whose box doesn't
+      // cover it (Aston Pine's Bath 3 vanity room, nearer the hall through its door, went hall-colored, 10/28)
+      { const lZ3 = ZONES.indexOf('living') + 1, livB = rooms.filter(r => r.zone === 'living').map(r => r.B);
+        rooms.filter(r => r.zone === 'bath' || r.zone === 'sleep').forEach(r => { const zi = ZONES.indexOf(r.zone) + 1, B = r.B, e = 0.3 * ppf;
+          for(let y = Math.ceil(B.y + e); y < B.z - e; y++) for(let x = Math.ceil(B.x + e); x < B.r - e; x++){ const i = y * W + x;
+            if(zone[i] === lZ3 && !solid[i] && !livB.some(L2 => inBox(L2, x, y, 0))) zone[i] = zi; } }); }
+      // a door's opening, through the wall's thickness, takes the color of the room it swings into, never the hall's
+      for(const dr of doors){ const [hx, hy] = dr.h, [px, py] = dr.p, ux = (dr.l[0] - hx) / dr.w, uy = (dr.l[1] - hy) / dr.w;
+        const zi = zone[Math.round(hy + py * 0.5 * dr.w) * W + Math.round(hx + px * 0.5 * dr.w + ux * 0.5 * dr.w)]; if(!zi || zi === ZONES.indexOf('void') + 1) continue;
+        // through the wall's own thickness at the hinge jamb, no further (never a lip of color out into the hall)
+        let back = 1; while(back < ppf){ const X = Math.round(hx - px * back), Y = Math.round(hy - py * back); if(X < 0 || Y < 0 || X >= W || Y >= H || !walls[Y * W + X]) break; back++; }
+        for(let t2 = 0.04 * dr.w; t2 <= 0.96 * dr.w; t2 += 0.5) for(let v = -back; v <= 0.15 * ppf; v += 0.5){ const X = Math.round(hx + ux * t2 + px * v), Y = Math.round(hy + uy * t2 + py * v);
+          if(X < 0 || Y < 0 || X >= W || Y >= H) continue; const i = Y * W + X; if(!solid[i] && inside[i]) zone[i] = zi; } }
+      // an opening with no swing drawn (a plain opening, a pocket or sliding door) between a hall and a room: the room's
+      // color through the wall's thickness, never the hall's (the owner 10/28). An opening pixel is hall-colored floor with a
+      // wall's cut end on each side within 4 ft (the jambs: ink a wall's thickness deep, running on the other way)
+      { const hallish = r => r && /hall|corridor|landing|foyer|entry|gallery|vestibule/i.test(r.name);
+        const [hr, vr] = runs(), lim = Math.round(4 * ppf), thick = 0.9 * ppf, hit = new Uint8Array(N), hitZ = new Uint8Array(N);
+        const jamb = (i, vert) => walls[i] && (vert ? vr[i] <= thick && hr[i] >= 0.4 * ppf : hr[i] <= thick && vr[i] >= 0.4 * ppf);
+        // (an opening left white, a sliver between the wall and a pocket door's line (Bayou Glen's bedroom), counts too)
+        for(let i = 0; i < N; i++){ if(solid[i] || !inside[i] || (zone[i] && !hallish(rooms[owner[i]]))) continue; const x = i % W, y = (i - x) / W;
+          for(const vert of [0, 1]){ let a2 = 0, b2 = 0;
+            // along the wall: a horizontal wall's opening runs across (x), a vertical wall's down (y)
+            if(!vert){ while(a2 < lim && x - a2 > 0 && !walls[i - a2]) a2++; while(b2 < lim && x + b2 < W - 1 && !walls[i + b2]) b2++;
+              if(a2 + b2 <= lim && a2 < lim && b2 < lim && jamb(i - a2, 1) && jamb(i + b2, 1)){ hit[i] = 1; break; } }
+            else { while(a2 < lim && y - a2 > 0 && !walls[i - a2 * W]) a2++; while(b2 < lim && y + b2 < H - 1 && !walls[i + b2 * W]) b2++;
+              if(a2 + b2 <= lim && a2 < lim && b2 < lim && jamb(i - a2 * W, 0) && jamb(i + b2 * W, 0)){ hit[i] = 2; break; } } } }
+        pieces(hit, W, H, (comp, ax, ay, bx, by) => {
+          // the room on the far side: the most common non-hall color just past the opening, either way across it
+          const c = new Map(), vert = hit[comp[0]] === 2, reach = Math.round(1.2 * ppf), sides = new Set();
+          for(const p of comp){ const x = p % W, y = (p - x) / W;
+            for(const sgn of [-1, 1]){ const X = vert ? x + sgn * reach : x, Y = vert ? y : y + sgn * reach; if(X < 0 || Y < 0 || X >= W || Y >= H) continue;
+              const q = Y * W + X, r = rooms[owner[q]]; if(zone[q]) sides.add(sgn);
+              if(zone[q] && r && !hallish(r) && r.zone !== 'void' && r.zone !== 'garage' && r.zone !== 'outdoor') c.set(zone[q], (c.get(zone[q]) || 0) + 1); } }
+          // (a white sliver with floor on one side only is a window, not an opening)
+          if(sides.size < 2) return;
+          const best = [...c.entries()].sort((p, q) => q[1] - p[1])[0];
+          if(best && best[1] >= 0.3 * comp.length) for(const p of comp) zone[p] = best[0]; }); }
+      // open to below takes in a pocket of floor beside it that the read put in no room (Aston Pine's strip beside the
+      // stairs), across a thin line, and the line goes (the owner 10/28: open-to-below is white with no line through it)
+      { const vZ2 = ZONES.indexOf('void') + 1, boxed = new Uint8Array(N);
+        rooms.forEach(r => { if(r.zone === 'void') return; const B = r.B; for(let y = Math.max(0, Math.floor(B.y)); y < Math.min(H, B.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(B.x)), y * W + Math.min(W, Math.ceil(B.r))); });
+        if(stB) for(let y = Math.max(0, Math.floor(stB.y)); y < Math.min(H, stB.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(stB.x)), y * W + Math.min(W, Math.ceil(stB.r)));
+        const u = new Uint8Array(N); for(let i = 0; i < N; i++) if(zone[i] && zone[i] !== vZ2 && !boxed[i] && inside[i] && !solid[i]) u[i] = 1;
+        // (only the open to below itself: never the stairs, whose treads stay)
+        const isV = new Uint8Array(N); rooms.filter(r => r.zone === 'void' && VOID.test(r.name)).forEach(r => { for(const p of boxOf(r)) if(zone[p] === vZ2) isV[p] = 1; });
+        const nearSt = new Uint8Array(N); if(stB) for(let y = Math.max(0, Math.floor(stB.y - 0.5 * ppf)); y < Math.min(H, stB.z + 0.5 * ppf); y++) for(let x = Math.max(0, Math.floor(stB.x - 0.5 * ppf)); x < Math.min(W, stB.r + 0.5 * ppf); x++) nearSt[y * W + x] = 1;
+        const vNear = dilate(isV, W, H, Math.max(2, Math.round(0.6 * ppf)));
+        pieces(u, W, H, (comp, ax, ay, bx, by) => { if(comp.length > 120 * ppf * ppf || comp.length < 2 * ppf * ppf || !comp.some(p => vNear[p])) return;
+          const m = new Uint8Array(N); for(const p of comp) m[p] = 1; const mN = dilate(m, W, H, Math.max(2, Math.round(0.6 * ppf)));
+          // (the outer wall runs past both ends of every such pocket: it doesn't count as a wall between)
+          const ow = 0.6 * ppf, outer = i => { const x = i % W, y = (i - x) / W; return x < O.x + ow || x > O.r - ow || y < O.y + ow || y > O.z - ow; };
+          const between = []; let hard = 0; for(let i = 0; i < N; i++) if(mN[i] && vNear[i] && walls[i] && !nearSt[i] && !outer(i)){ if(core[i]) hard++; else between.push(i); }
+          if(hard > 0.2 * (hard + between.length)) return;   // a real wall between: a room of its own
+          for(const p of comp) zone[p] = vZ2; for(const i of between){ walls[i] = 0; solid[i] = 0; ceilGone[i] = WHY.voidLine; zone[i] = vZ2; } }); }
+      // a pocket of floor the read put in no room that lies along the garage with only a thin line between (storage at the
+      // back of the garage, Aston Pine's water-heater strip) is the garage's: paper (the owner 10/28: garages, garage storage
+      // and rooms off the garage stay paper), even when a door from the house opens into it
+      { const gZ2 = ZONES.indexOf('garage') + 1, pZ2 = ZONES.indexOf('paper') + 1, boxed = new Uint8Array(N);
+        rooms.forEach(r => { const B = r.B; for(let y = Math.max(0, Math.floor(B.y)); y < Math.min(H, B.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(B.x)), y * W + Math.min(W, Math.ceil(B.r))); });
+        if(stB) for(let y = Math.max(0, Math.floor(stB.y)); y < Math.min(H, stB.z); y++) boxed.fill(1, y * W + Math.max(0, Math.floor(stB.x)), y * W + Math.min(W, Math.ceil(stB.r)));
+        const isG = new Uint8Array(N); for(let i = 0; i < N; i++) if(zone[i] === gZ2) isG[i] = 1;
+        const gNear = dilate(isG, W, H, Math.max(2, Math.round(1 * ppf)));
+        const u = new Uint8Array(N); for(let i = 0; i < N; i++) if(zone[i] && zone[i] !== gZ2 && zone[i] !== pZ2 && zone[i] !== ZONES.indexOf('void') + 1 && !boxed[i] && inside[i] && !solid[i]) u[i] = 1;
+        pieces(u, W, H, comp => { if(comp.length > 150 * ppf * ppf || comp.length < 4 * ppf * ppf) return;
+          let along = 0; for(const p of comp) if(gNear[p]) along++;
+          if(along < 0.2 * comp.length) return;
+          for(const p of comp) zone[p] = pZ2; }); }
       let white = 0; for(let i = 0; i < N; i++) if(inside[i] && !solid[i] && !zone[i] && !inWall[i]) white++;
       if(white > 0.5 * ppf * ppf) issues.push({kind: 'plan-white-inside', sqft: +(white / ppf / ppf).toFixed(1)});
     }
@@ -789,10 +1002,22 @@
     // in the first spot it fits, and leaves it off when it won't fit at 6 pt.
     const hard = new Uint8Array(N); for(let i = 0; i < N; i++) if(walls[i] && !soft[i]) hard[i] = 1;
     // our fixtures are drawn later, by the template: a label keeps off them too
-    for(const q of fx){ if(!q.B) continue; for(let y = Math.max(0, Math.floor(q.B.y)); y < Math.min(H, q.B.z); y++) hard.fill(1, y * W + Math.max(0, Math.floor(q.B.x)), y * W + Math.min(W, Math.ceil(q.B.r))); }
+    // (a drop is ink taken out: open floor for a label, the very spot a ceiling note or a name stood)
+    for(const q of fx){ if(!q.B || q.type === 'door' || q.type === 'drop' || !q.draw) continue; for(let y = Math.max(0, Math.floor(q.B.y)); y < Math.min(H, q.B.z); y++) hard.fill(1, y * W + Math.max(0, Math.floor(q.B.x)), y * W + Math.min(W, Math.ceil(q.B.r))); }
+    // a door's swing: its quarter circle (not the square around it), so a label never sits on a swing. A room with no clear
+    // spot off its swings (a mudroom with three doors) may set its label inside a swing's open quarter, never on its lines.
+    const hardOpen = hard.slice(), hardNoDoor = hard.slice();
+    // (our door's leaf and arc, drawn later by the template, are lines too)
+    for(const dr of doors){ const [hx, hy] = dr.h, [px, py] = dr.p, ux = (dr.l[0] - hx) / dr.w, uy = (dr.l[1] - hy) / dr.w, R = dr.w;
+      const put = (x, y) => { const X = Math.round(x), Y = Math.round(y); if(X >= 0 && Y >= 0 && X < W && Y < H) hardOpen[Y * W + X] = 1; };
+      for(let t = 0; t <= R; t += 0.5) put(hx + px * t, hy + py * t);
+      for(let a = 0; a <= Math.PI / 2; a += 0.5 / R) put(hx + R * (Math.cos(a) * px + Math.sin(a) * ux), hy + R * (Math.cos(a) * py + Math.sin(a) * uy)); }
+    for(const dr of doors){ const [hx, hy] = dr.h, [px, py] = dr.p, ux = (dr.l[0] - hx) / dr.w, uy = (dr.l[1] - hy) / dr.w, R = dr.w;
+      for(let y = Math.max(0, Math.floor(hy - R)); y < Math.min(H, hy + R); y++) for(let x = Math.max(0, Math.floor(hx - R)); x < Math.min(W, hx + R); x++){
+        const dx = x - hx, dy = y - hy; if(Math.hypot(dx, dy) <= R && dx * ux + dy * uy >= 0 && dx * px + dy * py >= 0) hard[y * W + x] = 1; } }
     if(stB) for(let y = Math.max(0, Math.floor(stB.y)); y < Math.min(H, stB.z); y++) hard.fill(1, y * W + Math.max(0, Math.floor(stB.x)), y * W + Math.min(W, Math.ceil(stB.r)));
-    const near = dilate(hard, W, H, Math.max(1, Math.round(0.2 * ppf))), labels = [];
-    const HH = [0.45, 0.6, 0.75, 0.9, 1.1, 1.35, 1.65, 2].map(f => f * ppf);
+    const near = dilate(hard, W, H, Math.max(1, Math.round(0.2 * ppf))), nearOpen = doors.length ? dilate(hardOpen, W, H, Math.max(1, Math.round(0.2 * ppf))) : near, labels = [];
+    const HH = [0.45, 0.6, 0.75, 0.9, 1.1, 1.35, 1.65, 2, 2.5, 3].map(f => f * ppf);   // (to 3 ft: a two-line label on a plan printed small, Marshall)
     const named = rooms.filter(r => {
       if(r.minor && rooms.some(q => q !== r && !q.minor && q.name === r.name)) return false;   // the small piece of an L
       if(r.suite) return false;                                                                // a suite's hall: part of the bedroom
@@ -824,11 +1049,12 @@
         if(bx < 0){ ({a, t, w, h} = om); inR = (x, y) => om.m[(y - t) * w + x - a]; }
         else { a = ax; t = ay; w = bx - ax + 1; h = by - ay + 1; inR = (x, y) => owner[y * W + x] === r.i; }
       } else { if(!om) return; ({a, t, w, h} = om); inR = (x, y) => om.m[(y - t) * w + x - a]; }
-      // bad: not this room, near a line, on the stairs
+      // bad: not this room, near a line, on the stairs (near: the mask in use)
+      const spotsWith = near => {
       const I = new Float64Array((w + 1) * (h + 1)); let cx = 0, cy = 0, cn = 0;
       for(let y = 0; y < h; y++){ let row = 0; for(let x = 0; x < w; x++){ const X = x + a, Y = y + t, ok = inR(X, Y) && !near[Y * W + X] && !inBox(stairsB, X, Y, 0.2 * ppf);
         if(inR(X, Y)){ cx += X; cy += Y; cn++; } row += ok ? 0 : 1; I[(y + 1) * (w + 1) + x + 1] = I[y * (w + 1) + x + 1] + row; } }
-      if(!cn) return;
+      if(!cn) return null;
       cx /= cn; cy /= cn;
       const bad = (x0_, y0_, x1_, y1_) => { const p0 = Math.floor(x0_ - a), q0 = Math.floor(y0_ - t), p1 = Math.ceil(x1_ - a), q1 = Math.ceil(y1_ - t);
         if(p0 < 0 || q0 < 0 || p1 > w || q1 > h) return 1;
@@ -851,30 +1077,64 @@
         cand.push({x: +(x / W).toFixed(4), y: +(y / H).toFixed(4), p: HH.map((hh, j) => [+(hh / H).toFixed(4), +(p[j] / W).toFixed(4)]).filter(z => z[1] > 0)
           .concat(HH.map((hw, j) => [+(p[n + j] / H).toFixed(4), +(hw / W).toFixed(4)]).filter(z => z[0] > 0))});
         if(cand.length >= 30) break; }
+      // and the roomiest spot in the room at each label height, wherever it is (Aston Pine's kitchen: thirty spots around
+      // its island crowded out the open floor above it, so the label went in at 6 pt, the owner 10/28)
+      { const top = HH.concat(HH).map(() => null);
+        for(let k2 = 0; k2 < pts.length; k2 += Math.max(1, Math.floor(pts.length / 1500))){ const [, x, y] = pts[k2], pr = prof(x, y);
+          pr.forEach((v, j) => { if(!top[j] || v > top[j].v) top[j] = {v, x, y, pr}; }); }
+        const n = HH.length;
+        for(const t of top){ if(!t || !roomy(t.pr) || cand.some(c => Math.abs(c.x - t.x / W) < 1e-4 && Math.abs(c.y - t.y / H) < 1e-4)) continue;
+          cand.push({x: +(t.x / W).toFixed(4), y: +(t.y / H).toFixed(4), p: HH.map((hh, j) => [+(hh / H).toFixed(4), +(t.pr[j] / W).toFixed(4)]).filter(z => z[1] > 0)
+            .concat(HH.map((hw, j) => [+(t.pr[n + j] / H).toFixed(4), +(hw / W).toFixed(4)]).filter(z => z[0] > 0))}); } }
+      return {cand, cx, cy}; };
+      const S1 = spotsWith(near); if(!S1) return;
+      const {cand, cx, cy} = S1;
+      // a door swing near the room's center (rule 4 keeps labels off it): the floor around the center, about a label's
+      // size, is more blocked than it would be with no swings. Reported with the label, so the before-and-after check can
+      // tell a label moved or set smaller for a swing from one that got worse.
+      let swing = false;
+      if(doors.length){ let a1 = 0, a2 = 0; for(let y = Math.max(0, Math.round(cy - 4 * ppf)); y < Math.min(H, cy + 4 * ppf); y++) for(let x = Math.max(0, Math.round(cx - 4 * ppf)); x < Math.min(W, cx + 4 * ppf); x++){ const i = y * W + x; if(hard[i]) a1++; if(hardNoDoor[i]) a2++; }
+        swing = a1 > a2 + 0.5 * ppf * ppf; }
+      // the same search with door swings open, for a room whose clear spots are cramped
+      const room = c => Math.max(0, ...c.flatMap(q => q.p.filter(([hh]) => hh * H >= 0.6 * ppf).map(([, hw]) => hw * W)));
+      const cand2 = doors.length && room(cand) < 2.5 * ppf ? spotsWith(nearOpen).cand : [];
       // no clear spot at all (a bath full of fixtures): the room's center, so the room is still labeled (at 6 pt, reported)
       if(!cand.length){ issues.push({kind: 'plan-label-no-clear-spot', room: r.name}); cand.push({x: +(cx / W).toFixed(4), y: +(cy / H).toFixed(4), p: [[+(0.3 * ppf / H).toFixed(4), +(0.6 * ppf / W).toFixed(4)]]}); }
       let knock = 0; for(let y = Math.max(0, Math.floor(r.B.y)); y < Math.min(H, r.B.z) && !knock; y++) for(let x = Math.max(0, Math.floor(r.B.x)); x < Math.min(W, r.B.r); x++) if(soft[y * W + x]){ knock = 1; break; }
       // a bath's size is optional and goes first; a bath under 80 sq ft (all but a primary bath) shows "Bath" alone
       if(r.zone === 'bath' && r.ft.w * r.ft.d < 80) dims = '';
       labels.push({name, short, dims, kind: r.kind, minor: r.minor, zone: r.zone, dimsOptional: r.zone === 'bath', knock: !!knock,
-        x: +(cx / W).toFixed(4), y: +(cy / H).toFixed(4), bx: +(r.B.x / W).toFixed(4), by: +(r.B.y / H).toFixed(4), w: +((r.B.r - r.B.x) / W).toFixed(4), h: +((r.B.z - r.B.y) / H).toFixed(4), c: cand});
+        x: +(cx / W).toFixed(4), y: +(cy / H).toFixed(4), bx: +(r.B.x / W).toFixed(4), by: +(r.B.y / H).toFixed(4), w: +((r.B.r - r.B.x) / W).toFixed(4), h: +((r.B.z - r.B.y) / H).toFixed(4), c: cand, c2: cand2, swing,
+        // (the color its floor actually took, for the patch under a tight label: a closet's is its bedroom's)
+        tint: ZONES[(zone[Math.round(cy) * W + Math.round(cx)] || 0) - 1] || r.zone});
     });
     // outside the house only its walls' own marks stay (a door swing, a window's sill): long straight lines out there are
     // roof outlines or site lines (Aston Pine's second floor, 10/28) and go
     { const near = dilate(inside, W, H, Math.max(1, Math.round(0.2 * ppf))), [hr, vr] = runs(), held2 = (x, y) => outs.some(e => x >= e.x && x <= e.r && y >= e.y && y <= e.z);
       let roof = 0;
       for(let i = 0; i < N; i++){ if(!walls[i] || near[i]) continue; const x = i % W, y = (i - x) / W; if(held2(x, y)) continue;
-        if(hr[i] >= 3 * ppf || vr[i] >= 3 * ppf || (hr[i] < 0.3 * ppf && vr[i] < 0.3 * ppf && !inBox(O, x, y, 3.5 * ppf))){ walls[i] = 0; roof++; } }
+        if(hr[i] >= 3 * ppf || vr[i] >= 3 * ppf || (hr[i] < 0.3 * ppf && vr[i] < 0.3 * ppf && !inBox(O, x, y, 3.5 * ppf))){ walls[i] = 0; ceilGone[i] = WHY.outside; roof++; } }
       // and a dashed roof line: outside pieces that don't touch the house at all
       const band = dilate(inside, W, H, Math.max(2, Math.round(0.4 * ppf))), out3 = new Uint8Array(N);
       for(let i = 0; i < N; i++){ if(!walls[i] || near[i]) continue; const x = i % W; if(!held2(x, (i - x) / W)) out3[i] = 1; }
-      pieces(out3, W, H, comp => { if(comp.some(p => band[p])) return; for(const p of comp){ walls[p] = 0; roof++; } });
+      pieces(out3, W, H, comp => { if(comp.some(p => band[p])) return; for(const p of comp){ walls[p] = 0; ceilGone[p] = WHY.outside; roof++; } });
+      // and a roof outline drawn against the wall (Aston Pine's porch roof, a triangle off the second floor): outside
+      // ink that reaches more than 3.5 ft out from the house, where no door swing or window goes
+      const far = dilate(inside, W, H, Math.max(2, Math.round(3.5 * ppf))), out4 = new Uint8Array(N);
+      for(let i = 0; i < N; i++){ if(!walls[i] || near[i]) continue; const x = i % W; if(!held2(x, (i - x) / W)) out4[i] = 1; }
+      pieces(out4, W, H, comp => { if(!comp.some(p => !far[p])) return; for(const p of comp){ walls[p] = 0; ceilGone[p] = WHY.outside; roof++; } });
       if(roof) issues.push({kind: 'plan-outside-lines-removed', px: roof}); }
+    // what each rule took out, as boxes (fractions of the floor), for the before-and-after check
+    const removed = [];
+    for(const [why, code] of Object.entries(WHY)){ const m = new Uint8Array(N); let any = 0; for(let i = 0; i < N; i++) if(ceilGone[i] === code){ m[i] = 1; any = 1; }
+      if(any) pieces(dilate(m, W, H, Math.max(1, Math.round(0.3 * ppf))), W, H, (comp, ax, ay, bx, by) => removed.push({why, x: +(ax / W).toFixed(4), y: +(ay / H).toFixed(4), w: +((bx - ax + 1) / W).toFixed(4), h: +((by - ay + 1) / H).toFixed(4)})); }
     const layers = {ink: maskURL(dilate(walls, W, H, 1), W, H)};
-    TINTED.forEach(zn => { const zi = ZONES.indexOf(zn) + 1, m = new Uint8Array(N); let any = 0; for(let p = 0; p < N; p++) if(zone[p] === zi){ m[p] = 1; any = 1; } if(any) layers[zn] = maskURL(m, W, H); });
+    // (white and paper floor go along too, untinted, so the before-and-after check can tell a rule's white from a miss)
+    ['chase', 'void', 'paper', 'garage'].concat(TINTED).forEach(zn => { const zi = ZONES.indexOf(zn) + 1, m = new Uint8Array(N); let any = 0; for(let p = 0; p < N; p++) if(zone[p] === zi){ m[p] = 1; any = 1; } if(any) layers[zn] = maskURL(m, W, H); });
         const fixtures = fx.map(q => q.type === 'stairs-curved' ? (q.cx_ == null ? null : {type: q.type, cx: +(q.cx_ / W).toFixed(4), cy: +(q.cy_ / H).toFixed(4), r0: +(q.r0_ / W).toFixed(4), r1: +(q.r1_ / W).toFixed(4), a0: q.a0, a1: q.a1, treads: q.treads})
-      : q.B && q.type !== 'drop' ? {type: q.type, x: +(q.B.x / W).toFixed(4), y: +(q.B.y / H).toFixed(4), w: +((q.B.r - q.B.x) / W).toFixed(4), h: +((q.B.z - q.B.y) / H).toFixed(4), back: q.back, n: q.n, inches: q.inches} : null).filter(Boolean);
-    return {name: L.name, floor: L.floor, roof: !!L.roof, front: L.front || 'bottom', w: W, h: H, fixtures, pageScale: +(1 / k).toFixed(4),
+      : q.B && q.type !== 'drop' && q.draw ? {type: q.type, x: +(q.B.x / W).toFixed(4), y: +(q.B.y / H).toFixed(4), w: +((q.B.r - q.B.x) / W).toFixed(4), h: +((q.B.z - q.B.y) / H).toFixed(4), back: q.back, n: q.n, inches: q.inches} : null).filter(Boolean);
+    doors.forEach(dr => fixtures.push({type: 'door', hx: +(dr.h[0] / W).toFixed(4), hy: +(dr.h[1] / H).toFixed(4), lx: +(dr.l[0] / W).toFixed(4), ly: +(dr.l[1] / H).toFixed(4), px: +dr.p[0].toFixed(4), py: +dr.p[1].toFixed(4)}));
+    return {name: L.name, floor: L.floor, roof: !!L.roof, front: L.front || 'bottom', w: W, h: H, fixtures, removed, pageScale: +(1 / k).toFixed(4),
       feet: L.feet ? {w: +(W / ppf).toFixed(1), d: +(H / ppf).toFixed(1)} : null, noSizes: !L.rooms.some(r => r.dims), layers, labels, issues};
   }
   // the older inside test, for walls that leak: in each row and column the color stops at the outermost wall near the
