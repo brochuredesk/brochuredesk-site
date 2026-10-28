@@ -259,6 +259,24 @@
     mark(O, 1.2 * ppf); outside.forEach(e => mark(T(e), 0.8 * ppf));
     const dark = new Uint8Array(N);
     for(let i = 0; i < N; i++) if(keep[i] && .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2] < 170) dark[i] = 1;
+    // straight runs of ink, across and down, at each dark pixel: walls are long runs, letters and hatching short ones
+    const runs = () => { const hr = new Uint16Array(N), vr = new Uint16Array(N);
+      for(let y = 0; y < H; y++){ let x = 0; while(x < W){ if(!dark[y * W + x]){ x++; continue; } let e = x; while(e < W && dark[y * W + e]) e++; hr.fill(Math.min(65535, e - x), y * W + x, y * W + e); x = e; } }
+      for(let x = 0; x < W; x++){ let y = 0; while(y < H){ if(!dark[y * W + x]){ y++; continue; } let e = y; while(e < H && dark[e * W + x]) e++; for(let q = y; q < e; q++) vr[q * W + x] = Math.min(65535, e - y); y = e; } }
+      return [hr, vr]; };
+    // hatching (Marshall's ceiling bands, a shaded wall): thin diagonal lines packed close. A pixel on no run longer than
+    // 0.3 ft is a diagonal stroke; where they cover more than a fifth of the floor around them, it's hatching, not a wall
+    // (an angled wall is thick, so its runs are longer; a door swing's curve is a lone stroke, so it stays)
+    { const [hr, vr] = runs(), thin = new Uint8Array(N), lim = 0.3 * ppf;
+      for(let i = 0; i < N; i++) if(dark[i] && hr[i] < lim && vr[i] < lim) thin[i] = 1;
+      const I = new Float64Array((W + 1) * (H + 1));   // summed area of thin strokes
+      for(let y = 0; y < H; y++){ let row = 0; for(let x = 0; x < W; x++){ row += thin[y * W + x]; I[(y + 1) * (W + 1) + x + 1] = I[y * (W + 1) + x + 1] + row; } }
+      const r = Math.max(2, Math.round(0.6 * ppf));
+      for(let y = 0; y < H; y++) for(let x = 0; x < W; x++){ const i = y * W + x; if(!thin[i]) continue;
+        const a0 = Math.max(0, x - r), a1 = Math.min(W, x + r + 1), b0 = Math.max(0, y - r), b1 = Math.min(H, y + r + 1);
+        const n = I[b1 * (W + 1) + a1] - I[b0 * (W + 1) + a1] - I[b1 * (W + 1) + a0] + I[b0 * (W + 1) + a0];
+        if(n > 0.2 * (a1 - a0) * (b1 - b0)) dark[i] = 0; }
+    }
     // the listing's text out: a letter is under about a foot tall and wide; near a room's label, pieces up to 2.6 ft
     // (letters run together in bold type). Walls, door swings and fixtures are larger and stay.
     const wins = L.rooms.map(r => { const B = T(P(r.box)), lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k,
@@ -274,6 +292,17 @@
       const big = Math.max(bx - ax, by - ay) + 1;
       const text = big < 1.1 * ppf || (big < 2.6 * ppf && wins.some(w => ax >= w.x && bx <= w.r && ay >= w.y && by <= w.z));
       if(text) for(const p of comp) dark[p] = 0;
+    }
+    // text that touches a line (a size printed against a wall, a name across a counter): around each room's label, in a
+    // cross about as long as the printed name (it may run across or up the page), only ink on a straight run over 1.2 ft
+    // stays (walls, counters, a tub); fixtures elsewhere in the room are left alone
+    { const [hr, vr] = runs(), keepRun = 1.2 * ppf;
+      L.rooms.forEach(r => { const B = T(P(r.box)), lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k, hh = 2.5 * ppf,
+        long = Math.max(2.5, (String(r.name).length + 2) * 0.45) * ppf;
+        for(const [a0, a1, c0, c1] of [[lx - long, lx + long, ly - hh, ly + hh], [lx - hh, lx + hh, ly - long, ly + long]]){
+          const xa = Math.max(0, Math.ceil(Math.max(a0, B.x))), xb = Math.min(W, Math.floor(Math.min(a1, B.r))), ya = Math.max(0, Math.ceil(Math.max(c0, B.y))), yb = Math.min(H, Math.floor(Math.min(c1, B.z)));
+          for(let y = ya; y < yb; y++) for(let x = xa; x < xb; x++){ const i = y * W + x; if(dark[i] && hr[i] < keepRun && vr[i] < keepRun) dark[i] = 0; }
+        } });
     }
     const walls = dark, rD = Math.max(1, Math.round(0.15 * ppf)), blocked = dilate(walls, W, H, rD);
     // open floor, split by the walls (4-connected; a door opening joins rooms, the room boxes keep each color in its room)
@@ -305,17 +334,20 @@
     const inside = new Uint8Array(N);
     for(let y = by0; y < by1; y++) for(let x = bx0; x < bx1; x++)
       if(x >= xl[y - by0] && x <= xr[y - by0] && y >= yt[x - bx0] && y <= yb[x - bx0]) inside[y * W + x] = 1;
-    // marks outside the walls that aren't a porch, patio or garage: the listing's floor title ("2nd Floor"), a north arrow
+    // marks outside the walls that aren't a porch, patio or garage, or in no room at all: the listing's floor title
+    // ("2nd Floor", even in the notch of an L-shaped floor), a north arrow. Walls join into pieces far larger than 6 ft.
     const outs = outside.map(T), held = (x, y) => outs.some(e => x >= e.x && x <= e.r && y >= e.y && y <= e.z);
+    const boxes = L.rooms.map(r => T(P(r.box))), pb = 0.5 * ppf, inRoom = (x, y) => boxes.some(e => x >= e.x - pb && x <= e.r + pb && y >= e.y - pb && y <= e.z + pb);
     seen.fill(0);
     for(let s = 0; s < N; s++){
       if(!walls[s] || seen[s]) continue;
       let top = 0, ax = W, ay = H, bx = -1, by = -1, inn = 0; stack[top++] = s; seen[s] = 1; comp.length = 0;
-      while(top){ const p = stack[--top], x = p % W, y = (p - x) / W; comp.push(p); if(inside[p] || held(x, y)) inn = 1;
+      let room = 0;
+      while(top){ const p = stack[--top], x = p % W, y = (p - x) / W; comp.push(p); if(inside[p] || held(x, y)) inn = 1; if(!room && inRoom(x, y)) room = 1;
         if(x < ax) ax = x; if(x > bx) bx = x; if(y < ay) ay = y; if(y > by) by = y;
         for(let dy = -1; dy <= 1; dy++) for(let dx = -1; dx <= 1; dx++){ const X = x + dx, Y = y + dy; if(X < 0 || Y < 0 || X >= W || Y >= H) continue;
           const q = Y * W + X; if(walls[q] && !seen[q]){ seen[q] = 1; stack[top++] = q; } } }
-      if(!inn && Math.max(bx - ax, by - ay) < 6 * ppf) for(const p of comp) walls[p] = 0;
+      if((!inn || !room) && Math.max(bx - ax, by - ay) < 6 * ppf) for(const p of comp) walls[p] = 0;
     }
     // each room: the open floor its label sits in, inside its box, grown back to the walls; larger rooms first, so a room
     // inside another's box keeps its own color
@@ -335,9 +367,25 @@
       const g2 = dilate(m, w, h, rD + 1);
       for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(g2[(y - t) * w + x - a] && !walls[i] && (out || inside[i])) zone[i] = zi; }
     });
+    // each label at the clearest spot in its room: the fewest wall lines and fixtures under it, near the listing's own
+    // label. Sized as the name prints at about 5 pt per foot (8 pt type; the template fits it again at the real size).
+    const IW = new Float64Array((W + 1) * (H + 1));
+    for(let y = 0; y < H; y++){ let row = 0; for(let x = 0; x < W; x++){ row += walls[y * W + x]; IW[(y + 1) * (W + 1) + x + 1] = IW[y * (W + 1) + x + 1] + row; } }
+    const inkIn = (a0, b0, a1, b1) => { a0 = Math.max(0, Math.round(a0)); b0 = Math.max(0, Math.round(b0)); a1 = Math.min(W, Math.round(a1)); b1 = Math.min(H, Math.round(b1));
+      return a1 > a0 && b1 > b0 ? IW[b1 * (W + 1) + a1] - IW[b0 * (W + 1) + a1] - IW[b1 * (W + 1) + a0] + IW[b0 * (W + 1) + a0] : 0; };
+    const spot = (r, lx, ly) => {
+      const B = r.B, hw = String(r.name).length * 0.47 * ppf, hh = (r.dims ? 1.9 : 0.95) * ppf, st = Math.max(1, 0.4 * ppf);
+      if(B.r - B.x < 2 * hw || B.z - B.y < 2 * hh) return [lx, ly];   // no room to move: the template shortens it
+      let best = null;
+      for(let y = B.y + hh; y <= B.z - hh; y += st) for(let x = B.x + hw; x <= B.r - hw; x += st){
+        const sc = inkIn(x - hw, y - hh, x + hw, y + hh) + 0.02 * Math.hypot(x - lx, y - ly) * hh;
+        if(!best || sc < best[0]) best = [sc, x, y];
+      }
+      return best ? [best[1], best[2]] : [lx, ly];
+    };
     rooms.forEach(r => {
       if(r.minor && rooms.some(q => q !== r && !q.minor && q.name === r.name)) return;   // the small piece of an L
-      const lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k;
+      const [lx, ly] = spot(r, (b.x + r.label.x * b.w - x0) * k, (b.y + r.label.y * b.h - y0) * k);
       labels.push({name: r.name, short: r.short, dims: r.dims, kind: r.kind, minor: r.minor, zone: r.zone,
         x: +(lx / W).toFixed(4), y: +(ly / H).toFixed(4), bx: +(r.B.x / W).toFixed(4), by: +(r.B.y / H).toFixed(4), w: +((r.B.r - r.B.x) / W).toFixed(4), h: +((r.B.z - r.B.y) / H).toFixed(4)});
     });
