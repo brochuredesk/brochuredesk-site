@@ -1174,13 +1174,32 @@
         const box = {left: Math.min(...ins.map(r => r.box.left)), top: Math.min(...ins.map(r => r.box.top)), right: Math.max(...ins.map(r => r.box.right)), bottom: Math.max(...ins.map(r => r.box.bottom))};
         out.push(Object.assign({}, L, {rooms: rs, outline: box, feet: null, ppfPage: L.ppfPage})); }); }
     return out.map((L, i) => Object.assign({}, L, {floor: i + 1, name: L.roof ? L.name : FLOORS[i] || L.name})); };
+  // a garage drawn apart from the house (off its outer walls, Eubanks): not cut off (10/27 left it off the crop) but kept
+  // as its own small drawing, which the template puts in a framed box beside the house with a site key (the owner 10/28,
+  // concept B). site: both boxes in page pixels, so the key shows where the listing places the garage.
+  const detachedGarages = (canvases, levels) => { const out = [];
+    const house = levels.map(L => { const c = canvases[L.page - 1]; if(!c) return L;
+      const b = drawingBox(c), P = f => ({x: b.x + f.left * b.w, y: b.y + f.top * b.h, r: b.x + f.right * b.w, z: b.y + f.bottom * b.h});
+      const o = P(L.outline), near = 0.04 * Math.max(o.r - o.x, o.z - o.y);
+      const apart = r => { if(r.kind !== 'garage') return false; const e = P(r.box); return !(e.x <= o.r + near && e.r >= o.x - near && e.y <= o.z + near && e.z >= o.y - near); };
+      const gs = L.rooms.filter(apart); if(!gs.length) return L;
+      gs.forEach(g => { const e = P(g.box), fpp = L.feet && L.feet.w > 0 ? L.feet.w / (o.r - o.x) : 0;
+        out.push({L: Object.assign({}, L, {rooms: [g], outline: g.box, stairs: null, name: 'Detached garage', roof: false,
+          feet: fpp ? {w: +((e.r - e.x) * fpp).toFixed(1), d: +((e.z - e.y) * fpp).toFixed(1)} : null}),
+          site: {house: [o.x, o.y, o.r - o.x, o.z - o.y].map(v => Math.round(v)), garage: [e.x, e.y, e.r - e.x, e.z - e.y].map(v => Math.round(v))}}); });
+      return Object.assign({}, L, {rooms: L.rooms.filter(r => !gs.includes(r))}); });
+    return {house, garages: out};
+  };
   PT.colorPlan = (canvases, plan) => {
     const fin = PT.planFinished(canvases, plan), levels = [];
-    const withPpf = (plan.levels || []).map(L => { const c = canvases[L.page - 1]; if(!c || !L.feet || !(L.feet.w > 0)) return L;
+    const sep = detachedGarages(canvases, plan.levels || []);
+    const withPpf = sep.house.map(L => { const c = canvases[L.page - 1]; if(!c || !L.feet || !(L.feet.w > 0)) return L;
       const bb = drawingBox(c); return Object.assign({}, L, {ppfPage: (L.outline.right - L.outline.left) * bb.w / L.feet.w}); });
-    for(const L of fin.finished ? splitParts(withPpf) : plan.levels || []){ const c = canvases[L.page - 1]; if(c) levels.push(fin.finished ? finishedFloor(c, L) : colorFloor(c, L)); }
+    for(const L of fin.finished ? splitParts(withPpf) : sep.house){ const c = canvases[L.page - 1]; if(c) levels.push(fin.finished ? finishedFloor(c, L) : colorFloor(c, L)); }
+    const detached = sep.garages.map(({L, site}) => { const c = canvases[L.page - 1]; if(!c) return null;
+      return Object.assign(fin.finished ? finishedFloor(c, L) : colorFloor(c, L), {name: 'Detached garage', detached: 'garage', site}); }).filter(Boolean);
     return {kind: 'color', source: fin.finished ? 'Floor plan from the listing.' : (plan.source || 'Floor plan from the listing, colored for this brochure.'),
-      levels, finished: fin.finished, watermark: fin.watermark, noSizes: !fin.finished && levels.length > 0 && levels.every(l => l.noSizes)};
+      levels, detached, finished: fin.finished, watermark: fin.watermark, noSizes: !fin.finished && levels.length > 0 && levels.every(l => l.noSizes)};
   };
   // the agent said yes to sizes from the MLS room list: each label takes the size of the MLS room with its name on its
   // floor (Primary for Master; "Bedroom 2" or the next unused bedroom), rounded to feet. A room with no match stays unsized.
