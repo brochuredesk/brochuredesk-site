@@ -556,7 +556,10 @@
         const bw = bx - ax + 1, bh = by - ay + 1;
         if(Math.max(bw, bh) >= 6 * ppf || comp.some(p => net[p] || protect[p])) return;
         if(inBox(stairsB, (ax + bx) / 2, (ay + by) / 2, 0)) return;
-        if(comp.length / (bw * bh) >= 0.45 && Math.min(bw, bh) >= 0.3 * ppf) return;   // solid: a column, a post (a letter's bar is thin)
+        // solid: a column, a post, a short support wall, at any angle: ink a wall's thickness through and a foot or more
+        // long (Stoney Brook's diagonal dining-room post fills under half its box and was dropped here, 10/28); a letter's
+        // bar is thinner
+        if(comp.some(p => core[p]) && Math.max(bw, bh) >= 0.8 * ppf) return;
         if(closes(comp, ax, ay, bx, by)) return;
         for(const p of comp) walls[p] = 0; gone++;
       });
