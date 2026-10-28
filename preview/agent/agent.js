@@ -1293,6 +1293,13 @@
   // ---------- 4. final proof ----------
   let finalPiece = null;
   function nextPiece(){ const ps = piecesOf(pkg); return ps.find(id => !pkg.approvals[id]) || ps[0]; }
+  // a listing plan with no room sizes (the owner 10/27): ask once whether to take them from the MLS room list (draft wording)
+  function planSizesBox(){
+    const P = pkg.plan, mls = (pkg.listing.rooms || []).filter(r => r && r.size);
+    $('#planSizes').hidden = !(P && P.noSizes && !pkg.paid && mls.length && pkg.planSizes == null);
+    $('#planSizesYes').onclick = async () => { pkg.plan = PT.mlsSizes(P, mls); pkg.planSizes = 'mls'; store.event(pkg.id, 'plan-sizes', {from: 'mls'}); save(); planSizesBox(); await drawFinal(); };
+    $('#planSizesNo').onclick = () => { pkg.planSizes = 'none'; store.event(pkg.id, 'plan-sizes', {from: 'none'}); save(); planSizesBox(); };
+  }
   async function openFinal(piece){
     if(!pkg.copy[pkg.design]) return openRough();
     show('vFinal');
@@ -1301,7 +1308,7 @@
     $('#finalPiece').innerHTML = ps.map(id => `<option value="${id}"${id === finalPiece ? ' selected' : ''}>${pieceLabel(id)}${pkg.approvals[id] ? ' (approved)' : ''}</option>`).join('');
     $('#finalTitle').textContent = `Proof: ${pkg.listing.address}`;
     $('#backToRough').hidden = !!pkg.paid;
-    ohFields(); approveBox(); switchTiles(); await drawFinal();
+    ohFields(); planSizesBox(); approveBox(); switchTiles(); await drawFinal();
     // a proof that hasn't had its fill pass or outside AI check yet (written before it existed, or interrupted) gets one now
     const w = pkg.copy[pkg.design]; if(w && !pkg.paid && pkg.stage === 'final'){ if(!w.filled) await fillPass(); if(!w.aiCheck) await aiCheckPass(); }
   }
