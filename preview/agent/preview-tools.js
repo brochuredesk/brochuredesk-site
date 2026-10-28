@@ -343,7 +343,7 @@
     });
     const layers = {ink: maskURL(dilate(walls, W, H, 1), W, H)};
     ZONES.forEach((zn, i) => { const m = new Uint8Array(N); let any = 0; for(let p = 0; p < N; p++) if(zone[p] === i + 1){ m[p] = 1; any = 1; } if(any) layers[zn] = maskURL(m, W, H); });
-    return {name: L.name, floor: L.floor, roof: !!L.roof, w: W, h: H, feet: L.feet ? {w: +(W / ppf).toFixed(1), d: +(H / ppf).toFixed(1)} : null, layers, labels};
+    return {name: L.name, floor: L.floor, roof: !!L.roof, w: W, h: H, pageScale: +(1 / k).toFixed(4), feet: L.feet ? {w: +(W / ppf).toFixed(1), d: +(H / ppf).toFixed(1)} : null, layers, labels};
   }
   PT.colorPlan = (canvases, plan) => {
     const levels = [];
