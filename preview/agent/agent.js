@@ -13,7 +13,7 @@
   const PICK_CAP = 13;
   const PICK_FULL = 'You need to remove an active photo to pull in a new photo.';   // the owner's wording; don't change without asking
   const PICK_LABELS = {upper: 'In your package', lower: 'More listing photos'};     // draft wording
-  const PLAN_NOTE = "Your floor plan will be redrawn in this design's style.";      // draft wording (the owner's call)
+  const PLAN_NOTE = "Your floor plan will be colored in this design's style, with clear room labels.";      // draft wording (the owner's call)
   const PT = window.PreviewTools;
   const FINE_PRINT = 'Information deemed reliable but not guaranteed.';
   const PRICE = {full: 2500, essentials: 2000, single: 1000};
@@ -729,7 +729,7 @@
       copy: written ? written.copy : pre.copy,
       companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : pre.companion,
       copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {},
-      // the redrawn plan is saved as linework (rooms, walls, levels); each design restyles it in code, never a second redraw
+      // the colored plan is saved as masks and labels; each design tints it in its own colors, never a second read
       written && pkg.plan && fp && fp.active ? {plan: pkg.plan} : {});
   }
   // The design's own example copy gives the shape and the length of every slot. Photo sections get the room heading of
@@ -1237,8 +1237,9 @@
       $('#writeRetry').hidden = false;
     }
   }
-  // The professional floor plan redraw (product.md "Floor plans"): once per plan, at Finalize. The drawing is saved as
-  // linework (pkg.plan) that every design styles in code, so a design switch never redraws; a new plan (an upload) does.
+  // The floor plan at Finalize (product.md "Floor plans"): once per plan, one AI read marks every room, then this browser
+  // colors the listing's own plan from it (pkg.plan: masks every design tints, our own labels), so a design switch never
+  // reads it again; a new plan (an upload) does.
   // A plan the checks turn down leaves pkg.plan empty and the design takes its no-plan version.
   async function redrawPlan(){
     const F = pkg.floorPlan;
@@ -1247,18 +1248,22 @@
     if(pkg.planKey === key) return;
     try {
       let pages;
-      try { pages = await PT.planPages(await planBlobs((F.files || []).filter(f => !f.from || !F.source || f.from === F.source))); }
-      catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artPages(F.art); }
+      try { pages = await PT.planCanvases(await planBlobs((F.files || []).filter(f => !f.from || !F.source || f.from === F.source))); }
+      catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artCanvases(F.art); }
       const st = +pkg.listing.stories || 0;
       if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
+      const canvases = pages; pages = canvases.map(PT.forRead);
       const body = {action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
         stories: st || null, sqft: +pkg.listing.sqft || null};
       // the first read, then (turned down) the more careful retry as a request of its own: a slow first read on the
       // strongest model leaves too little of the 150 s limit for a second in the same request
       let j = await ai(Object.assign({attempt: 'first'}, body)), cost = j.cost || 0;
       if(!j.plan && j.retry){ j = await ai(Object.assign({}, body, {attempt: 'retry'})); cost += j.cost || 0; }
-      Object.assign(pkg, {plan: j.plan || null, planKey: key, planCost: (pkg.planCost || 0) + cost});
-      store.event(pkg.id, j.plan ? 'plan-redraw' : 'plan-redraw-failed', j.plan ? {model: j.model, cost} : {why: j.why, cost});
+      // the listing's own plan, colored from the read (in this browser, no AI cost)
+      let plan = null;
+      if(j.plan){ try { plan = PT.colorPlan(canvases, j.plan); if(!plan.levels.length) plan = null; } catch(e){ j.why = ['coloring: ' + e.message]; } }
+      Object.assign(pkg, {plan, planKey: key, planCost: (pkg.planCost || 0) + cost});
+      store.event(pkg.id, plan ? 'plan-redraw' : 'plan-redraw-failed', plan ? {model: j.model, cost} : {why: j.why, cost});
     } catch(e) {
       // a failed call is tried again at the next Finalize (no key saved)
       pkg.plan = null; store.event(pkg.id, 'plan-redraw-failed', {why: [e.message]});

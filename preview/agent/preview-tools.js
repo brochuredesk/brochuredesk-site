@@ -3,7 +3,8 @@
 //   PreviewTools.load() / heading / line    room headings and the "what you'll get" lines (/designs/shared/preview-lines.json)
 //   PreviewTools.isPreview(text)            true when a text holds a preview line (exports refuse it)
 //   PreviewTools.cleanPlan(blob)            the agent's own floor plan as simple line art, one image per floor
-//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the redraw at Finalize, cropped to the drawing
+//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the plan read at Finalize, cropped to the drawing
+//   PreviewTools.planCanvases(blobs) / colorPlan(canvases, plan)   the listing's own plan, colored from that read (pkg.plan)
 //   PreviewTools.picker(root, opts)         the two-box photo picker (upper: in the package, lower: the rest)
 (function(){
   const PT = window.PreviewTools = {};
@@ -185,16 +186,170 @@
     const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.03), x = Math.max(0, x0 - pad), y = Math.max(0, y0 - pad);
     return {x, y, w: Math.min(W, x1 + pad) - x, h: Math.min(H, y1 + pad) - y};
   }
-  PT.planPages = async blobs => {
+  // the plan pages drawn large (4200 px), once: the read gets forRead of each, and the coloring the canvases themselves
+  PT.planCanvases = async blobs => {
     const out = [];
-    for(const b of [].concat(blobs)) for(const c of await withRetry(b, 4200)){ if(out.length >= 4) break; out.push(forRead(c)); }
+    for(const b of [].concat(blobs)) for(const c of await withRetry(b, 4200)){ if(out.length >= 4) break; out.push(c); }
     return out;
   };
+  PT.forRead = forRead;
+  PT.planPages = async blobs => (await PT.planCanvases(blobs)).map(forRead);
   // no file to read again (an upload from an earlier visit): the cleaned line art, on white
-  PT.artPages = art => Promise.all([].concat(art).slice(0, 4).map(a => new Promise((res, rej) => {
-    const im = new Image(); im.onload = () => { const c = canvas(im.naturalWidth, im.naturalHeight); c.getContext('2d').drawImage(im, 0, 0); res(forRead(c)); };
+  PT.artCanvases = art => Promise.all([].concat(art).slice(0, 4).map(a => new Promise((res, rej) => {
+    const im = new Image(); im.onload = () => { const c = canvas(im.naturalWidth, im.naturalHeight), g = c.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0); res(c); };
     im.onerror = rej; im.src = a.src;
   })));
+  PT.artPages = async art => (await PT.artCanvases(art)).map(forRead);
+
+  // ---------- the listing's own plan, colored (the owner 10/27: dress up the listing's plan, don't redraw it) ----------
+  // canvases: the pages planCanvases drew (the read's fractions are of each page's drawingBox, as forRead sent it);
+  // plan: package-ai's {kind: 'color', levels}. Each floor is cut from its page at its outer walls (plus its porch, patio and
+  // garage), so a builder sheet's photo, logo and dimension strings drop out; the listing's text is taken out; each room
+  // is filled out to its walls. Saved as masks the design tints in its own colors: ink (the walls) and one per room kind.
+  // The labels are ours, set by the template in the design's font at a print-legible size.
+  const ZONE = (name, kind) => {
+    if(kind === 'outdoor' || kind === 'garage' || kind === 'open') return kind;
+    if(kind === 'wet') return 'bath';
+    if(kind === 'closet') return 'service';
+    const n = String(name || '').toLowerCase();
+    if(/bed|primary|suite|guest/.test(n)) return 'sleep';
+    if(/bath|powder/.test(n)) return 'bath';
+    if(/closet|pantry|laundry|utility|storage|mech|linen/.test(n)) return 'service';
+    if(/hall|entry|foyer|landing|gallery|stair/.test(n)) return 'open';
+    return 'living';
+  };
+  const ZONES = ['living', 'sleep', 'bath', 'service', 'garage', 'outdoor'];
+  // square dilation by r (separable running max), on a 0/1 mask
+  function dilate(m, W, H, r){
+    if(r < 1) return m.slice();
+    const t = new Uint8Array(W * H), o = new Uint8Array(W * H);
+    for(let y = 0; y < H; y++){ const row = y * W; let last = -1e9;
+      for(let x = 0; x < W; x++){ if(m[row + x]) last = x; if(x - last <= r) t[row + x] = 1; }
+      last = 1e9; for(let x = W - 1; x >= 0; x--){ if(m[row + x]) last = x; if(last - x <= r) t[row + x] = 1; } }
+    for(let x = 0; x < W; x++){ let last = -1e9;
+      for(let y = 0; y < H; y++){ if(t[y * W + x]) last = y; if(y - last <= r) o[y * W + x] = 1; }
+      last = 1e9; for(let y = H - 1; y >= 0; y--){ if(t[y * W + x]) last = y; if(last - y <= r) o[y * W + x] = 1; } }
+    return o;
+  }
+  const maskURL = (m, W, H) => {
+    const c = canvas(W, H), g = c.getContext('2d'), id = g.createImageData(W, H);
+    for(let i = 0; i < W * H; i++) if(m[i]) id.data[i * 4 + 3] = 255;
+    g.putImageData(id, 0, 0); return c.toDataURL('image/png');
+  };
+  function colorFloor(page, L){
+    const b = drawingBox(page), P = f => ({x: b.x + f.left * b.w, y: b.y + f.top * b.h, r: b.x + f.right * b.w, z: b.y + f.bottom * b.h});
+    const o = P(L.outline), side = Math.max(o.r - o.x, o.z - o.y);
+    const outside = L.rooms.filter(r => r.kind === 'outdoor' || r.kind === 'garage').map(r => P(r.box));
+    const pad = 0.03 * side, ext = [o].concat(outside);
+    const x0 = Math.max(0, Math.min(...ext.map(e => e.x)) - pad), y0 = Math.max(0, Math.min(...ext.map(e => e.y)) - pad);
+    const x1 = Math.min(page.width, Math.max(...ext.map(e => e.r)) + pad), y1 = Math.min(page.height, Math.max(...ext.map(e => e.z)) + pad);
+    // 3000 px on the long side: 300 ppi up to 10 in, wider than any floor prints on a back panel
+    const k = Math.min(4, 3000 / Math.max(x1 - x0, y1 - y0)), W = Math.round((x1 - x0) * k), H = Math.round((y1 - y0) * k), N = W * H;
+    const c = canvas(W, H), g = c.getContext('2d', {willReadFrequently: true});
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.imageSmoothingQuality = 'high'; g.drawImage(page, x0, y0, x1 - x0, y1 - y0, 0, 0, W, H);
+    const d = g.getImageData(0, 0, W, H).data;
+    const T = e => ({x: (e.x - x0) * k, y: (e.y - y0) * k, r: (e.r - x0) * k, z: (e.z - y0) * k});
+    const O = T(o);
+    // pixels per foot here: from the floor's size in feet (package-ai), else a house about 45 ft across
+    const ppf = L.feet && L.feet.w > 0 ? (O.r - O.x) / L.feet.w : Math.max(O.r - O.x, O.z - O.y) / 45;
+    // what belongs to this floor: the outer walls a little out, and each porch, patio and garage box
+    const keep = new Uint8Array(N), mark = (e, p) => { const a = Math.max(0, Math.floor(e.x - p)), bb = Math.min(W, Math.ceil(e.r + p)), t = Math.max(0, Math.floor(e.y - p)), z = Math.min(H, Math.ceil(e.z + p));
+      for(let y = t; y < z; y++) keep.fill(1, y * W + a, y * W + bb); };
+    mark(O, 1.2 * ppf); outside.forEach(e => mark(T(e), 0.8 * ppf));
+    const dark = new Uint8Array(N);
+    for(let i = 0; i < N; i++) if(keep[i] && .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2] < 170) dark[i] = 1;
+    // the listing's text out: a letter is under about a foot tall and wide; near a room's label, pieces up to 2.6 ft
+    // (letters run together in bold type). Walls, door swings and fixtures are larger and stay.
+    const wins = L.rooms.map(r => { const B = T(P(r.box)), lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k,
+      hw = Math.max(2.5 * ppf, (B.r - B.x) / 2), hh = 2.5 * ppf; return {x: lx - hw, r: lx + hw, y: ly - hh, z: ly + hh}; });
+    const seen = new Uint8Array(N), stack = new Int32Array(N), comp = [];
+    for(let s = 0; s < N; s++){
+      if(!dark[s] || seen[s]) continue;
+      let top = 0, ax = W, ay = H, bx = -1, by = -1; stack[top++] = s; seen[s] = 1; comp.length = 0;
+      while(top){ const p = stack[--top], x = p % W, y = (p - x) / W; comp.push(p);
+        if(x < ax) ax = x; if(x > bx) bx = x; if(y < ay) ay = y; if(y > by) by = y;
+        for(let dy = -1; dy <= 1; dy++) for(let dx = -1; dx <= 1; dx++){ const X = x + dx, Y = y + dy; if(X < 0 || Y < 0 || X >= W || Y >= H) continue;
+          const q = Y * W + X; if(dark[q] && !seen[q]){ seen[q] = 1; stack[top++] = q; } } }
+      const big = Math.max(bx - ax, by - ay) + 1;
+      const text = big < 1.1 * ppf || (big < 2.6 * ppf && wins.some(w => ax >= w.x && bx <= w.r && ay >= w.y && by <= w.z));
+      if(text) for(const p of comp) dark[p] = 0;
+    }
+    const walls = dark, rD = Math.max(1, Math.round(0.15 * ppf)), blocked = dilate(walls, W, H, rD);
+    // open floor, split by the walls (4-connected; a door opening joins rooms, the room boxes keep each color in its room)
+    const free = new Int32Array(N); let nid = 0;
+    for(let s = 0; s < N; s++){
+      if(blocked[s] || free[s] || !keep[s]) continue;
+      nid++; let top = 0; stack[top++] = s; free[s] = nid;
+      while(top){ const p = stack[--top], x = p % W;
+        for(const q of [x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1, p - W, p + W]) if(q >= 0 && q < N && !blocked[q] && !free[q] && keep[q]){ free[q] = nid; stack[top++] = q; } }
+    }
+    // inside the house: the marked outline runs a little past the walls in places (a bay, a jog), so in each row and
+    // column the color stops at the outermost wall near the box edge (an opening takes its neighbors' position)
+    const R = 3 * ppf, bx0 = Math.max(0, Math.floor(O.x - ppf)), bx1 = Math.min(W, Math.ceil(O.r + ppf)), by0 = Math.max(0, Math.floor(O.y - ppf)), by1 = Math.min(H, Math.ceil(O.z + ppf));
+    const edges = (n, lo, hi, at) => {   // at(i, j) -> wall at line i, position j (lo..hi)
+      const a = new Float64Array(n).fill(NaN), z = new Float64Array(n).fill(NaN);
+      for(let i = 0; i < n; i++){
+        for(let j = lo; j < Math.min(hi, lo + R); j++) if(at(i, j)){ a[i] = j; break; }
+        for(let j = hi - 1; j >= Math.max(lo, hi - R); j--) if(at(i, j)){ z[i] = j; break; }
+      }
+      for(const [v, dflt] of [[a, lo], [z, hi - 1]]){
+        const ok = []; for(let i = 0; i < n; i++) if(!isNaN(v[i])) ok.push(i);
+        if(!ok.length){ v.fill(dflt); continue; }
+        let m = 0; for(let i = 0; i < n; i++){ while(m < ok.length - 1 && Math.abs(ok[m + 1] - i) <= Math.abs(ok[m] - i)) m++; if(isNaN(v[i])) v[i] = v[ok[m]]; }
+      }
+      return [a, z];
+    };
+    const [xl, xr] = edges(by1 - by0, bx0, bx1, (i, j) => walls[(i + by0) * W + j]);
+    const [yt, yb] = edges(bx1 - bx0, by0, by1, (i, j) => walls[j * W + i + bx0]);
+    const inside = new Uint8Array(N);
+    for(let y = by0; y < by1; y++) for(let x = bx0; x < bx1; x++)
+      if(x >= xl[y - by0] && x <= xr[y - by0] && y >= yt[x - bx0] && y <= yb[x - bx0]) inside[y * W + x] = 1;
+    // marks outside the walls that aren't a porch, patio or garage: the listing's floor title ("2nd Floor"), a north arrow
+    const outs = outside.map(T), held = (x, y) => outs.some(e => x >= e.x && x <= e.r && y >= e.y && y <= e.z);
+    seen.fill(0);
+    for(let s = 0; s < N; s++){
+      if(!walls[s] || seen[s]) continue;
+      let top = 0, ax = W, ay = H, bx = -1, by = -1, inn = 0; stack[top++] = s; seen[s] = 1; comp.length = 0;
+      while(top){ const p = stack[--top], x = p % W, y = (p - x) / W; comp.push(p); if(inside[p] || held(x, y)) inn = 1;
+        if(x < ax) ax = x; if(x > bx) bx = x; if(y < ay) ay = y; if(y > by) by = y;
+        for(let dy = -1; dy <= 1; dy++) for(let dx = -1; dx <= 1; dx++){ const X = x + dx, Y = y + dy; if(X < 0 || Y < 0 || X >= W || Y >= H) continue;
+          const q = Y * W + X; if(walls[q] && !seen[q]){ seen[q] = 1; stack[top++] = q; } } }
+      if(!inn && Math.max(bx - ax, by - ay) < 6 * ppf) for(const p of comp) walls[p] = 0;
+    }
+    // each room: the open floor its label sits in, inside its box, grown back to the walls; larger rooms first, so a room
+    // inside another's box keeps its own color
+    const zone = new Uint8Array(N), labels = [];
+    const rooms = L.rooms.map(r => Object.assign({}, r, {B: T(P(r.box)), zone: ZONE(r.name, r.kind)}));
+    rooms.slice().sort((p, q) => (q.B.r - q.B.x) * (q.B.z - q.B.y) - (p.B.r - p.B.x) * (p.B.z - p.B.y)).forEach(r => {
+      if(r.zone === 'open') return;
+      const zi = ZONES.indexOf(r.zone) + 1, pd = 0.4 * ppf, B = r.B;
+      const a = Math.max(0, Math.floor(B.x - pd)), bb = Math.min(W, Math.ceil(B.r + pd)), t = Math.max(0, Math.floor(B.y - pd)), z = Math.min(H, Math.ceil(B.z + pd));
+      if(bb <= a || z <= t) return;
+      const at = (x, y) => free[Math.min(H - 1, Math.max(0, Math.round(y))) * W + Math.min(W - 1, Math.max(0, Math.round(x)))];
+      const lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k;
+      const seed = at(lx, ly) || at((B.x + B.r) / 2, (B.y + B.z) / 2);
+      if(!seed) return;
+      const out = r.zone === 'outdoor' || r.zone === 'garage', w = bb - a, h = z - t, m = new Uint8Array(w * h);
+      for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(free[i] === seed && (out || inside[i])) m[(y - t) * w + x - a] = 1; }
+      const g2 = dilate(m, w, h, rD + 1);
+      for(let y = t; y < z; y++) for(let x = a; x < bb; x++){ const i = y * W + x; if(g2[(y - t) * w + x - a] && !walls[i] && (out || inside[i])) zone[i] = zi; }
+    });
+    rooms.forEach(r => {
+      if(r.minor && rooms.some(q => q !== r && !q.minor && q.name === r.name)) return;   // the small piece of an L
+      const lx = (b.x + r.label.x * b.w - x0) * k, ly = (b.y + r.label.y * b.h - y0) * k;
+      labels.push({name: r.name, short: r.short, dims: r.dims, kind: r.kind, minor: r.minor, zone: r.zone,
+        x: +(lx / W).toFixed(4), y: +(ly / H).toFixed(4), bx: +(r.B.x / W).toFixed(4), by: +(r.B.y / H).toFixed(4), w: +((r.B.r - r.B.x) / W).toFixed(4), h: +((r.B.z - r.B.y) / H).toFixed(4)});
+    });
+    const layers = {ink: maskURL(dilate(walls, W, H, 1), W, H)};
+    ZONES.forEach((zn, i) => { const m = new Uint8Array(N); let any = 0; for(let p = 0; p < N; p++) if(zone[p] === i + 1){ m[p] = 1; any = 1; } if(any) layers[zn] = maskURL(m, W, H); });
+    return {name: L.name, floor: L.floor, roof: !!L.roof, w: W, h: H, feet: L.feet ? {w: +(W / ppf).toFixed(1), d: +(H / ppf).toFixed(1)} : null, layers, labels};
+  }
+  PT.colorPlan = (canvases, plan) => {
+    const levels = [];
+    for(const L of plan.levels || []){ const c = canvases[L.page - 1]; if(c) levels.push(colorFloor(c, L)); }
+    return {kind: 'color', source: plan.source || 'Floor plan from the listing, colored for this brochure.', levels};
+  };
 
   // ---------- photo picker ----------
   // opts: photos [{key, src, room}], upper [keys in the package], cap, full (the message when the upper box is full),
