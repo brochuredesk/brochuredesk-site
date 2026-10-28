@@ -1241,6 +1241,14 @@
   // colors the listing's own plan from it (pkg.plan: masks every design tints, our own labels), so a design switch never
   // reads it again; a new plan (an upload) does.
   // A plan the checks turn down leaves pkg.plan empty and the design takes its no-plan version.
+  // the kitchen facts already in the lookup (description, kitchen and room fields), for the plan read to find on the plan
+  // (the owner 10/28). Plain text matching, no AI.
+  function kitchenFacts(l){
+    const t = [l.description, l.facts && l.facts['Kitchen Description'], l.kitchenDescription, l.interior, JSON.stringify(l.rooms || [])].filter(Boolean).join(' ').toLowerCase();
+    const inch = t.match(/(\d{2})\s*(?:"|''|-?\s*inch|in\.?)\s*(?:\w+\s){0,3}?(?:range|cooktop|stove)/);
+    return {ranges: /(two|double|dual|2)\s+(ranges|stoves|cooktops)/.test(t) ? 2 : null, rangeInches: inch ? +inch[1] : null,
+      secondSink: /(prep|second|bar|island)\s+sink/.test(t) || null, scullery: /scullery|butler'?s pantry|prep kitchen|catering kitchen/.test(t) || null};
+  }
   async function redrawPlan(){
     const F = pkg.floorPlan;
     if(!F || !F.active) return;
@@ -1254,7 +1262,7 @@
       if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
       const canvases = pages; pages = canvases.map(PT.forRead);
       const body = {action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
-        stories: st || null, sqft: +pkg.listing.sqft || null};
+        stories: st || null, sqft: +pkg.listing.sqft || null, kitchen: kitchenFacts(pkg.listing)};
       // the first read, then (turned down) the more careful retry as a request of its own: a slow first read on the
       // strongest model leaves too little of the 150 s limit for a second in the same request
       let j = await ai(Object.assign({attempt: 'first'}, body)), cost = j.cost || 0;
