@@ -109,7 +109,23 @@
     "body": "New wiring and breaker box, three-phase power, new plumbing, fiber cement siding and a new roof. Out back, a fenced yard with a covered garage beside the patio."
    },
    "locationTitle": "Location",
-   "locationBody": "A park is a few blocks away and coffee is under a mile. Navigation Esplanade is about 2 miles, and Downtown is 3.5 miles."
+   "locationBody": "A park is a few blocks away and coffee is under a mile. Navigation Esplanade is about 2 miles, and Downtown is 3.5 miles.",
+   "details": [
+    {
+     "label": "Lot",
+     "value": "5,000 sq ft, fenced"
+    },
+    {
+     "label": "Updates",
+     "value": "New wiring, breaker box, plumbing, roof and siding"
+    }
+   ],
+   "detailsMore": [
+    "The kitchen has white upper cabinets, dark lowers and marble-look counters, with a bar that seats three.",
+    "A breakfast nook beside the kitchen opens to the backyard.",
+    "The primary bedroom is at the back of the house, under a vaulted ceiling.",
+    "Out back is a covered patio, about 9 by 26 feet."
+   ]
   }
  },
  "companion": {
