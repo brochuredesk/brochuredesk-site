@@ -327,23 +327,26 @@
     const F = floorCrop(page, L, true);
     // the listing's white paper goes clear, so the plan sits on the design's own paper (no white box on a tinted panel)
     // and only this floor: what lies in its rooms (a floor drawn in two blocks spans part of another floor's drawing)
-    const id = F.g.getImageData(0, 0, F.W, F.H), d = id.data, pad = 0.03 * Math.max(F.W, F.H);
+    const id = F.g.getImageData(0, 0, F.W, F.H), d = id.data, pad = (L.rooms.length ? 0.03 : 0.006) * Math.max(F.W, F.H);   // found with no AI: the walls' own box
     const bx = L.rooms.filter(r => !/yard|lawn|drive|pool/i.test(r.name)).map(r => F.T(F.P(r.box))).concat([F.T(F.o)].filter(() => !L.rooms.length));
+    const ex = (L.exclude || []).map(e => F.T(F.P(e)));   // other drawings on the same page (found with no AI)
     // the paper: the commonest light color along the crop's edge (a listing's paper is often a little off white)
     const hist = new Map(); for(let x = 0; x < F.W; x += 3) for(const y of [0, F.H - 1]){ const i = (y * F.W + x) * 4, kk = (d[i] >> 3) * 1024 + (d[i + 1] >> 3) * 32 + (d[i + 2] >> 3); hist.set(kk, (hist.get(kk) || 0) + 1); }
     const top = [...hist.entries()].sort((a, b) => b[1] - a[1])[0][0], pr = (top >> 10) * 8 + 4, pg = ((top >> 5) & 31) * 8 + 4, pbl = (top & 31) * 8 + 4;
     const paper = Math.min(pr, pg, pbl) > 200 ? [pr, pg, pbl] : [255, 255, 255];
     for(let i = 0; i < d.length; i += 4){ const p = i / 4, x = p % F.W, y = (p - x) / F.W;
       const isPaper = Math.min(d[i], d[i + 1], d[i + 2]) > 242 || (Math.abs(d[i] - paper[0]) < 10 && Math.abs(d[i + 1] - paper[1]) < 10 && Math.abs(d[i + 2] - paper[2]) < 10);
-      if(isPaper || !bx.some(e => x >= e.x - pad && x <= e.r + pad && y >= e.y - pad && y <= e.z + pad)) d[i + 3] = 0; }
+      if(isPaper || !bx.some(e => x >= e.x - pad && x <= e.r + pad && y >= e.y - pad && y <= e.z + pad) || ex.some(e => x >= e.x && x <= e.r && y >= e.y && y <= e.z)) d[i + 3] = 0; }
     F.g.putImageData(id, 0, 0);
     // which way the listing's text runs (it can't be redrawn, so the plan is turned to keep it readable): around each
     // room's label, each letter's nearest neighbor letter sits beside it ('h') or above or below it ('v'). Gray type
     // counts (W 9th's); a split block keeps its page's feet.
     let hz = 0, vt = 0;
     { const ppf = L.ppfPage ? L.ppfPage * F.k : L.feet && L.feet.w > 0 ? (F.T(F.o).r - F.T(F.o).x) / L.feet.w : Math.max(F.W, F.H) / 45, r = 2 * ppf;
-      for(const rm of L.rooms){ const lx = (F.b.x + rm.label.x * F.b.w - F.x0) * F.k, ly = (F.b.y + rm.label.y * F.b.h - F.y0) * F.k;
-        const x0 = Math.max(0, Math.round(lx - r)), y0 = Math.max(0, Math.round(ly - r)), x1 = Math.min(F.W, Math.round(lx + r)), y1 = Math.min(F.H, Math.round(ly + r)), w = x1 - x0, h = y1 - y0;
+      // with no room list (found with no AI), the whole crop is one window: every letter-sized piece in it votes
+      const wins = L.rooms.length ? L.rooms.map(rm => [(F.b.x + rm.label.x * F.b.w - F.x0) * F.k, (F.b.y + rm.label.y * F.b.h - F.y0) * F.k, r]) : [[F.W / 2, F.H / 2, Math.max(F.W, F.H)]];
+      for(const [lx, ly, rr] of wins){
+        const x0 = Math.max(0, Math.round(lx - rr)), y0 = Math.max(0, Math.round(ly - rr)), x1 = Math.min(F.W, Math.round(lx + rr)), y1 = Math.min(F.H, Math.round(ly + rr)), w = x1 - x0, h = y1 - y0;
         if(w < 4 || h < 4) continue;
         const m = new Uint8Array(w * h); for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){ const i = ((y + y0) * F.W + x + x0) * 4; if(d[i + 3] && d[i] + d[i + 1] + d[i + 2] < 480) m[y * w + x] = 1; }
         const c = [];
@@ -1207,10 +1210,97 @@
     return {kind: 'color', source: redraw ? (plan.source || 'Floor plan from the listing, colored for this brochure.') : 'Floor plan from the listing.',
       levels, detached, finished: !redraw, colored: fin.colored > 0.1, watermark: fin.watermark, noSizes: redraw && levels.length > 0 && levels.every(l => l.noSizes)};
   };
-  // the listing's plan as the agent gave it, with no AI read (the owner 10/29): each page is one floor, cut to its drawing
-  // (PT.drawingBox), white paper made clear, colors kept. No room boxes, so no split blocks or detached-garage box.
-  PT.givenPlan = canvases => PT.colorPlan(canvases, {levels: canvases.map((c, i) => ({page: i + 1, floor: i + 1, name: FLOORS[i] || '',
-    outline: {left: 0, top: 0, right: 1, bottom: 1}, rooms: [], feet: null}))});
+  // ---------- the listing's plan as the agent gave it, found with no AI (the owner 10/29) ----------
+  // Each page is looked at in plain code: walls are long straight runs of dark ink, so a floor drawing is a cluster of
+  // them; a builder sheet's photo and color panel, the title, logo, fine print and page frame are not, and are left off.
+  // Each separate drawing on a page is its own floor (each crop clears the others); a
+  // small, nearly empty box set apart from the house is the detached garage. Floors are named in page order, and on a
+  // shared page bottom row first, left to right.
+  function findDrawings(page){
+    const L0 = Math.max(page.width, page.height), k = Math.min(1, 1400 / L0), W = Math.round(page.width * k), H = Math.round(page.height * k);
+    const c = canvas(W, H), g = c.getContext('2d', {willReadFrequently: true});
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(page, 0, 0, W, H);
+    const d = g.getImageData(0, 0, W, H).data, N = W * H, lum = new Uint8Array(N), dark = new Uint8Array(N);
+    for(let i = 0; i < N; i++){ lum[i] = .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2]; if(lum[i] < 170) dark[i] = 1; }
+    // long straight runs: walls (and rules, frames and photo edges, sorted out below)
+    const Lmin = Math.round(0.022 * Math.max(W, H)), run = new Uint8Array(N);
+    for(let y = 0; y < H; y++){ let x = 0; while(x < W){ if(!dark[y * W + x]){ x++; continue; } let e = x; while(e < W && dark[y * W + e]) e++; if(e - x >= Lmin) run.fill(1, y * W + x, y * W + e); x = e; } }
+    for(let x = 0; x < W; x++){ let y = 0; while(y < H){ if(!dark[y * W + x]){ y++; continue; } let e = y; while(e < H && dark[e * W + x]) e++; if(e - y >= Lmin) for(let q = y; q < e; q++) run[q * W + x] = 1; y = e; } }
+    const R = Math.round(0.008 * Math.max(W, H)), grown = dilate(run, W, H, R), cand = [];
+    pieces(grown, W, H, (comp, ax, ay, bx, by) => {
+      let n = 0, dk = 0, edge = 0, grad = 0;
+      for(const p of comp){ if(run[p]) n++; }
+      const w = bx - ax + 1, h = by - ay + 1;
+      for(let y = ay; y <= by; y += 2) for(let x = ax; x <= bx; x += 2){ const i = y * W + x; dk += dark[i];
+        if(x + 2 <= bx && Math.abs(lum[i] - lum[i + 2]) > 10) grad++;
+        const inset = Math.min(x - ax, bx - x, y - ay, by - y); if(run[i] && inset < 0.04 * Math.max(w, h)) edge++; }
+      const cells = Math.ceil(w / 2) * Math.ceil(h / 2);
+      cand.push({ax, ay, bx, by, w, h, n, dense: dk / cells, busy: grad / cells, rim: edge / Math.max(1, n / 4)});
+    });
+    const shape = cand.filter(q => Math.min(q.w, q.h) >= 0.06 * Math.max(W, H)   // a lone rule or a frame side
+      && q.dense < 0.45                                                   // a solid color panel
+      && q.busy < 0.3                                                     // a photo: texture everywhere
+      && !(q.w * q.h > 0.75 * W * H && q.rim > 0.6));                     // the page frame
+    const big = Math.max(1, ...shape.map(q => q.n)), keep = shape.filter(q => q.n >= 0.05 * big);   // icons, arrows, a logo's rules
+    // pieces whose walls nearly touch are one drawing (a porch post, a deck rail); separate drawings stay apart
+    const near = 0.012 * Math.max(W, H), groups = [];
+    // (an open plan's walls break into pieces inside one outline: pieces whose boxes overlap join, until none do)
+    for(const q of keep) groups.push({ax: q.ax, ay: q.ay, bx: q.bx, by: q.by, n: q.n, parts: [q]});
+    // (one mostly inside the other, or two halves lined up edge to edge across a hairline gap; a neighbor floor whose
+    // box only clips this one's corner stays apart)
+    const hits = (A, B) => { const ox = Math.min(A.bx, B.bx) - Math.max(A.ax, B.ax), oy = Math.min(A.by, B.by) - Math.max(A.ay, B.ay);
+      const area = E => (E.bx - E.ax) * (E.by - E.ay), small = Math.min(area(A), area(B));
+      const span = (a0, a1, b0, b1) => (Math.min(a1, b1) - Math.max(a0, b0)) / Math.min(a1 - a0, b1 - b0);
+      if(ox > 0 && oy > 0 && ox * oy >= 0.4 * small) return true;
+      return (oy > -near && ox > 0 && span(A.ax, A.bx, B.ax, B.bx) >= 0.8) || (ox > -near && oy > 0 && span(A.ay, A.by, B.ay, B.by) >= 0.8); };
+    for(let joined = true; joined;){ joined = false;
+      for(let i = 0; i < groups.length && !joined; i++) for(let j = i + 1; j < groups.length; j++){ const A = groups[i], B = groups[j];
+        if(!hits(A, B)) continue;
+        Object.assign(A, {ax: Math.min(A.ax, B.ax), ay: Math.min(A.ay, B.ay), bx: Math.max(A.bx, B.bx), by: Math.max(A.by, B.by), n: A.n + B.n, parts: A.parts.concat(B.parts)});
+        groups.splice(j, 1); joined = true; break; } }
+    // inside the walls (the run pixels away from the drawing's edge): a detached garage is an almost empty box
+    for(const G of groups){ let inner = 0; const ix = 0.12 * (G.bx - G.ax), iy = 0.12 * (G.by - G.ay);
+      for(let y = Math.round(G.ay + iy); y < G.by - iy; y++) for(let x = Math.round(G.ax + ix); x < G.bx - ix; x++) if(run[y * W + x]) inner++;
+      G.inner = inner / Math.max(1, G.n); }
+    const box = G => ({ax: G.ax, ay: G.ay, bx: G.bx, by: G.by});
+    return groups.map(G => ({n: G.n, inner: G.inner, walls: box(G), W, H}));
+  }
+  PT.findFloors = canvases => {
+    const out = [];
+    canvases.forEach((page, pi) => { const b = drawingBox(page), s = page.width;
+      for(const D of findDrawings(page)){ const f = s / D.W;   // work pixels to page pixels, then to drawingBox fractions
+        const fr = e => ({left: (e.ax * f - b.x) / b.w, top: (e.ay * f - b.y) / b.h, right: ((e.bx + 1) * f - b.x) / b.w, bottom: ((e.by + 1) * f - b.y) / b.h});
+        out.push({page: pi + 1, n: D.n, inner: D.inner, outline: fr(D.walls), walls: fr(D.walls),
+          cy: (D.walls.ay + D.walls.by) / 2 / D.H, cx: (D.walls.ax + D.walls.bx) / 2 / D.W, size: (D.walls.bx - D.walls.ax) * (D.walls.by - D.walls.ay) * f * f}); } });
+    const top = Math.max(1, ...out.map(o => o.size));
+    // a detached garage: a small drawing (a third of the house or less) that is almost an empty box, on a page with a house
+    const garages = out.filter(o => o.size < 0.35 * top && o.inner < 0.06 && out.some(h => h.page === o.page && h !== o && h.size > 2 * o.size));
+    let levels = out.filter(o => !garages.includes(o));
+    // floors sharing a page: bottom row first, left to right
+    levels.sort((a, b) => a.page - b.page || (Math.abs(a.cy - b.cy) > 0.15 ? b.cy - a.cy : a.cx - b.cx));
+    if(levels.length > 4) levels = levels.slice().sort((a, b) => b.size - a.size).slice(0, 4).sort((a, b) => levels.indexOf(a) - levels.indexOf(b));
+    // floors sharing a page are named in that order, except a grid of three or more (Stanford: its floors don't run in
+    // reading order): those keep only the listing's own labels, so each crop takes a small margin around its walls
+    const grid = new Set([...new Set(levels.map(L => L.page))].filter(pg => { const on = levels.filter(L => L.page === pg);
+      const rows = []; for(const L of on){ const r = rows.find(R => Math.abs(R[0].cy - L.cy) <= 0.15); if(r) r.push(L); else rows.push([L]); }
+      return on.length >= 3 && rows.length > 1 && rows.some(R => R.length > 1); }));
+    for(const L of levels) if(grid.has(L.page)){ const m = 0.04, o = L.outline;
+      Object.assign(o, {left: o.left - m, top: o.top - m, right: o.right + m, bottom: o.bottom + m}); }
+    // every other drawing on the page is cleared from this one's crop
+    for(const L of levels.concat(garages)) L.exclude = out.filter(o => o !== L && o.page === L.page).map(o => o.walls);
+    const named = levels.map((L, i) => Object.assign(L, {floor: i + 1, name: grid.has(L.page) ? '' : (FLOORS[i] || ''), rooms: [], feet: null}));
+    return {levels: named, garages: garages.map(G => Object.assign(G, {rooms: [], feet: null, name: 'Detached garage'}))};
+  };
+  PT.givenPlan = canvases => {
+    const F = PT.findFloors(canvases), levels = [];
+    for(const L of F.levels){ const c = canvases[L.page - 1]; if(c) levels.push(finishedFloor(c, L)); }
+    const detached = F.garages.map(G => { const c = canvases[G.page - 1], H = F.levels.find(L => L.page === G.page); if(!c || !H) return null;
+      const b = drawingBox(c), P = f => [b.x + f.left * b.w, b.y + f.top * b.h, (f.right - f.left) * b.w, (f.bottom - f.top) * b.h].map(v => Math.round(v));
+      return Object.assign(finishedFloor(c, G), {name: 'Detached garage', detached: 'garage', site: {house: P(H.walls), garage: P(G.walls)}}); }).filter(Boolean);
+    const fin = PT.planFinished(canvases, {levels: F.levels});
+    if(fin.watermark && levels[0]) levels[0].issues.push({kind: 'plan-watermark', detail: "another company's name across the plan: ask the agent for a clean file"});
+    return {kind: 'color', source: 'Floor plan from the listing.', levels, detached, finished: true, colored: fin.colored > 0.1, watermark: fin.watermark, noSizes: false};
+  };
   // the agent said yes to sizes from the MLS room list: each label takes the size of the MLS room with its name on its
   // floor (Primary for Master; "Bedroom 2" or the next unused bedroom), rounded to feet. A room with no match stays unsized.
   PT.mlsSizes = (plan, mls) => {
