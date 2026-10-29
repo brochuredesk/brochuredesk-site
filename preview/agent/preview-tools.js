@@ -1190,16 +1190,22 @@
       return Object.assign({}, L, {rooms: L.rooms.filter(r => !gs.includes(r))}); });
     return {house, garages: out};
   };
+  // the owner 10/28 (late): no more redrawing. Every listing's plan is placed as the agent gave it: cut from its page, turned
+  // and sized to the plan panel, its white paper made clear so it sits on the design's own background; a colored plan
+  // keeps its colors. Redrawing kept misreading rooms and erasing lines. colorFloor stays for a plan with redraw: true
+  // (off everywhere). A watermark (another company's name) or a file too soft to print sharp is flagged on the proof.
   PT.colorPlan = (canvases, plan) => {
-    const fin = PT.planFinished(canvases, plan), levels = [];
+    const fin = PT.planFinished(canvases, plan), levels = [], redraw = plan.redraw === true;
     const sep = detachedGarages(canvases, plan.levels || []);
     const withPpf = sep.house.map(L => { const c = canvases[L.page - 1]; if(!c || !L.feet || !(L.feet.w > 0)) return L;
       const bb = drawingBox(c); return Object.assign({}, L, {ppfPage: (L.outline.right - L.outline.left) * bb.w / L.feet.w}); });
-    for(const L of fin.finished ? splitParts(withPpf) : sep.house){ const c = canvases[L.page - 1]; if(c) levels.push(fin.finished ? finishedFloor(c, L) : colorFloor(c, L)); }
+    const place = (c, L) => redraw ? colorFloor(c, L) : finishedFloor(c, L);
+    for(const L of redraw ? sep.house : splitParts(withPpf)){ const c = canvases[L.page - 1]; if(c) levels.push(place(c, L)); }
     const detached = sep.garages.map(({L, site}) => { const c = canvases[L.page - 1]; if(!c) return null;
-      return Object.assign(fin.finished ? finishedFloor(c, L) : colorFloor(c, L), {name: 'Detached garage', detached: 'garage', site}); }).filter(Boolean);
-    return {kind: 'color', source: fin.finished ? 'Floor plan from the listing.' : (plan.source || 'Floor plan from the listing, colored for this brochure.'),
-      levels, detached, finished: fin.finished, watermark: fin.watermark, noSizes: !fin.finished && levels.length > 0 && levels.every(l => l.noSizes)};
+      return Object.assign(place(c, L), {name: 'Detached garage', detached: 'garage', site}); }).filter(Boolean);
+    if(!redraw && fin.watermark && levels[0]) levels[0].issues.push({kind: 'plan-watermark', detail: "another company's name across the plan: ask the agent for a clean file"});
+    return {kind: 'color', source: redraw ? (plan.source || 'Floor plan from the listing, colored for this brochure.') : 'Floor plan from the listing.',
+      levels, detached, finished: !redraw, colored: fin.colored > 0.1, watermark: fin.watermark, noSizes: redraw && levels.length > 0 && levels.every(l => l.noSizes)};
   };
   // the agent said yes to sizes from the MLS room list: each label takes the size of the MLS room with its name on its
   // floor (Primary for Master; "Bedroom 2" or the next unused bedroom), rounded to feet. A room with no match stays unsized.
