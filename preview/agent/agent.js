@@ -639,11 +639,14 @@
     return false;
   }
   // Matrix photos come through our reader (browsers can't fetch them directly); sample photos are on this site.
+  // The reader saves each photo once and sends the browser to that copy: the small (about 1024 px) one here for the
+  // picker and proofs, the full-size original only for print (printSrc).
+  const printSrc = url => /^https:\/\/([\w-]+\.)*(harmls|harstatic)\.com\//.test(url || '') ? `${FN_MATRIX}?photo=${encodeURIComponent(url)}&size=full` : '';
   async function loadPhoto(url, viaReader, direct){
     if(photoSrc.has(url)) return photoSrc.get(url);
     if(!viaReader && url.startsWith('/')){ photoSrc.set(url, url); return url; }
     // a brokerage site's own photos can't go through the reader (Matrix and HAR photos only); try them straight from the site
-    const r = await fetch(direct ? url : `${FN_MATRIX}?photo=${encodeURIComponent(url)}`);
+    const r = await fetch(direct ? url : `${FN_MATRIX}?photo=${encodeURIComponent(url)}&size=preview`);
     if(!r.ok) throw new Error('photo');
     const blob = await r.blob();
     if(isCollage(await createImageBitmap(blob))) return null;
@@ -1077,6 +1080,8 @@
   async function libFile(piece){
     const social = piece.kind === 'social';
     const data = Object.assign(libData(), {mode: social ? 'email' : 'print', piece});
+    // print gets each listing photo's full-size original, never the screen copy
+    if(!social) for(const [id, ph] of Object.entries(data.photos || {})){ const full = printSrc((pkg.photos[+id.slice(1)] || {}).url); if(full) ph.src = full; }
     const html = srcdoc(LIB, await tpl(LIB, piece.file), data, null, true);
     if(social){   // a real link the agent clicks (a tab opened after loading counts as a pop-up and gets blocked)
       const url = URL.createObjectURL(new Blob([html], {type: 'text/html'}));

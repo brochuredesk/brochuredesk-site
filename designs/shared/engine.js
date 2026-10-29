@@ -68,7 +68,7 @@
   }
 
   async function loadPhoto(src){
-    const r = await fetch(`${FN}?photo=${encodeURIComponent(src)}`);
+    const r = await fetch(`${FN}?photo=${encodeURIComponent(src)}&size=preview`);   // the reader's saved ~1024 px copy, never the full-size original
     if(!r.ok) throw new Error('photo');
     const blob = await r.blob(), bmp = await createImageBitmap(blob);
     if(isCollage(bmp)) return null;
