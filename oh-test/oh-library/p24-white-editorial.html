@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · White Editorial</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  White Editorial (from reference P24). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: clean, neat and simple. A property-magazine page on white: the event wording and the address in serif, a fine
+  facts line, one large photo with white space doing the work, the date and time as a large serif line, the writer's
+  paragraph, and a ruled footer in three parts (brokerage logo, agent, phone and web). No price.
+  Type: Newsreader (headline, date), Hanken Grotesk (details).
+-->
+<style>
+  .sheet{background:#fff;color:var(--ink)}
+  .hl{font:500 30pt/36pt Newsreader;text-transform:uppercase;letter-spacing:2pt;white-space:nowrap;overflow:hidden}
+  .addr{font:400 18pt/24pt Newsreader;white-space:nowrap;overflow:hidden}
+  .facts{font:600 9pt/12pt 'Hanken Grotesk';letter-spacing:1.6pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .date{font:500 30pt/36pt Newsreader;white-space:nowrap;overflow:hidden}
+  .time{font:600 18pt/23pt 'Hanken Grotesk';white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .body{font:400 13pt/18.5pt 'Hanken Grotesk'}
+  .ev{font:600 10pt/13pt 'Hanken Grotesk'}
+  .hr{position:absolute;left:54pt;width:504pt;height:.8pt;background:var(--ink);opacity:.35}
+  .vr{position:absolute;width:.8pt;background:var(--ink);opacity:.35}
+  .cell{font:400 10pt/14pt 'Hanken Grotesk';white-space:nowrap;overflow:hidden}
+  .cell b{font:600 12.5pt/16pt Newsreader;display:block}
+  .fine{font:400 6.6pt/8pt 'Hanken Grotesk';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['500 10pt Newsreader', '400 10pt Newsreader', '600 10pt Newsreader', '400 10pt "Hanken Grotesk"', '600 10pt "Hanken Grotesk"'], D => {
+  const esc = Ivory.esc, L = D.listing, A = D.agent || {}, B = D.brand || {}, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const X = 54, W = 504;
+  let h = '';
+  let y = 48;
+  h += `<div class="abs hl" style="left:${X}pt;top:${y}pt;width:${W}pt;height:36pt" data-fit="30,20" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`; y += 40;
+  h += `<div class="abs addr" style="left:${X}pt;top:${y}pt;width:${W}pt;height:24pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join(', '))}</div>`; y += 28;
+  h += `<div class="abs facts" style="left:${X}pt;top:${y}pt;width:${W}pt;height:12pt" data-slot="oh.facts" data-lines="1">${esc([...Ivory.facts(L)].filter(Boolean).join('  |  '))}</div>`; y += 22;
+  // the photo, then right under it the date and time, then the write-up, larger and as long as the room allows,
+  // then the contact card (owner 10/27/2026)
+  const evH0 = [E.note, E.refreshments].filter(Boolean).reduce((a, t) => a + Ivory.linesNeeded('ev', t, W, 13)*13 + 2, 0);
+  const footer = 694;
+  const below = 18 + 36 + 26 + 10 + (evH0 ? evH0 + 6 : 0);
+  const fr = OHL.fitHero(D, hero, W, Math.min(footer - 16 - below - 4*18.5 - 10 - y, 360));
+  h += OHL.photo(D, hero, `left:${X + (W - fr.w)/2}pt;top:${y}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  y += fr.h + 18;
+  const wu = OHL.writeup(D, 'body', W, 18.5, Math.floor((footer - 14 - (y + 44 + (evH0 ? evH0 + 8 : 0)))/18.5)), body = wu.text, bn = body ? wu.n : 0;
+  h += `<div class="abs date" style="left:${X}pt;top:${y}pt;width:${W - 190}pt;height:36pt" data-fit="30,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${X + W - 190}pt;top:${y + 8}pt;width:190pt;height:23pt;text-align:right" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 44;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, y, W, 13, 2);
+  h += ev.html; y += ev.h + (ev.h ? 8 : 0);
+  if(bn){ h += `<div class="abs body" style="left:${X}pt;top:${y}pt;width:${W}pt;height:${bn*18.5+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`; y += bn*18.5 + 4; }
+  const issues = y > footer - 6 ? [{slot:'oh.note', kind:'overflow', detail:'the copy runs into the footer'}] : [];
+  // ruled footer in three parts
+  h += `<div class="hr" style="top:${footer}pt"></div><div class="hr" style="top:${footer + 64}pt"></div>`;
+  h += OHL.contact(D, {x:X, y:footer + 2, w:W, h:60, tone:'light', nameSize:18, logoW:176, logoH:46, nameFont:'Newsreader', nameWeight:600, bodyFont:"'Hanken Grotesk'"});
+  h += `<div class="abs fine" style="left:${X}pt;top:${footer + 72}pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

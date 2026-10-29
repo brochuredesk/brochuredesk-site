@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Black Rules</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Black Rules (from reference P39). Trim 612 x 792 pt. Public or REALTOR(R).
+  A clear event heading between heavy rules in the brand's dark color, the date, time and address on one line under
+  it, a strongly aligned photo grid (the house large, rooms beside and below), and two contact blocks at the foot:
+  the agent at left and the brokerage (logo, office phone and web) at right.
+  Type: Red Hat Display (headline), Libre Franklin (details).
+-->
+<style>
+  .sheet{background:#fff;color:var(--ink)}
+  .rule{position:absolute;left:30pt;width:552pt;background:var(--dark)}
+  .hl{font:700 52pt/58pt 'Red Hat Display';text-transform:uppercase;letter-spacing:6pt;text-align:center;white-space:nowrap;overflow:hidden}
+  .date{font:700 20pt/25pt 'Libre Franklin';white-space:nowrap;overflow:hidden}
+  .time{font:600 18pt/25pt 'Libre Franklin';white-space:nowrap;overflow:hidden;text-align:right;color:var(--main-on-paper)}
+  .street{font:700 19pt/28pt 'Red Hat Display';text-align:center;white-space:nowrap;overflow:hidden}
+  .addr{font:600 10pt/14pt 'Libre Franklin';letter-spacing:.8pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:600 10pt/13pt 'Libre Franklin';text-align:center}
+  .k{font:700 8.6pt/11pt 'Libre Franklin';letter-spacing:2pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
+  .cb{position:absolute;font:400 10pt/14pt 'Libre Franklin';white-space:nowrap;overflow:hidden}
+  .cb b{display:block;font:700 15pt/19pt 'Red Hat Display'}
+  .fine{font:400 6.6pt/8pt 'Libre Franklin';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Red Hat Display"', '700 10pt "Libre Franklin"', '600 10pt "Libre Franklin"', '400 10pt "Libre Franklin"'], D => {
+  const esc = Ivory.esc, L = D.listing, A = D.agent || {}, B = D.brand || {}, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 5);
+  const X = 30, W = 552, G = 8;
+  let h = `<div class="rule" style="top:26pt;height:5pt"></div>`;
+  h += `<div class="abs hl" style="left:${X}pt;top:38pt;width:${W}pt;height:58pt" data-fit="52,26" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  h += `<div class="rule" style="top:102pt;height:2pt"></div>`;
+  h += `<div class="abs date" style="left:${X}pt;top:112pt;width:330pt;height:25pt" data-fit="20,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${X + 330}pt;top:112pt;width:${W - 330}pt;height:25pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  h += `<div class="rule" style="top:145pt;height:2pt"></div>`;
+  // the address big and bold with city, state and ZIP (owner 10/27/2026: it got lost), the facts small under it
+  h += `<div class="abs street" style="left:${X}pt;top:153pt;width:${W}pt;height:28pt" data-fit="19,15" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join(', '))}</div>`;
+  h += `<div class="abs addr" style="left:${X}pt;top:184pt;width:${W}pt;height:14pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, ' · '))}</div>`;
+  let y = 206;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, y, W, 13, 2);
+  h += ev.html; y += ev.h + (ev.h ? 8 : 0);
+  // the grid: house (2/3 width) + two rooms stacked; a row of three rooms
+  const cy = 690, gh = cy - 16 - y, topH = Math.round((gh - G)*0.62), botH = gh - G - topH;
+  const hw = Math.round((W - G)*0.66), sw = W - G - hw;
+  const fr = OHL.fitHero(D, hero, hw, topH);
+  h += OHL.photo(D, hero, `left:${X + (hw - fr.w)/2}pt;top:${y}pt;width:${fr.w}pt;height:${topH}pt`);
+  const sh = (topH - G)/2;
+  rooms.slice(0, 2).forEach((id, i) => h += OHL.photo(D, id, `left:${X + hw + G}pt;top:${y + i*(sh + G)}pt;width:${sw}pt;height:${sh}pt`));
+  const bw = (W - 2*G)/3;
+  rooms.slice(2, 5).forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(bw + G)}pt;top:${y + topH + G}pt;width:${bw}pt;height:${botH}pt`));
+  const issues = gh < 300 ? [{slot:'oh.note', kind:'overflow', detail:'the grid is squeezed too small'}] : [];
+  // two contact blocks
+  h += `<div class="rule" style="top:${cy}pt;height:2pt"></div>`;
+  h += `<div class="abs k" style="left:${X}pt;top:${cy + 10}pt;width:250pt;height:11pt">Your agent</div>`;
+  h += OHL.contact(D, {x:X, y:cy + 22, w:W, h:62, tone:'light', nameSize:18, logoW:170, logoH:46, nameFont:"'Red Hat Display'", nameWeight:700, bodyFont:"'Libre Franklin'"});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

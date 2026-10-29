@@ -1,0 +1,503 @@
+{
+ "title": "Ivory set",
+ "lede": "The Ivory set as it builds today: all 8 fold-over versions, the five Open House flyers and the four postcards.",
+ "groups": [
+  {
+   "title": "Fold-over (11 x 17), all 8 versions",
+   "note": "Sample listings from the readiness set; the sample copy was written for the 10/24 layout, so some boxes run short or long (writer text, not the design).",
+   "items": [
+    {
+     "id": "IV-FO 1-story-plan",
+     "title": "One story, with floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/one-story-plan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/one-story-plan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/one-story-plan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/one-story-plan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 1-story-noplan",
+     "title": "One story, no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/one-story-noplan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/one-story-noplan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/one-story-noplan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/one-story-noplan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 2-story-plan",
+     "title": "Two story, with floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/two-story-plan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/two-story-plan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/two-story-plan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/two-story-plan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 2-story-noplan",
+     "title": "Two story, no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/two-story-noplan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/two-story-noplan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/two-story-noplan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/two-story-noplan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 3-story-plan",
+     "title": "Three story, with floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/three-story-plan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/three-story-plan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/three-story-plan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/three-story-plan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 3-story-noplan",
+     "title": "Three story, no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/three-story-noplan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/three-story-noplan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/three-story-noplan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/three-story-noplan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 4-story-plan",
+     "title": "Four story, with floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/four-story-plan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/four-story-plan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/four-story-plan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/four-story-plan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    },
+    {
+     "id": "IV-FO 4-story-noplan",
+     "title": "Four story, no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/four-story-noplan-4-back.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/four-story-noplan-1-front.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/four-story-noplan-2-top.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside top"
+      },
+      {
+       "src": "img/four-story-noplan-3-bottom.jpg",
+       "wh": [
+        1200,
+        933
+       ],
+       "label": "Inside bottom"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Open House flyers (8.5 x 11)",
+   "note": "Also on /preview/open-house-library/, where the label, refreshments and notes can be changed.",
+   "items": [
+    {
+     "id": "Ivory Open House 1",
+     "title": "Open House 1",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/oh1.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Flyer"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Open House 2",
+     "title": "Open House 2",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/oh2.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Flyer"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Open House 3",
+     "title": "Open House 3",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/oh3.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Flyer"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Open House 4",
+     "title": "Open House 4",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/oh4.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Flyer"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Open House 5",
+     "title": "Open House 5",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/oh5.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Flyer"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Postcards",
+   "note": "",
+   "items": [
+    {
+     "id": "Ivory Just Listed 6x9",
+     "title": "Just Listed postcard, 6 x 9",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/postcard-6x9-front.jpg",
+       "wh": [
+        1200,
+        800
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/postcard-6x9-back.jpg",
+       "wh": [
+        1200,
+        800
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Just Listed 6x11",
+     "title": "Just Listed postcard, 6 x 11",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/postcard-6x11-front.jpg",
+       "wh": [
+        1200,
+        655
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/postcard-6x11-back.jpg",
+       "wh": [
+        1200,
+        655
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Just Sold 6x9",
+     "title": "Just Sold postcard, 6 x 9",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/just-sold-6x9-front.jpg",
+       "wh": [
+        1200,
+        800
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/just-sold-6x9-back.jpg",
+       "wh": [
+        1200,
+        800
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "Ivory Just Sold 6x11",
+     "title": "Just Sold postcard, 6 x 11",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/just-sold-6x11-front.jpg",
+       "wh": [
+        1200,
+        655
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/just-sold-6x11-back.jpg",
+       "wh": [
+        1200,
+        655
+       ],
+       "label": "Back"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

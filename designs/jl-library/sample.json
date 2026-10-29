@@ -61,6 +61,15 @@
     "The primary bedroom has a vaulted ceiling and a double-door closet.",
     "The vaulted primary bedroom has a ceiling fan and a double-door closet.",
     "The primary bedroom has a vaulted ceiling, a fan and a wide double-door closet."
+   ],
+   "nook": [
+    "The breakfast nook sits off the kitchen, with windows on two sides and a door that leads outside.",
+    "Off the kitchen, the breakfast nook has windows on two sides and its own door to the outside.",
+    "The breakfast nook has windows on two sides, a door outside and room for a round table.",
+    "The breakfast nook has windows on two sides and a door that leads outside.",
+    "Windows on two sides light the breakfast nook off the kitchen.",
+    "The breakfast nook opens off the kitchen, with windows on two sides.",
+    "The nook off the kitchen has windows on two sides and a door outside."
    ]
   }
  },

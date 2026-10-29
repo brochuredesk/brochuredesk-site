@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Tall Column</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Tall Column (from reference P26). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner wants a flyer built around this one. Tall condensed lettering makes the event and the date a column of their
+  own at left, on a pale tint of the agent's main color: the brokerage logo, the event wording, the month and day very
+  large, the time, then the address and facts with line icons, and the agent. A clean vertical gallery at right: the
+  house and three rooms.
+  Type: Asap Condensed (headline, date), Barlow (details).
+-->
+<style>
+  .sheet{background:#fff;color:var(--ink)}
+  .col{position:absolute;left:0;top:0;width:272pt;height:792pt}
+  .hl{font:700 66pt/62pt 'Asap Condensed';text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .md{font:700 44pt/48pt 'Asap Condensed';text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .wd{font:600 11pt/14pt Barlow;letter-spacing:3pt;text-transform:uppercase;white-space:nowrap}
+  .time{font:600 22pt/27pt Barlow;white-space:nowrap;overflow:hidden}
+  .hr{position:absolute;height:2pt;background:var(--main-on-paper)}
+  .row{position:absolute;display:flex;align-items:center;gap:10pt}
+  .row .ic{width:28pt;height:28pt;border-radius:50%;background:var(--main);color:var(--on-main);display:flex;align-items:center;justify-content:center;flex:none}
+  .row span{font:600 11pt/14pt Barlow;text-transform:uppercase;letter-spacing:.4pt;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10pt/13pt Barlow}
+  .addr{font:700 21pt/24pt 'Asap Condensed';color:var(--main-on-paper)}
+  .wu{font:400 10.5pt/14.5pt Barlow}
+  .oh-agent-name{font-family:'Asap Condensed';font-weight:700}
+  .oh-agent{font-family:Barlow}
+  .fine{font:400 6.6pt/8pt Barlow;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Asap Condensed"', '600 10pt Barlow', '500 10pt Barlow', '400 10pt Barlow'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 3);
+  const X = 30, CW = 272 - 2*X;
+  let h = `<div class="col" style="background:${OHL.mix(k.main, '#ffffff', .9)}"></div>`;
+  h += OHL.logo(D, 'light', `left:${X}pt;top:28pt;width:${CW}pt;height:48pt;justify-content:flex-start`);
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:${X-2}pt;top:${94 + i*62}pt;width:${CW+4}pt;height:66pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  let y = 94 + lines.length*62 + 8;
+  const y0 = y;
+  if(E.weekday){ h += `<div class="abs wd" style="left:${X}pt;top:${y}pt;width:${CW}pt;height:14pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`; y += 16; }
+  h += `<div class="abs md" style="left:${X}pt;top:${y}pt;width:${CW}pt;height:48pt" data-fit="44,26" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthShort + ' ' + E.day : E.long)}</div>`; y += 50;
+  if(E.time){ h += `<div class="abs time" style="left:${X}pt;top:${y}pt;width:${CW}pt;height:27pt" data-fit="22,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`; y += 32; }
+  h += `<div class="hr" style="left:${X}pt;top:${y + 4}pt;width:${CW}pt"></div>`; y += 20;
+  // under the rule (owner 10/27/2026): the full address on its own, larger; the three facts with icons; then a short
+  // write-up that fills the column down to the agent card
+  const addr = [L.address, OHL.place(L)].filter(Boolean).join(', '), an = Ivory.linesNeeded('addr', addr, CW, 24);
+  h += `<div class="abs addr" style="left:${X}pt;top:${y - 2}pt;width:${CW}pt;height:${an*24+2}pt" data-slot="address" data-lines="${an}">${esc(addr)}</div>`; y += an*24 + 12;
+  const rows = OHL.factCells(L).filter(c => c[0] !== 'pin').map((c, i) => [c[0], c[1] + ' ' + c[2], 'fact.' + i]);
+  rows.forEach(([ic, t, slot]) => { h += `<div class="row" style="left:${X}pt;top:${y}pt;width:${CW}pt;height:30pt"><div class="ic">${OHL.icon(ic, 15)}</div><span data-slot="${slot}" data-lines="1">${esc(t)}</span></div>`; y += 36; });
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, y + 2, CW, 13, 2);
+  h += ev.html; y += ev.h + 8;
+  const wu = OHL.writeup(D, 'wu', CW, 14.5, Math.floor((676 - 18 - y)/14.5));
+  if(wu.text && wu.n){ h += `<div class="abs wu" style="left:${X}pt;top:${y}pt;width:${CW}pt;height:${wu.n*14.5+3}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`; y += wu.n*14.5 + 6; }
+  const issues = y > 676 ? [{slot:'oh.note', kind:'overflow', detail:'the column is too full'}] : [];
+  // agent at the column's foot (no second logo)
+  h += OHL.contact(D, {x:X, y:676, w:CW, h:96, logo:false, nameSize:18});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  // gallery
+  const gx = 272 + 10, gw = 612 - gx - 10, G = 10;
+  const fr = OHL.fitHero(D, hero, gw, Math.round(gw/1.5));
+  h += OHL.photo(D, hero, `left:${gx + (gw - fr.w)/2}pt;top:10pt;width:${fr.w}pt;height:${fr.h}pt`);
+  const gy = 10 + fr.h + G, rh = (772 - gy - (rooms.length - 1)*G)/rooms.length;
+  rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${gx}pt;top:${gy + i*(rh + G)}pt;width:${gw}pt;height:${rh}pt`));
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 66, 36, 94, 0.94);
+  return f;
+});
+</script>
+</body>
+</html>

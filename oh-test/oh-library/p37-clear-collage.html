@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Clear Collage</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Clear Collage (from reference P37). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner liked the top but couldn't see the date or time. So the date and time get their own full-width bar in the
+  agent's main color right under the event wording, large. Then the two-column collage: photos at left (the house and
+  two rooms), the listing details and the writer's paragraph at right, and the agent with the logo on a soft panel.
+  Type: Fraunces (headline, date), Outfit (details).
+-->
+<style>
+  .sheet{background:#fff;color:var(--ink)}
+  .hl{font:600 46pt/50pt Fraunces;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .addr{font:500 12pt/16pt Outfit;letter-spacing:2pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .bar{position:absolute;left:0;width:612pt;background:var(--main);color:var(--on-main)}
+  .bar~.on{color:var(--on-main)}
+  .date{font:600 26pt/32pt Fraunces;white-space:nowrap;overflow:hidden}
+  .time{font:600 20pt/32pt Outfit;text-align:right;white-space:nowrap;overflow:hidden}
+  .k{font:600 10pt/13pt Outfit;letter-spacing:2.4pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
+  .f{position:absolute;display:flex;align-items:center;gap:8pt;font:400 11pt/14pt Outfit;white-space:nowrap;overflow:hidden}
+  .body{font:400 12.5pt/17.5pt Outfit}
+  .ev{font:600 10pt/13pt Outfit}
+  .panel{position:absolute;left:0;width:612pt}
+  .oh-agent-name{font-family:Fraunces;font-weight:600}
+  .oh-agent{font-family:Outfit}
+  .fine{font:400 6.6pt/8pt Outfit;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt Fraunces', '600 10pt Outfit', '500 10pt Outfit', '400 10pt Outfit'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 3);
+  const X = 34, W = 544;
+  let h = '';
+  h += `<div class="abs hl" style="left:${X}pt;top:28pt;width:${W}pt;height:50pt" data-fit="46,26" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  h += `<div class="abs addr" style="left:${X}pt;top:82pt;width:${W}pt;height:16pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join('  ·  '))}</div>`;
+  // the date bar
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], X, 0, W, 13, 2);
+  const bt = 110, bh = 54 + (ev.h ? ev.h + 6 : 0);
+  h += `<div class="bar" style="top:${bt}pt;height:${bh}pt"></div>`;
+  h += `<div class="abs on date" style="left:${X}pt;top:${bt + 11}pt;width:340pt;height:32pt" data-fit="26,20" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs on time" style="left:${X + 340}pt;top:${bt + 11}pt;width:${W - 340}pt;height:32pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  if(ev.h) h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + bt + 48}pt`);
+  // collage: photos left, details right
+  const cy = 694, gy = bt + bh + 16, gh = cy - 18 - gy, LW = 320, G = 8;
+  const hh = Math.round(gh * 0.55), fr = OHL.fitHero(D, hero, LW, hh);
+  h += OHL.photo(D, hero, `left:${X + (LW - fr.w)/2}pt;top:${gy}pt;width:${fr.w}pt;height:${hh}pt`);
+  const rw = (LW - G)/2;
+  rooms.slice(0, 2).forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(rw + G)}pt;top:${gy + hh + G}pt;width:${rw}pt;height:${gh - hh - G}pt`));
+  const RX = X + LW + 20, RW = W - LW - 20;
+  // a third room fills the bottom-right corner, in line with the row beside it (owner 10/27/2026)
+  const third = rooms[2], ry3 = gy + hh + G;
+  if(third) h += OHL.photo(D, third, `left:${X + LW + G}pt;top:${ry3}pt;width:${W - LW - G}pt;height:${gh - hh - G}pt`);
+  const textEnd = third ? ry3 - 14 : cy - 18;
+  let y = gy;
+  h += `<div class="abs k" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:13pt">Listing details</div>`; y += 20;
+  OHL.factCells(L).forEach(([ic, v, kk], i) => { h += `<div class="f" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:18pt"><span style="color:var(--main-on-paper)">${OHL.icon(ic, 15)}</span><span data-slot="fact.${i}" data-lines="1">${esc(v + ' ' + kk.toLowerCase())}</span></div>`; y += 22; });
+  y += 12;
+  // the write-up, a size larger (owner 10/27/2026), as long as the room above the corner photo allows
+  const wu = OHL.writeup(D, 'body', RW, 17.5, Math.floor((textEnd - y - 20)/17.5));
+  if(wu.text && wu.n && y + 20 + wu.n*17.5 <= textEnd){
+    h += `<div class="abs k" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:13pt">About this home</div>`; y += 20;
+    h += `<div class="abs body" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:${wu.n*17.5+4}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`;
+  }
+  const issues = gh < 260 ? [{slot:'oh.note', kind:'overflow', detail:'the collage is squeezed too small'}] : [];
+  h += `<div class="panel" style="top:${cy - 8}pt;height:${792 - cy + 8}pt;background:${OHL.mix(k.main, '#ffffff', .9)}"></div>`;
+  h += OHL.contact(D, {x:X, y:cy + 4, w:W, h:62, tone:'light', nameSize:17, phoneSize:13, lineSize:9.5, logoW:176, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:780pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

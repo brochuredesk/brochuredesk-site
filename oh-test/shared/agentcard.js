@@ -5,7 +5,14 @@
    The card: full width at the bottom of the panel. With a headshot, the photo bleeds off the card's left edge at full
    height; with none, a 3 pt stripe in the agent's accent color sits at the left edge and the card closes up (no empty
    box). Agent column: name, REALTOR(R), then the cell number beside the email and website, then the fine print. The
-   brokerage panel sits flush to the right edge, tinted with the agent's accent color, logo and office lines centered.
+   brokerage panel sits flush to the right edge, logo and office lines centered.
+
+   Logos float (owner, 10/26/2026): nothing is ever drawn behind the brokerage logo. No tint, fill, frame or box on the
+   panel or the band, and no frame around the card; a hairline in the line color divides the agent column from the
+   brokerage. The logo sits on the piece's own background (the piece picks the white version on dark fields).
+   One exception (owner, 10/27/2026): a full-width tinted brokerage band across the card's bottom (opts.bandTint, band
+   layout only; the accent at 12%, lighter if its text would drop under 4.5:1) sets the brokerage apart from the agent.
+   Ivory's 6 x 9 postcard backs use it. A box tight around the logo is still never drawn.
 
    Each design gives it its own look through CSS variables (falling back to the design's own tokens):
      --cc-paper  --cc-ink  --cc-muted  --cc-accent  --cc-line  --cc-display (name, typeset brokerage)  --cc-body
@@ -20,7 +27,7 @@
    brand: brokerage, logo (url or ''), shape ('wide' | 'square' | 'tall'; read from the logo when not given), phone,
           web, address (one or two lines: a string with '\n' or an array), officeLabel
    opts:  layout 'panel' (agent column | brokerage panel; fold-over backs, Open House flyers) or 'band' (the brokerage
-          on a tinted band along the card's bottom; postcard backs, too narrow for a 204 pt panel beside a headshot).
+          on a band along the card's bottom; postcard backs, too narrow for a 204 pt panel beside a headshot).
           Default by box width: 420 pt and up panel, else band.
           size   type-size preset (SIZES key): 'full' (fold-over), 'mid' (Open House flyers), 'short' (cards about
                  0.9 in tall), 'band'. Default: full at 600 pt and wider, mid under that, band for the band layout.
@@ -30,7 +37,6 @@
           brokerage false  the piece shows its one logo elsewhere: no panel, the agent column only
           logoStyle        extra style on the logo image (a white knockout filter on dark fields)
           bottomGap        pt every line of contact text keeps above the card's bottom edge while fitting (Ivory: 0.5)
-          panelBg          the panel's fill when the card sits on a colored field (else the guarded accent tint)
           floor            type floor in pt for the checks (default 8; the Open House library passes 8.6 so type
                            prints at 8 pt after the home-printer scale-down)
 
@@ -42,14 +48,13 @@
    9-10 pt so it never competes with the cell. Logos keep their true shape inside a max-width/max-height box. The card
    carries the panel's one brokerage logo.
 
-   Tint guard: the panel tint is the accent mixed into the paper. Before mixing, an accent that is very light is darkened
-   and one that is very saturated is toned down, so the panel always reads as a soft tint; the panel's text must keep
-   4.5:1 contrast on it, and the accent used for small labels keeps 4.5:1 on the paper. */
+   Accent guard: the accent used for small labels keeps 4.5:1 on the paper (darkened until it does); the stripe uses the
+   accent with very light or very saturated colors toned down. */
 (function(){
   const PT = 96 / 72;
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'})[c]);
   const SIZES = {
-    full:  {pad: [16, 24, 10], hsGap: 22, stripeGap: 27, name: 30, nameFloor: 22, desig: 8, label: 8, phone: 20, line: 10, office: 9,
+    full:  {pad: [16, 24, 10], hsGap: 22, stripeGap: 27, name: 30, nameFloor: 22, desig: 9.5, label: 9.5, phone: 20, line: 11, office: 10.5,   /* = the 6 x 11 postcard backs (owner 10/26) */
             rowGap: 24, panelW: 204, panelPad: [10, 16], panelGap: 9, hsW: 100, fineH: 0,
             logo: {wide: [160, 48], square: [52, 52], tall: [56, 56]}, lock: 15, type: 16, typeW: 172, typeLines: 3, tint: 12},
     mid:   {pad: [10, 16, 8], hsGap: 16, stripeGap: 19, name: 24, nameFloor: 17, desig: 8, label: 8, phone: 16, line: 9, office: 9,
@@ -66,7 +71,7 @@
   const V = (k, d) => `var(--cc-${k},var(--${d}))`;
 
   const css = `
-  .cc{position:absolute;box-sizing:border-box;overflow:hidden;background:${V('paper', 'paper')};border:.45pt solid ${V('line', 'line')};
+  .cc{position:absolute;box-sizing:border-box;overflow:hidden;background:${V('paper', 'paper')};
       color:${V('ink', 'ink')};font-family:${V('body', 'font-body')};text-align:left}
   .cc *{box-sizing:border-box}
   .cc .cc-stripe{position:absolute;left:0;top:0;bottom:0;width:3pt;background:${V('accent', 'accent')}}
@@ -81,7 +86,11 @@
   .cc .cc-line,.cc .cc-office{white-space:nowrap}
   .cc .cc-office b{font-weight:600}
   .cc .cc-fine{font-size:6pt;line-height:7.5pt;color:${V('muted', 'muted')};white-space:nowrap;overflow:hidden}
-  .cc .cc-panel{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+  .cc .cc-panel{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;background:none;
+      border-left:.45pt solid ${V('line', 'line')}}
+  .cc .cc-band{border-left:0;border-top:.45pt solid ${V('line', 'line')}}
+  .cc .cc-nameblock.cc-inl{display:flex;align-items:baseline;gap:10pt}
+  .cc .cc-inl .cc-desig{margin-top:0;flex:none}
   .cc .cc-logo{display:flex;align-items:center;justify-content:center;flex:none}
   .cc .cc-logo img{display:block;width:auto;height:auto}
   .cc .cc-brkname{font-family:${V('display', 'font-display')};line-height:1.32;color:${V('ink', 'ink')};overflow:hidden;flex:none}
@@ -110,7 +119,7 @@
     const contact = `<div class="cc-contact" style="display:flex;flex-wrap:${S.wrap ? 'wrap' : 'nowrap'};column-gap:${S.rowGap}pt;align-items:flex-end"><div style="flex:none">${phone}</div><div class="cc-lines" style="flex:none">${line('email', a.email)}${line('web', a.web, 'cc-web')}</div></div>`;
     const [pt, px, pb] = S.pad, left = hs ? S.hsGap : S.stripeGap;
     const agentCol = `<div class="cc-agent" data-fit="agent" style="padding:${pt}pt ${px}pt ${pb}pt ${left}pt">` +
-      `<div class="cc-nameblock" style="overflow:hidden;flex:none">${name}${desigHTML}</div>${contact}` +
+      `<div class="cc-nameblock${S.desigInline ? ' cc-inl' : ''}" style="overflow:hidden;flex:none">${name}${desigHTML}</div>${contact}` +
       (fine ? `<div class="cc-fine" data-slot="back.footnote" data-fine="1">${esc(fine)}</div>` : '') + `</div>`;
     const photo = hs ? `<img class="cc-hs" data-slot="agent.headshot" src="${esc(a.headshot)}" alt="" style="width:${S.hsW}pt">` : '';
 
@@ -124,7 +133,7 @@
           `<div class="cc-logo"><img src="${esc(b.logo)}" alt="" data-slot="broker.logo" style="${esc(opts.logoStyle || '')}"></div>` +
           `<div class="cc-lock" data-slot="broker.name" style="font-size:${lockSize}pt;display:none">${esc(b.brokerage)}</div></div>`
       : `<div class="cc-brkname" data-fit="brk-name" data-slot="broker.name" data-size="${S.type}" data-lines="${S.typeLines}" style="font-size:${S.type}pt;max-width:${S.typeW}pt">${esc(b.brokerage)}</div>`;
-    const [qy, qx] = S.panelPad, bg = opts.panelBg ? `background:${opts.panelBg}` : '';
+    const [qy, qx] = S.panelPad, bg = '';
     const panel = !brk ? '' : layout === 'band'
       ? `<div class="cc-panel cc-band" data-fit="panel" style="height:${S.bandH}pt;flex-direction:row;gap:${S.panelGap}pt;padding:${qy}pt ${qx}pt;${bg}">${mark}<div style="text-align:left">${offLines}</div></div>`
       : `<div class="cc-panel" data-fit="panel" style="width:${S.panelW}pt;gap:${S.panelGap}pt;padding:${qy}pt ${qx}pt;${bg}">${mark}<div>${offLines}</div></div>`;
@@ -132,8 +141,8 @@
     const inner = layout === 'band'
       ? `<div style="display:flex;flex-direction:column;height:100%"><div class="cc-row" style="flex:1;min-height:0">${photo}${agentCol}</div>${panel}</div>`
       : `<div class="cc-row">${photo}${agentCol}${panel}</div>`;
-    return `<div class="cc cc-${layout}" data-contactcard data-layout="${layout}" data-h="${h}" data-grow="${opts.grow != null ? opts.grow : 10}" data-shape="${esc(b.shape || '')}" data-bgap="${+opts.bottomGap || 0}"` +
-      ` data-floor="${opts.floor || 8}" data-brk="${brk ? 1 : 0}" data-tinted="${opts.panelBg ? 0 : 1}" data-opts="${esc(JSON.stringify(S))}" style="left:${x}pt;top:${y}pt;width:${w}pt;height:${h}pt">${stripe}${inner}</div>`;
+    return `<div class="cc cc-${layout}" data-contactcard data-layout="${layout}" data-h="${h}" data-grow="${opts.grow != null ? opts.grow : 10}" data-shape="${esc(b.shape || '')}" data-bgap="${+opts.bottomGap || 0}"${opts.bandTint && layout === 'band' ? ' data-bandtint="1"' : ''}` +
+      ` data-floor="${opts.floor || 8}" data-brk="${brk ? 1 : 0}" data-tinted="${opts.fieldAccent ? 0 : 1}" data-opts="${esc(JSON.stringify(S))}" style="left:${x}pt;top:${y}pt;width:${w}pt;height:${h}pt">${stripe}${inner}</div>`;
   };
 
   // ---- colors: the tint guard ----
@@ -157,12 +166,14 @@
     if(/rgba\(.*,\s*0\)|transparent/.test(cs.backgroundColor)) paper = [255, 255, 255];
     probe.remove();
     const S = JSON.parse(card.dataset.opts), ink = rgb(getComputedStyle(card).color), g = C.guard(acc);
-    // the tint: the guarded accent at the design's share (12%), lighter still if the panel text would drop under 4.5:1
-    let k = S.tint / 100, tint = mix(g, paper, k);
-    while(contrast(ink, tint) < 4.5 && k > 0.04){ k -= 0.02; tint = mix(g, paper, k); }
     // small accent labels (CALL / TEXT): the agent's accent, darkened until it reads on the paper
     let la = acc; for(let i = 0; i < 12 && contrast(la, paper) < 4.5; i++){ const [h, s, l] = toHsl(la); la = fromHsl([h, Math.min(s, 0.8), l - 0.06]); }
-    return {tint: css3(tint), label: css3(la), stripe: css3(g), guarded: g.join(',') !== acc.join(',') || k < S.tint / 100};
+    // (on a dark field the label lightens instead, until it reads)
+    if(lum(paper) < 0.2) { la = acc; for(let i = 0; i < 12 && contrast(la, paper) < 4.5; i++){ const [h, s, l] = toHsl(la); la = fromHsl([h, s, Math.min(0.95, l + 0.04)]); } }
+    // the band tint (opts.bandTint): the guarded accent at the design's share (12%), lighter still if the band's text would drop under 4.5:1
+    let k = (S.tint || 12) / 100, tint = mix(g, paper, k);
+    while(contrast(ink, tint) < 4.5 && k > 0.04){ k -= 0.02; tint = mix(g, paper, k); }
+    return {label: css3(la), stripe: css3(g), tint: css3(tint), guarded: g.join(',') !== acc.join(','), lightened: lum(paper) < 0.2 && la.join(',') !== acc.join(',')};
   };
 
   // ---- fitting ----
@@ -189,6 +200,8 @@
   };
 
   const fitOne = card => {
+    const ag0 = card.querySelector('.cc-agent');   // a re-fit (an image loaded) starts from the padding as built, not as centered
+    if(ag0 && ag0.dataset.pad0){ const [t, b] = ag0.dataset.pad0.split(','); ag0.style.paddingTop = t + 'pt'; ag0.style.paddingBottom = b + 'pt'; }
     const S = JSON.parse(card.dataset.opts), layout = card.dataset.layout;
     const n = card.querySelector('.cc-name'), web = card.querySelector('.cc-web'), brkweb = card.querySelector('.cc-brkweb');
     const name = n.dataset.name, start = +n.dataset.size, floor = +n.dataset.floor;
@@ -201,15 +214,19 @@
     const top0 = card.dataset.top0 ? +card.dataset.top0 : parseFloat(card.style.top); card.dataset.top0 = top0;
     card.style.top = top0 + 'pt'; card.style.height = card.dataset.h + 'pt';
 
-    // colors (tint guard)
-    // (a card on a colored field keeps the field's own accent and panel: the piece set them for that field)
+    // colors (accent guard)
+    // (a card on a colored field keeps the field's own accent: the piece set it for that field)
     const col = colors(card);
+    if(card.dataset.tinted !== '1' && contrast(rgb(col.label), rgb(getComputedStyle(card).backgroundColor)) >= 4.5 && col.lightened)
+      card.querySelectorAll('.cc-acc').forEach(e => e.style.color = col.label);   // a field's own accent that won't read on it lightens just enough
     if(card.dataset.tinted === '1'){
       card.querySelectorAll('.cc-acc').forEach(e => e.style.color = col.label);
       card.querySelectorAll('.cc-accbg').forEach(e => e.style.background = col.stripe); }
     const panel = card.querySelector('.cc-panel');
-    if(panel && card.dataset.tinted === '1') panel.style.background = col.tint;
-    card.dataset.tint = col.tint; card.dataset.tintGuarded = col.guarded ? '1' : '';
+    card.dataset.tintGuarded = col.guarded ? '1' : '';
+    // a full-width tinted brokerage band across the card's bottom is allowed (owner 10/27: it sets the brokerage apart from
+    // the agent); a box tight around the logo is still not. Opt-in: Ivory's 6 x 9 postcard backs.
+    if(panel && card.dataset.bandtint === '1') panel.style.background = col.tint;
 
     // logo: true shape inside its max box; square and stacked marks show the name in type and the card grows
     const img = card.querySelector('.cc-logo img'), lock = card.querySelector('.cc-lock');
@@ -265,6 +282,26 @@
     if(card.dataset.inline) steps.push('label on the number line');
     card.dataset.steps = steps.join(', ');
     card.dataset.namePt = size || floor;
+    centerOverBand(card);
+  };
+  // a tinted brokerage band (opts.bandTint, Ivory's 6 x 9 backs): the agent's lines sit centered top to bottom between the
+  // card's top and the band's top (owner 10/27, Part 1c), measured on the letters, not the line boxes. The column's
+  // padding moves from bottom to top (or back), so its height and the space between the lines stay as fitted.
+  const centerOverBand = card => {
+    const ag = card.querySelector('.cc-agent'), band = card.querySelector('.cc-band');
+    if(card.dataset.bandtint !== '1' || !ag || !band) return;
+    const p0 = (ag.dataset.pad0 || (ag.dataset.pad0 = [parseFloat(ag.style.paddingTop), parseFloat(ag.style.paddingBottom)].join(','))).split(',').map(Number);
+    ag.style.paddingTop = p0[0] + 'pt'; ag.style.paddingBottom = p0[1] + 'pt';
+    const k = card.getBoundingClientRect().width / card.offsetWidth || 1, PT = 4 / 3, rg = document.createRange();
+    let t = Infinity, b = -Infinity; const w = document.createTreeWalker(ag, NodeFilter.SHOW_TEXT); let nd;
+    while((nd = w.nextNode())){ if(!nd.textContent.trim() || !nd.parentElement.offsetParent) continue;
+      const fs = parseFloat(getComputedStyle(nd.parentElement).fontSize) * k; rg.selectNodeContents(nd);
+      for(const q of rg.getClientRects()){ if(q.width < 1) continue; const half = Math.max(0, (q.height - fs) / 2);
+        t = Math.min(t, q.top + half + fs * 0.24); b = Math.max(b, q.bottom - half - fs * 0.14); } }
+    if(!isFinite(t)) return;
+    const d = ((t - card.getBoundingClientRect().top) - (band.getBoundingClientRect().top - b)) / 2 / k / PT;   // pt to move up
+    const up = Math.max(-p0[1], Math.min(p0[0], d));
+    ag.style.paddingTop = (p0[0] - up) + 'pt'; ag.style.paddingBottom = (p0[1] + up) + 'pt';
   };
 
   C._overflow = overflow;   // for test runners
@@ -304,11 +341,12 @@
       const hs = card.querySelector('.cc-hs');
       if(hs && hs.naturalWidth){ const sc = Math.max(hs.clientWidth / hs.naturalWidth, hs.clientHeight / hs.naturalHeight), ppi = 96 / sc;
         if(ppi < 300) add('photo-under-300ppi', {slot: 'agent.headshot', ppi: Math.round(ppi)}); }
-      // tint guard: every line on the panel keeps 4.5:1 on the tint; the accent labels keep 4.5:1 on the paper
-      const panel = card.querySelector('.cc-panel');
-      if(panel && card.dataset.tinted === '1'){ const bg = rgb(getComputedStyle(panel).backgroundColor);
-        panel.querySelectorAll('*').forEach(e => { if(!vis(e) || ![...e.childNodes].some(c => c.nodeType === 3 && c.textContent.trim())) return;
-          const r = contrast(rgb(getComputedStyle(e).color), bg); if(r < 4.5) add('tint-contrast', {detail: `${e.textContent.trim().slice(0, 24)}: ${r.toFixed(1)}:1 on the panel`}); }); }
+      // logos float (owner 10/26): nothing filled or framed behind the logo, anywhere up its parent chain inside the card
+      const lgi = card.querySelector('.cc-logo img');
+      if(lgi) for(let e = lgi.parentElement; e && e !== card; e = e.parentElement){ const cs = getComputedStyle(e);
+        if(card.dataset.bandtint === '1' && e.classList.contains('cc-band')) continue;   // the full-width band, not a box
+        if(!/rgba\(.*,\s*0\)|transparent/.test(cs.backgroundColor) || cs.backgroundImage !== 'none' || ['Top', 'Right', 'Bottom', 'Left'].filter(sd => parseFloat(cs['border' + sd + 'Width'])).length > 1){
+          add('logo-boxed', {detail: 'a fill or frame behind the brokerage logo'}); break; } }
       const paper = rgb(getComputedStyle(card).backgroundColor);
       if(!/rgba\(.*,\s*0\)/.test(getComputedStyle(card).backgroundColor))
         card.querySelectorAll('.cc-acc').forEach(e => { if(!vis(e)) return; const r = contrast(rgb(getComputedStyle(e).color), paper);
@@ -318,7 +356,7 @@
   };
 
   // a summary for test runners: name size, steps taken, logo shape, tint
-  C.report = root => [...(root || document).querySelectorAll('.cc[data-contactcard]')].map(c => ({namePt: +c.dataset.namePt, steps: c.dataset.steps || '', shape: c.dataset.logoShape || 'none', layout: c.dataset.layout, tint: c.dataset.tint, tintGuarded: !!c.dataset.tintGuarded}));
+  C.report = root => [...(root || document).querySelectorAll('.cc[data-contactcard]')].map(c => ({namePt: +c.dataset.namePt, steps: c.dataset.steps || '', shape: c.dataset.logoShape || 'none', layout: c.dataset.layout, tintGuarded: !!c.dataset.tintGuarded}));
 })();
 /* AgentCard: what the Open House library and older tests still call (10/24/2026 API). The 10/24 card itself is retired;
    every card is the Right panel card now. */

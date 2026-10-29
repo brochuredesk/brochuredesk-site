@@ -45,8 +45,8 @@ Ivory.whenFonts(function(){
   const inset = ((D.mode||'email')==='print' && D.piece.print==='margin') ? (D.piece.margin||18) : 0;
 
   const ids = Ivory.photoOrder(D);
-  const pick = (C.flyerPhotos && C.flyerPhotos.length>=4) ? C.flyerPhotos : ids;
-  const [hero, s1, s2, s3] = pick;
+  const pick = (C.flyerPhotos && C.flyerPhotos.length>=5) ? C.flyerPhotos : ids;
+  const [hero, s1, s2, s3, s4] = (pick.length>=5 ? pick : ids);
 
   let h = '', drop = 0;
   // the label bar: field edge to field edge, top of the page down to 62 pt
@@ -65,7 +65,7 @@ Ivory.whenFonts(function(){
   h += O.time ? `<div class="abs tl-time" data-slot="oh.time" data-lines="1">${esc(O.time)}</div>` : '';
   { const ls = [[O.note,'oh.note','oh-strong'],[O.refreshments,'oh.refreshments','tl-note']].filter(l=>l[0]);
     // the date and time sit centered in the tile; special notes and refreshments go on a strip under the tile and hero
-    h += `<style>.tl-wd,.tl-day,.tl-mo,.tl-raw,.tl-hair,.tl-time{margin-top:16pt}</style>`;
+    h += `<style>.tl-wd,.tl-day,.tl-mo,.tl-raw,.tl-hair,.tl-time{margin-top:16pt}.tl-day{margin-top:-8pt}</style>`;
     if(ls.length){
       const ev = Ivory.eventLines(ls, 48, 373, 516, 14, 0, 'text-align:center');
       drop = ev.h + 18;
@@ -76,10 +76,21 @@ Ivory.whenFonts(function(){
 
   if(drop) h += `<style>.address{top:${372+drop}pt}.placeline{top:${406+drop}pt}.factline{top:${404+drop}pt}</style>`;
   h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
   h += `<div class="hair" style="left:36pt;top:${422+drop}pt;width:540pt;opacity:.35"></div>`;
-  [[s1,36],[s2,221],[s3,406]].forEach(([id,x],i)=> h += Ivory.photo(D, '', id, `left:${x}pt;top:${432+drop}pt;width:170pt;height:${150-drop}pt`) + Ivory.captionHTML(D, id, x, 586, 170, 'row'+i));
+  // four photos across the bottom, edge to edge of the 540 pt column, each with its label only (no description)
+  const ph = 104, pt = 611 - ph, pw = 126, gp = 12;
+  [s1,s2,s3,s4].forEach((id,i)=>{
+    const x = 36 + i*(pw+gp);
+    h += Ivory.photo(D, '', id, `left:${x}pt;top:${pt}pt;width:${pw}pt;height:${ph}pt`);
+    const c = Ivory.caption(D, id);
+    h += c.name ? `<div class="abs cap-name" style="left:${x}pt;top:${pt+ph+4}pt;width:${pw}pt;height:10.5pt" data-slot="row${i}.name" data-lines="1">${esc(c.name)}</div>` : Ivory.ghost(x, pt+ph+4, pw*0.55, 1, 10);
+  });
+  // the write-up: the writer's own sentences, fully justified from the first photo's left edge to the last photo's right edge
+  const blurb = (C.openHouse||{}).blurb || (C.listing||{}).body || '';
+  const blTop = 432+drop, blAvail = pt - 10 - blTop;
+  if(blurb && blAvail >= 28) h += `<div class="abs body" style="left:36pt;top:${blTop}pt;width:540pt;height:${blAvail}pt;text-align:justify;hyphens:none" data-slot="oh.blurb" data-lines="2" data-fill="2">${esc(blurb)}</div>`;
 
   h += Ivory.card(D, {x:36, y:636, w:540, h:118, nameSize:30, phoneSize:18, lineSize:8.5, officeSize:16, qr:0, brkShift:9, logoH:42, gap:18, brkMin:250,
                       top:{name:9, title:46, callLbl:59, phone:67}});
@@ -89,6 +100,33 @@ Ivory.whenFonts(function(){
   document.getElementById('pages').innerHTML = f.html;
   Ivory.shapeLogos();
   window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+  const blEl = document.querySelector('[data-slot="oh.blurb"]');
+  if(blEl){
+    const all = blurb.match(/[^.!?]+[.!?]+/g) || [blurb], avail = blAvail;
+    const measure = (txt, size, lh) => {
+      blEl.textContent = txt; blEl.style.fontSize = size+'pt'; blEl.style.lineHeight = lh+'pt'; blEl.style.textAlignLast = 'left';
+      const r = document.createRange(); r.selectNodeContents(blEl);
+      const rects = Array.from(r.getClientRects()).filter(q=>q.width>1), box = blEl.getBoundingClientRect();
+      const tops = []; rects.forEach(q=>{ if(!tops.some(t=>Math.abs(t-q.top)<3)) tops.push(q.top); });
+      const last = rects.filter(q=>Math.abs(q.top-Math.max(...tops))<3);
+      const lastW = Math.max(...last.map(q=>q.right)) - Math.min(...last.map(q=>q.left));
+      return {lines: tops.length, fill: lastW/box.width};
+    };
+    let best = null;
+    for(let n = all.length; n >= 1 && !best; n--){
+      const txt = all.slice(0, n).join('').trim();
+      for(let size = 14.5; size >= 11.5; size -= .25){
+        const lh = Math.round(size*1.36*4)/4, m = measure(txt, size, lh);
+        if(m.lines >= 2 && m.lines*lh <= avail && m.fill >= .8){ best = {txt, size, lh, m}; break; }
+      }
+    }
+    if(best){
+      measure(best.txt, best.size, best.lh);
+      blEl.style.height = (best.m.lines*best.lh)+'pt'; blEl.style.textAlignLast = best.m.fill >= .93 ? 'justify' : 'left';
+      blEl.dataset.lines = best.m.lines; blEl.dataset.fill = best.m.lines;
+      blEl.style.top = (blTop + Math.max(0, (avail - best.m.lines*best.lh)/2))+'pt';
+    } else blEl.remove();
+  }
   const cardIssues = Ivory.layoutCards();
   window.brochureCheck = () => Ivory.check(cardIssues);
 });

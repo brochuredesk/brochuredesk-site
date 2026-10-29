@@ -230,9 +230,9 @@
   },
   {
    "design": "oh-library",
-   "piece": "lib-b11-lifted-photo",
-   "file": "b11-lifted-photo.html",
-   "name": "Lifted Photo",
+   "piece": "lib-b03-formal-invitation",
+   "file": "b03-navy-invitation.html",
+   "name": "Formal Invitation",
    "own": false,
    "needsFloorPlan": false,
    "trim": [
@@ -321,6 +321,44 @@
    "fonts": false,
    "qr": false,
    "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p15-pale-gallery",
+   "file": "p15-pale-gallery.html",
+   "name": "Pale Gallery",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p18-asymmetric",
+   "file": "p18-asymmetric.html",
+   "name": "Asymmetric",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
    "refreshments": false
   },
   {
@@ -439,6 +477,82 @@
   },
   {
    "design": "oh-library",
+   "piece": "lib-p06-warm-collage",
+   "file": "p06-warm-collage.html",
+   "name": "Warm Collage",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p08-architect",
+   "file": "p08-architect.html",
+   "name": "Architect",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p10-charcoal-classic",
+   "file": "p10-charcoal-classic.html",
+   "name": "Charcoal Classic",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p12-archway",
+   "file": "p12-arch.html",
+   "name": "Archway",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
    "piece": "lib-p13-logo-grid",
    "file": "p13-logo-grid.html",
    "name": "Logo Grid",
@@ -515,9 +629,9 @@
   },
   {
    "design": "oh-library",
-   "piece": "lib-p21-date-tab",
-   "file": "p21-date-tab.html",
-   "name": "Date Tab",
+   "piece": "lib-p24-white-editorial",
+   "file": "p24-white-editorial.html",
+   "name": "White Editorial",
    "own": false,
    "needsFloorPlan": false,
    "trim": [
@@ -534,9 +648,66 @@
   },
   {
    "design": "oh-library",
-   "piece": "lib-p36-photo-strip",
-   "file": "p36-photo-strip.html",
-   "name": "Photo Strip",
+   "piece": "lib-p26-tall-column",
+   "file": "p26-tall-column.html",
+   "name": "Tall Column",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p37-clear-collage",
+   "file": "p37-clear-collage.html",
+   "name": "Clear Collage",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p38-serif-headline",
+   "file": "p38-serif-headline.html",
+   "name": "Serif Headline",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p39-black-rules",
+   "file": "p39-black-rules.html",
+   "name": "Black Rules",
    "own": false,
    "needsFloorPlan": false,
    "trim": [
@@ -552,5 +723,44 @@
    "refreshments": false
   }
  ],
- "candidates": []
+ "candidates": [
+  {
+   "design": "oh-library",
+   "piece": "lib-b11-lifted-photo",
+   "file": "b11-lifted-photo.html",
+   "name": "Lifted Photo",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "realtor",
+   "refreshments": false
+  },
+  {
+   "design": "oh-library",
+   "piece": "lib-p45-civic-diagonal",
+   "file": "p45-civic-diagonal.html",
+   "name": "Civic Diagonal",
+   "own": false,
+   "needsFloorPlan": false,
+   "trim": [
+    612,
+    792
+   ],
+   "print": "scaled",
+   "margin": null,
+   "variant": "openhouse",
+   "fonts": false,
+   "qr": false,
+   "audience": "public",
+   "refreshments": false
+  }
+ ]
 }

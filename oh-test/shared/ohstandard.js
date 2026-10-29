@@ -9,7 +9,7 @@
      qr              one QR code, at least 54 pt (0.75 in) square; none at all on pieces marked "qr": false
                      (the open house flyer library, 10/20/2026; Ivory's five Open House flyers, 10/22/2026)
      price / photo-number / staging   no listing price, no "Photo 12", no "virtually staged"
-     banned-phrase   no "no pressure" wording (10/22/2026)
+     banned-phrase   no "no pressure" wording (10/22/2026), no "rebuilt" (10/28/2026)
    The TREC broker-name size rule needs the logo's wordmark measured by eye; it is recorded with the owner's approval. */
 (function(){
   const PT = 72 / 96;
@@ -67,6 +67,7 @@
     if(/\bphoto\s*#?\s*\d+/i.test(text)) add('page', 'photo-number', 'a photo number is on the page');
     if(/virtual(ly)?\s+stag/i.test(text)) add('page', 'staging', '"virtually staged" is on the page');
     if(/\bno[\s-]+pressure\b/i.test(text)) add('page', 'banned-phrase', '"no pressure" is on the page');
+    if(/\brebuil(t|d)/i.test(text)) add('page', 'banned-phrase', '"rebuilt" is on the page');
     return out;
   }
   window.OHStandard = {check};

@@ -26,7 +26,7 @@
   .k{font:600 9pt/12pt Outfit;letter-spacing:2.4pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
   .ev{font:400 12pt/16pt Outfit}
   .addr{font:600 24pt/28pt Fraunces}
-  .place{font:400 10pt/13pt Outfit;white-space:nowrap;overflow:hidden}
+  .place{font:600 24pt/28pt Fraunces;white-space:nowrap;overflow:hidden}
   .hr{position:absolute;left:36pt;width:540pt;height:.9pt;background:var(--ink);opacity:.25}
   .oh-agent-name{font-family:Fraunces;font-weight:600}
   .oh-agent{font-family:Outfit}
@@ -68,14 +68,17 @@ OHL.start(['600 10pt Fraunces', '400 10pt Outfit', '600 10pt Outfit'], D => {
   h += `<div class="abs k" style="left:36pt;top:${y}pt;width:250pt;height:12pt">${det.length ? 'Good to know' : 'The home'}</div>`;
   let ev;
   if(det.length) ev = Ivory.eventLines(det, 36, y + 18, 262, 16, 4);
-  else { const fl = Ivory.facts(L); ev = {html: fl.map((t, i) => `<div class="abs ev" style="left:36pt;top:${y+18+i*16}pt;width:262pt;height:16pt;white-space:nowrap;overflow:hidden" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`).join(''), h: fl.length*16}; }
+  else { const lh = 16, wu = OHL.writeup(D, 'ev', 262, lh, Math.floor((704 - 18 - 14 - (y + 18))/lh));
+    ev = {html: wu.n ? `<div class="abs ev" style="left:36pt;top:${y+18}pt;width:262pt;height:${wu.n*lh+3}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>` : '', h: wu.n*lh}; }
   h += ev.html;
-  h += `<div class="vr" style="left:312pt;top:${y}pt;height:${Math.max(ev.h + 18, 78)}pt"></div>`;
+  const an = Ivory.linesNeeded('addr', L.address, 246, 28), colH = Math.max(ev.h + 18, 78, an*28 + 52);
+  h += `<div class="vr" style="left:312pt;top:${y}pt;height:${colH}pt"></div>`;
   h += `<div class="abs k" style="left:330pt;top:${y}pt;width:246pt;height:12pt">Where</div>`;
-  const an = Ivory.linesNeeded('addr', L.address, 246, 28);
-  h += `<div class="abs addr" style="left:330pt;top:${y+16}pt;width:246pt;height:${an*28+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:330pt;top:${y+20+an*28}pt;width:246pt;height:13pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', '))}</div>`;
-  const end = y + Math.max(ev.h + 18, an*28 + 36);
+  // the street and city lines centered top to bottom in the space under "Where", down to the divider's foot (owner 10/28/2026)
+  const ay = y + 12 + Math.max(0, (colH - 12 - (an*28 + 32))/2);
+  h += `<div class="abs addr" style="left:330pt;top:${ay}pt;width:246pt;height:${an*28+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:330pt;top:${ay+an*28+2}pt;width:246pt;height:30pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  const end = y + Math.max(ev.h + 18, an*28 + 52);
   const cy = 704;
   const shift = Math.max(0, (cy - 18 - end)/2);
   h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;

@@ -18,15 +18,17 @@
   .sheet{background:var(--paper);color:var(--ink)}
   .wash{position:absolute;left:0;top:0;width:612pt;background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25) 45%, rgba(0,0,0,.72))}
   .top{color:#fff;text-shadow:0 1pt 3pt rgba(0,0,0,.45)}
-  .ev.top{font:500 12pt/16pt 'Instrument Sans'}
+  .ev.top{font:500 15pt/20pt 'Instrument Sans'}
   .eyebrow{font:500 10pt/13pt 'Instrument Sans';letter-spacing:4pt;text-transform:uppercase;white-space:nowrap}
   .hl{font:500 40pt/46pt Newsreader;white-space:nowrap;overflow:hidden}
-  .rt{font:italic 500 24pt/30pt Newsreader;white-space:nowrap;overflow:hidden}
-  .date{font:600 28pt/34pt Newsreader;white-space:nowrap;overflow:hidden}
+  .rt{font:italic 500 30pt/38pt Newsreader;white-space:nowrap;overflow:hidden}
+  .date{font:600 38pt/42pt Newsreader;white-space:nowrap;overflow:hidden}
   .time{font:600 19pt/24pt 'Instrument Sans';letter-spacing:.6pt;white-space:nowrap;overflow:hidden}
   .k{font:600 8.8pt/11pt 'Instrument Sans';letter-spacing:2.2pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
   .addr{font:500 22pt/26pt Newsreader}
-  .place{font:400 9.5pt/13pt 'Instrument Sans'}
+  .place{font:400 10.5pt/15pt 'Instrument Sans'}
+  .facts{font:600 12.5pt/18pt 'Instrument Sans'}
+  .wu{font:400 11pt/15pt 'Instrument Sans'}
   .ev{font:400 10.5pt/14pt 'Instrument Sans'}
   .ev.b{font-weight:600}
   .rule{position:absolute;height:.9pt;background:var(--ink);opacity:.22}
@@ -57,14 +59,14 @@ OHL.start(['500 10pt Newsreader', '600 10pt Newsreader', 'italic 500 10pt Newsre
   y += 48;
   const rtext = E.refreshTitle || E.refreshText;
   // the refreshment type as a title; the agent's own line under it (or alone, in the same italic, when there is no type)
-  if(E.refreshTitle){ h += `<div class="abs top rt" style="left:40pt;top:${y}pt;width:532pt;height:30pt" data-fit="24,16" data-slot="oh.refreshTitle" data-lines="1">${esc(E.refreshTitle + (E.refreshText ? ':' : ''))}</div>`; y += 32; }
-  else if(E.refreshText){ const n = Ivory.linesNeeded('rt', E.refreshText, 532, 30);
-    h += `<div class="abs top rt" style="left:40pt;top:${y}pt;width:532pt;height:${n*30+4}pt;white-space:normal" data-slot="oh.refreshments" data-lines="${n}">${esc(E.refreshText)}</div>`; y += n*30 + 2; }
-  if(E.refreshTitle && E.refreshText){ const n = Ivory.linesNeeded('ev top', E.refreshText, 400, 16);
-    h += `<div class="abs top ev" style="left:40pt;top:${y}pt;width:400pt;height:${n*16+3}pt" data-slot="oh.refreshments" data-lines="${n}">${esc(E.refreshText)}</div>`; y += n*16; }
-  h += `<div class="abs top date" style="left:40pt;top:${TH-80}pt;width:532pt;height:34pt" data-fit="28,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.refreshTitle){ h += `<div class="abs top rt" style="left:40pt;top:${y}pt;width:532pt;height:38pt" data-fit="30,18" data-slot="oh.refreshTitle" data-lines="1">${esc(E.refreshTitle + (E.refreshText ? ':' : ''))}</div>`; y += 40; }
+  else if(E.refreshText){ const n = Ivory.linesNeeded('rt', E.refreshText, 532, 38);
+    h += `<div class="abs top rt" style="left:40pt;top:${y}pt;width:532pt;height:${n*38+4}pt;white-space:normal" data-slot="oh.refreshments" data-lines="${n}">${esc(E.refreshText)}</div>`; y += n*38 + 2; }
+  if(E.refreshTitle && E.refreshText){ const n = Ivory.linesNeeded('ev top', E.refreshText, 500, 20);
+    h += `<div class="abs top ev" style="left:40pt;top:${y}pt;width:500pt;height:${n*20+3}pt" data-slot="oh.refreshments" data-lines="${n}">${esc(E.refreshText)}</div>`; y += n*20; }
+  h += `<div class="abs top date" style="left:40pt;top:${TH-88}pt;width:532pt;height:42pt" data-fit="38,24" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
   if(E.time) h += `<div class="abs top time" style="left:40pt;top:${TH-44}pt;width:532pt;height:24pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
-  const issues = y > TH - 88 ? [{slot:'oh.refreshments', kind:'overflow', detail:'the refreshment lines run into the date'}] : [];
+  const issues = y > TH - 94 ? [{slot:'oh.refreshments', kind:'overflow', detail:'the refreshment lines run into the date'}] : [];
   // below: the house beside the address and the details
   y = TH + 24;
   const pw = 300, ph = Math.max(200, OHL.minFrameH(D, hero, pw, 200));
@@ -75,12 +77,17 @@ OHL.start(['500 10pt Newsreader', '600 10pt Newsreader', 'italic 500 10pt Newsre
   h += `<div class="abs k" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:11pt">Join us at</div>`; ry += 16;
   const an = Ivory.linesNeeded('addr', L.address, rw, 26);
   h += `<div class="abs addr" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${an*26+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`; ry += an*26 + 4;
-  const pl = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', ');
-  h += `<div class="abs place" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:13pt;white-space:nowrap;overflow:hidden" data-slot="place" data-lines="1">${esc(pl)}</div>`; ry += 15;
-  h += `<div class="abs place" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:13pt;white-space:nowrap;overflow:hidden" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`; ry += 24;
+  const pl = OHL.place(L);
+  h += `<div class="abs place" style="left:${rx}pt;top:${ry - 2}pt;width:${rw}pt;height:15pt;white-space:nowrap;overflow:hidden" data-slot="place" data-lines="1">${esc(pl)}</div>`; ry += 22;
+  h += `<div class="abs facts" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:18pt;white-space:nowrap;overflow:hidden" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`; ry += 26;
+  const colEnd = y + (shown ? ph : 0);
+  let noteH = 0, noteEv = null;
+  if(E.note){ noteEv = Ivory.eventLines([[E.note,'oh.note','ev b']], rx, 0, rw, 14); noteH = 30 + noteEv.h; }
+  const wl = 15, wu = OHL.writeup(D, 'wu', rw, wl, Math.floor((colEnd - ry - noteH)/wl));
+  if(wu.n){ h += `<div class="abs wu" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${wu.n*wl+3}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`; ry += wu.n*wl + 10; }
   if(E.note){
-    h += `<div class="rule" style="left:${rx}pt;top:${ry - 8}pt;width:${rw}pt"></div>`;
-    h += `<div class="abs k" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:11pt">Good to know</div>`; ry += 15;
+    h += `<div class="rule" style="left:${rx}pt;top:${ry - 4}pt;width:${rw}pt"></div>`;
+    h += `<div class="abs k" style="left:${rx}pt;top:${ry + 4}pt;width:${rw}pt;height:11pt">Good to know</div>`; ry += 19;
     const ev = Ivory.eventLines([[E.note,'oh.note','ev b']], rx, ry, rw, 14); h += ev.html; ry += ev.h;
   }
   const blockEnd = Math.max(y + (shown ? ph : 0), ry);

@@ -86,7 +86,7 @@ OHL.start(['400 10pt "DM Serif Display"', '600 10pt Manrope', '700 10pt Manrope'
   const ay = kick ? Math.max(evEnd + 34, Math.round((evEnd + 520 - kn*24 - 28 - addrH)/2)) : Math.max(evEnd + 34, 520 - addrH - 30);
   h += `<div class="abs" style="left:${X-2}pt;top:${ay+3}pt;width:18pt;height:18pt;color:var(--accent-on-dark)">${ICON.pin.replace('<svg','<svg style="width:18pt;height:18pt;stroke:currentColor;fill:none;stroke-width:1.6"')}</div>`;
   h += `<div class="abs addr" style="left:${X+22}pt;top:${ay}pt;width:${W-22}pt;height:${an*26+6}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:${X+22}pt;top:${ay+an*26+4}pt;width:${W-22}pt;height:11pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:${X+22}pt;top:${ay+an*26+4}pt;width:${W-22}pt;height:11pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   if(kick){
     const ky = 520 - kn*24;
     h += `<div class="abs" style="left:${X}pt;top:${ky-16}pt;width:${W}pt;height:.8pt;background:var(--on-dark);opacity:.25"></div>`;
@@ -103,7 +103,6 @@ OHL.start(['400 10pt "DM Serif Display"', '600 10pt Manrope', '700 10pt Manrope'
   if(L.beds) facts.push([ICON.bed, L.beds, L.beds == 1 ? 'Bedroom' : 'Bedrooms']);
   if(L.baths) facts.push([ICON.bath, L.baths + (L.halfBaths ? ' / ' + L.halfBaths : ''), L.halfBaths ? 'Full / half baths' : (L.baths == 1 ? 'Full bath' : 'Full baths')]);
   if(L.sqft) facts.push([ICON.area, Number(L.sqft).toLocaleString('en-US'), 'Square feet']);
-  if(L.neighborhood) facts.push([ICON.pin, L.neighborhood, L.city || '']);
   const cw = 540 / facts.length;
   facts.forEach(([ic, v, k], i) => {
     h += `<div class="fact" style="left:${36+i*cw}pt;top:${by+44}pt;width:${cw}pt;height:70pt">${ic}<div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(k)}</div></div>`;

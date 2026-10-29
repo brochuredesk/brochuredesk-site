@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Civic Diagonal</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<script src="../shared/factrepeat.js"></script>
+<!--
+  Civic Diagonal (from reference P45). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: another cool angled design, perfect for the right house. A white text field with widely spaced event wording
+  and the facts meets a dark brand panel holding the brokerage logo in white; below, two photos with their tops cut on
+  one shared diagonal, a white gap running between them. The house photo takes the diagonal only when its house box
+  proves the cut crosses sky; otherwise its top stays square. Date, time and address large at the foot.
+  Type: Jost.
+-->
+<style>
+  .sheet{background:#fff;color:var(--ink)}
+  .hl{font:400 44pt/50pt Jost;letter-spacing:12pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .facts{font:500 10pt/13pt Jost;letter-spacing:3pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .date{font:600 28pt/34pt Jost;white-space:nowrap;overflow:hidden}
+  .time{font:500 22pt/28pt Jost;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .addr{font:500 15pt/20pt Jost;letter-spacing:1.2pt;text-transform:uppercase;text-align:right}
+  .f6{position:absolute;display:flex;align-items:center;gap:7pt;font:500 12pt/15pt Jost;white-space:nowrap;overflow:hidden}
+  .f6 span:first-child{color:var(--main-on-paper);flex:none}
+  .pw{font:400 13pt/18.25pt Jost;color:var(--ink);text-align:justify}
+  .ev{font:500 10pt/13pt Jost}
+  .oh-agent-name{font-family:Jost;font-weight:600}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['400 10pt Jost', '500 10pt Jost', '600 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'angled');
+  const room = OHL.photos(D).find(id => id !== hero && /patio|yard|living/i.test(D.photos[id].tags||'')) || OHL.photos(D).find(id => id !== hero && !Ivory.fullHouse(D, id));
+  const P = 4/3;
+  // the dark panel (top right) with its lower edge on the diagonal
+  const DX = 330, DBOT = 200, slope = 0.15;   // the diagonal falls 0.32 pt per pt from right to left
+  let h = `<svg class="abs" style="left:0;top:0;width:612pt;height:${DBOT + 60}pt" viewBox="0 0 816 ${(DBOT + 60)*P}"><polygon points="${DX*P},0 816,0 816,${DBOT*P} ${DX*P},${(DBOT + (612 - DX)*slope)*P}" fill="var(--dark)"/></svg>`;
+  h += OHL.logo(D, 'knockout', `left:${DX + 30}pt;top:48pt;width:${612 - DX - 60}pt;height:70pt;justify-content:center`);
+  // text field
+  // the headline, facts and paragraph sit a little higher so the paragraph can start level with the room photo's
+  // top-left point (owner 10/28/2026)
+  const lines = OHL.labelLines(E.label), HT = 40, ROW = 28;
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:34pt;top:${HT + i*54}pt;width:${DX - 50}pt;height:56pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  const fy = HT + lines.length*54 + 12;
+  // under the headline the six MLS facts with icons, two columns, big enough to read easily (owner 10/27/2026)
+  const six = OHL.factSix(L), cw6 = (DX - 50 - 10)/2;
+  six.forEach(([ic, t], i) => h += `<div class="f6" style="left:36pt;top:${fy + Math.floor(i/2)*ROW}pt;width:${cw6}pt;height:22pt;margin-left:${i % 2 ? cw6 + 10 : 0}pt"><span>${OHL.icon(ic, 17)}</span><span data-slot="fact.${i}" data-lines="1">${esc(t)}</span></div>`);
+  const sixEnd = fy + Math.ceil(six.length/2)*ROW;
+  // photos: left = the house, right = a room. Both tops follow one line parallel to the panel's edge, a white gap
+  // below it; the line falls toward the left: y(x) = DBOT + (612 - x)*slope + gap
+  const evN = [E.note, E.refreshments].filter(Boolean).reduce((a, t) => a + Ivory.linesNeeded('ev', t, 544, 13)*13 + 2, 0);
+  const foot = 600 - evN, gap = 12, yl = x => DBOT + (612 - x)*slope + gap;
+  const lw = DX - 30 - gap/2, rx = DX - 30 + gap/2, rw = 612 - rx;
+  const rTop = yl(612), rH = foot - rTop;
+  h += OHL.maskedPhoto(D, room, `left:${rx}pt;top:${rTop}pt;width:${rw}pt;height:${rH}pt`, [[0, (yl(rx) - rTop)/rH], [1, 0], [1, 1], [0, 1]]);
+  const lTop = yl(lw), lH = foot - lTop, poly = [[0, (yl(0) - lTop)/lH], [1, 0], [1, 1], [0, 1]];
+  const ok = OHL.polyFits(D, hero, lw, lH, poly);
+  h += ok ? OHL.maskedPhoto(D, hero, `left:0;top:${lTop}pt;width:${lw}pt;height:${lH}pt`, poly)
+          : (() => { const fr = OHL.fitHero(D, hero, lw, lH, true); return OHL.photo(D, hero, `left:${(lw - fr.w)/2}pt;top:${foot - fr.h}pt;width:${fr.w}pt;height:${fr.h}pt`); })();
+  // the foot: date and time left, address right
+  let y = foot + 16;
+  h += `<div class="abs date" style="left:34pt;top:${y}pt;width:330pt;height:34pt" data-fit="28,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:34pt;top:${y + 34}pt;width:330pt;height:28pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  // the address a size up, with city, state and ZIP (owner 10/27/2026)
+  const al = [L.address, OHL.place(L)].filter(Boolean), an = Ivory.linesNeeded('addr', L.address, 238, 20) + al.length - 1;
+  h += `<div class="abs addr" style="left:340pt;top:${y + 4}pt;width:238pt;height:${an*20 + 2}pt" data-slot="address" data-lines="${an}">${al.map(esc).join('<br>')}</div>`;
+  y += 66;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 34, y, 544, 13, 2);
+  h += ev.html; y += ev.h;
+  const cy = Math.max(704, y + 10);
+  const photoTop = ok ? yl(0) : foot - OHL.fitHero(D, hero, lw, lH, true).h;
+  // a paragraph under the six facts fills the blank field (owner 10/28/2026), the writer's own sentences. It starts level
+  // with the room photo's angled top-left point and ends above the house photo; its left gap is half the facts' (18 pt),
+  // its right edge stays on the house photo's right edge; larger type, justified. A sentence that repeats one of the six
+  // facts above it is left out (owner 10/28/2026: a write-up never repeats facts shown on the piece).
+  const PL = 18, PLH = 18.25, pw = lw - PL, py = Math.max(yl(rx), sixEnd + 10), pn = Math.floor((photoTop - 10 - py)/PLH);
+  const wu = OHL.writeup(D, 'pw', pw, PLH, pn, six.map(f => f[1]));
+  if(wu.text) h += `<div class="abs pw" style="left:${PL}pt;top:${py}pt;width:${pw}pt;height:${wu.n*PLH + 2}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`;
+  const issues = sixEnd > photoTop - 6 ? [{slot:'fact.0', kind:'overflow', detail:'the facts run into the photo'}] : cy > 708 ? [{slot:'oh.note', kind:'overflow', detail:'the foot is too full'}] : [];
+  h += OHL.contact(D, {x:34, y:Math.min(cy, 708), w:544, h:60, logo:false, nameSize:16, phoneSize:12.5, lineSize:9});
+  h += `<div class="abs fine" style="left:34pt;top:779pt;width:544pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 44, 22, 54, 1.12);
+  return f;
+});
+</script>
+</body>
+</html>

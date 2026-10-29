@@ -23,8 +23,9 @@
   .ev-note{height:15pt;font:600 11.5pt/15pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .oh-strong{height:15pt;font:700 11.5pt/15pt var(--font-body);color:var(--accent);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .address{left:35pt;top:514pt;width:254pt;height:81pt;font-size:22pt;line-height:27pt;white-space:normal}
-  .placeline{left:36pt;top:600pt;width:252pt;height:20pt;white-space:normal;line-height:10pt}
-  .factline{left:36pt;top:614pt;width:252pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .oh5-note{font-size:8.5pt;line-height:10.5pt}
+  .cityline{left:35pt;top:541pt;width:254pt;height:27pt;font-size:22pt;line-height:27pt;white-space:nowrap}
+  .factline{left:36pt;top:614pt;width:252pt;height:16pt;font:600 12.5pt/16pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -69,7 +70,17 @@ Ivory.whenFonts(function(){
   h += `<div class="hair" style="left:304pt;top:${y+10}pt;width:272pt"></div>`;
   // two captioned photos fill the column from the rule to the card
   // each photo gets its room name and a 3-line write-up (10/21/2026: more copy here)
-  const notes = C.photoNotes || {}, capH = 50, p0 = y + 22, ph = Math.round((622 - p0 - 2*capH)/2);
+  // 10/25 A09 round 2: two to three full lines of real writing under each photo (the writer's photoNotes, else that
+  // room's write-up from the brochure copy, kept to whole sentences that fit three lines); never a one-line caption
+  const notes = Object.assign({}, C.photoNotes || {}), capH = 50, p0 = y + 22, ph = Math.round((622 - p0 - 2*capH)/2);
+  const roomCopy = id => { const K = D.copy || {}, all = [];
+    Object.values(K).forEach(v => { if(v && typeof v === 'object') ['features','tiles'].forEach(k => (v[k]||[]).forEach(f => all.push(f))); });
+    const f = all.find(f => f.photo === id); if(!f || !f.body) return '';
+    const sn = f.body.match(/[^.!?]+[.!?]+/g) || [f.body];
+    for(let n = sn.length; n >= 1; n--){ const t = sn.slice(0, n).join('').trim();
+      const k = Ivory.linesNeeded('body oh5-note', t, 272, 10.5); if(k <= 3 && (k >= 2 || n === 1)) return t; }
+    return ''; };
+  [s1, s2].forEach(id => { if(id && !notes[id]) notes[id] = roomCopy(id); });
   [[s1,p0],[s2,p0+ph+capH]].forEach(([id,py],i)=>{
     const c = Ivory.caption(D, id);
     h += Ivory.photo(D, '', id, `left:304pt;top:${py}pt;width:272pt;height:${ph}pt`);
@@ -79,18 +90,22 @@ Ivory.whenFonts(function(){
   });
 
   h += `<div class="abs display address" data-slot="address" data-lines="3">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="2" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs display cityline" data-slot="place" data-lines="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
 
-  h += Ivory.card(D, {x:36, y:650, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:56, logoH:28, gap:18, brkMin:170,
+  h += Ivory.card(D, {x:36, y:650, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:15, qr:0, brkShift:9, logoH:38, gap:18, brkMin:230,
                       top:{name:8, title:40, callLbl:52, phone:60}});
   h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
 
   const f = Ivory.frame(D, 612, 792, h);
   document.getElementById('pages').innerHTML = f.html;
   Ivory.shapeLogos();
-  { const ad = document.querySelector('.address'); const used = Math.min(3, Math.max(1, Math.round(ad.scrollHeight*72/96/27)));
-    const top = 514 + used*27; document.querySelector('.placeline').style.top = (top+6)+'pt'; document.querySelector('.factline').style.top = (top+6+14)+'pt'; }
+  // street (1-3 lines), city and state at the same size, then the facts: one block, centered between the hero and the card
+  { const ad = document.querySelector('.address'), used = Math.min(3, Ivory.linesNeeded('display address', L.address, 254, 27));
+    const blockH = used*27 + 27 + 8 + 16, top = Math.round(502 + (650 - 502 - blockH)/2);
+    ad.style.top = top+'pt'; ad.style.height = used*27+'pt';
+    document.querySelector('.cityline').style.top = (top + used*27)+'pt';
+    document.querySelector('.factline').style.top = (top + used*27 + 27 + 8)+'pt'; }
   window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
   const cardIssues = Ivory.layoutCards();
   window.brochureCheck = () => Ivory.check(cardIssues);

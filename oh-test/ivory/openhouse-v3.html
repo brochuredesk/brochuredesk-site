@@ -75,7 +75,7 @@ Ivory.whenFonts(function(){
 
   if(grow) h += `<style>.address{top:${462+grow}pt}.placeline{top:${496+grow}pt}.factline{top:${495+grow}pt}</style>`;
   h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
   h += Ivory.fullRule(D, 612, 514+grow);
   [[s1,36],[s2,221],[s3,406]].forEach(([id,x],i)=> h += Ivory.photo(D, '', id, `left:${x}pt;top:${524+grow}pt;width:170pt;height:${100-grow}pt`) + Ivory.captionHTML(D, id, x, 628, 170, 'row'+i));

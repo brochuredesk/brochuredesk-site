@@ -90,7 +90,7 @@ Ivory.whenFonts(function(){
   });
 
   h += `<div class="abs display address" data-slot="address" data-lines="3">${esc(L.address)}</div>`;
-  h += `<div class="abs display cityline" data-slot="place" data-lines="1">${esc(Ivory.cityST(L))}</div>`;
+  h += `<div class="abs display cityline" data-slot="place" data-lines="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
 
   h += Ivory.card(D, {x:36, y:650, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:15, qr:0, brkShift:9, logoH:38, gap:18, brkMin:230,

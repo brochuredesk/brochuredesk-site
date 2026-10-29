@@ -9,8 +9,8 @@
 <!--
   Twilight Frame (from reference B01). Trim 612 x 792 pt. REALTOR(R) or public; refreshments as a text line only.
   The page is the brand's dark color with one closed hairline frame drawn on top of everything, so it never depends
-  on where trees or rooflines fall in the photo. The frame's top line opens for the brokerage logo, knocked out
-  in white (the owner's B01 note). Event at the top in wide-tracked caps, the whole house below at its own 3:2 shape
+  on where trees or rooflines fall in the photo. The brokerage logo is in the standard footer card, in white (owner
+  10/27/2026; it used to sit in a gap in the frame's top line). Event at the top in wide-tracked caps, the whole house below at its own 3:2 shape
   (nothing cropped off the sides), address and agent on the dark band under it.
   Type: Tenor Sans (label, agent), Spectral (date, address), Jost (time, details).
 -->
@@ -55,19 +55,18 @@ OHL.start(['400 10pt "Tenor Sans"', '500 10pt Spectral', '500 10pt Jost', '600 1
 
   // address, details, agent
   h += `<div class="abs address" style="left:${X}pt;top:640pt;width:${W}pt;height:32pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  const det = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') , Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  ');
+  const det = [OHL.place(L), Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  ');
   h += `<div class="abs details" style="left:${X}pt;top:673pt;width:${W}pt;height:12pt" data-slot="place" data-lines="1">${esc(det)}</div>`;
-  h += OHL.contact(D, {x:X, y:694, w:W, h:62, logo:false, align:'center', field:'dark', nameSize:18, nameFont:"'Tenor Sans'", nameWeight:400, bodyFont:'Jost'});
+  // the standard footer: agent, then the brokerage panel on the right with the flyer's one logo, white on the dark field (owner 10/27/2026)
+  h += OHL.contact(D, {x:X, y:694, w:W, h:62, tone:'knockout', field:'dark', logoW:180, logoH:46, nameSize:18, nameFont:"'Tenor Sans'", nameWeight:400, bodyFont:'Jost'});
   h += `<div class="abs fine" style="left:${X}pt;top:762pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc([[A.designation, b.brokerage].filter(Boolean).join(', '), C.fineprint || 'Information deemed reliable but not guaranteed.'].filter(Boolean).join('  ·  '))}</div>`;
 
-  // the closed frame, drawn last so it sits on top of the photo; its top line opens for the logo
-  const fx = 20, fy = 30, fr = 592, fb = 776, t = 1.2, gap = 92;
-  h += `<div class="fr" style="left:${fx}pt;top:${fy}pt;width:${306-gap-fx}pt;height:${t}pt"></div>`;
-  h += `<div class="fr" style="left:${306+gap}pt;top:${fy}pt;width:${fr-306-gap}pt;height:${t}pt"></div>`;
+  // the closed frame, drawn last so it sits on top of the photo (the logo moved from a gap in its top line to the footer)
+  const fx = 20, fy = 30, fr = 592, fb = 776, t = 1.2;
+  h += `<div class="fr" style="left:${fx}pt;top:${fy}pt;width:${fr-fx}pt;height:${t}pt"></div>`;
   h += `<div class="fr" style="left:${fx}pt;top:${fy}pt;width:${t}pt;height:${fb-fy}pt"></div>`;
   h += `<div class="fr" style="left:${fr-t}pt;top:${fy}pt;width:${t}pt;height:${fb-fy}pt"></div>`;
   h += `<div class="fr" style="left:${fx}pt;top:${fb-t}pt;width:${fr-fx}pt;height:${t}pt"></div>`;
-  h += OHL.logo(D, 'knockout', `left:${306-gap+12}pt;top:8pt;width:${2*gap-24}pt;height:46pt;justify-content:center`);
 
   const f = OHL.frame(D, h);
   f.issues = issues;

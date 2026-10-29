@@ -23,10 +23,10 @@
   .date{font:500 28pt/34pt Jost;white-space:nowrap;overflow:hidden}
   .time{font:600 19pt/24pt Jost;letter-spacing:1pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
   .ev{font:400 10pt/13pt Jost;opacity:.92}
-  .addr{font:600 18pt/22pt Jost}
+  .addr{font:600 22pt/26pt Jost}
   .place{font:500 9pt/12pt Jost;letter-spacing:2pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
-  .facts{font:500 10pt/13pt Jost;white-space:nowrap;overflow:hidden}
-  .body{font:400 9.5pt/13pt Jost;opacity:.88}
+  .facts{font:500 12.5pt/16pt Jost;white-space:nowrap;overflow:hidden}
+  .body{font:400 11pt/15.5pt Jost;opacity:.9}
   .vr{position:absolute;width:.8pt;background:var(--on-dark);opacity:.3}
   .hr{position:absolute;left:54pt;width:522pt;height:.8pt;background:var(--on-dark);opacity:.3}
   .oh-agent-name{font-family:Jost;font-weight:600}
@@ -42,7 +42,7 @@ OHL.start(['600 10pt Jost', '500 10pt Jost', '400 10pt Jost'], D => {
   const esc = Ivory.esc, L = D.listing, C = D.companion || {};
   const E = OHL.event(D), hero = OHL.hero(D, 'straight');
   let h = '';
-  h += `<div class="tab"></div><div class="tabt" data-slot="place.tab" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="tab"></div><div class="tabt" data-slot="place.tab" data-lines="1">${esc(OHL.place(L))}</div>`;
   // the house in an arrow, its accent echo just behind
   const fx = 54, fy = 40, fw = 540, fh = Math.max(360, OHL.minFrameH(D, hero, 540, 360));
   const arrow = [[0,0],[.9,0],[1,.5],[.9,1],[0,1],[.1,.5]];   // a shallow point and a notched tail, both clear of most front shots
@@ -66,17 +66,18 @@ OHL.start(['600 10pt Jost', '500 10pt Jost', '400 10pt Jost'], D => {
   h += ev.html; y += ev.h + 4;
   // address, facts, the writer's paragraph right
   const rx = 344, rw = 232;
-  h += `<div class="vr" style="left:326pt;top:${top0+4}pt;height:${Math.max(y - top0, 150)}pt"></div>`;
   let ry = top0 + 2;
-  const an = Ivory.linesNeeded('addr', L.address, rw, 22);
-  h += `<div class="abs addr" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${an*22+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  ry += an*22 + 4;
-  h += `<div class="abs place" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:12pt" data-slot="place" data-lines="1">${esc([L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : ''))}</div>`;
+  const an = Ivory.linesNeeded('addr', L.address, rw, 26);
+  h += `<div class="abs addr" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${an*26+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  ry += an*26 + 4;
+  h += `<div class="abs place" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   ry += 18;
-  h += `<div class="abs facts" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
-  ry += 22;
-  const cy = 704, body = String((C.listing||{}).body || '').trim(), bn = body ? Ivory.linesNeeded('body', body, rw, 13) : 0;
-  if(body && ry + bn*13 <= cy - 22){ h += `<div class="abs body" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${bn*13+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`; ry += bn*13; }
+  h += `<div class="abs facts" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:16pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  ry += 26;
+  // the writer's own sentences fill the rest of the column, set larger (owner 10/28/2026)
+  const cy = 704, bBottom = Math.min(cy - 34, Math.max(y, top0 + 210)), wu = OHL.writeup(D, 'body', rw, 15.5, Math.floor((bBottom - ry)/15.5));
+  if(wu.text){ h += `<div class="abs body" style="left:${rx}pt;top:${ry}pt;width:${rw}pt;height:${wu.n*15.5+4}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`; ry += wu.n*15.5; }
+  h += `<div class="vr" style="left:326pt;top:${top0+4}pt;height:${Math.max(y, ry) - top0 - 2}pt"></div>`;
   const issues = y > cy - 18 ? [{slot:'oh.note', kind:'overflow', detail:'the event runs into the agent card'}] : [];
   const shift = Math.max(0, Math.min(40, (cy - 18 - Math.max(y, ry))/2));   // the block sits centered in what is left
   h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;

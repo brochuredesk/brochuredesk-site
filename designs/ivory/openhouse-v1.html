@@ -25,7 +25,7 @@
   .oh-strong{height:15pt;font:700 11.5pt/15pt var(--font-body);color:var(--accent);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .address{left:36pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt;text-align:center}
   .placeline{left:36pt;width:540pt;height:9pt;text-align:center}
-  .factline{left:36pt;width:540pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .factline{left:36pt;width:540pt;height:16pt;font:600 12.5pt/16pt var(--font-body);color:var(--ink);text-align:center;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -74,15 +74,15 @@ Ivory.whenFonts(function(){
   h += Ivory.photo(D, '', s2, `left:${36+hw+8}pt;top:${g+sh+8}pt;width:${sw}pt;height:${sh}pt`);
   const a = g + gh + 12;
   h += `<div class="abs display address" style="top:${a}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" style="top:${a+34}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" style="top:${a+34}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" style="top:${a+47}pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
-  // a short description of the house fills the space above the card (10/21/2026)
+  // the write-up fills the space above the card, fully justified; sized and trimmed in the fit step below (10/28/2026)
   const blurb = (C.openHouse||{}).blurb || (C.listing||{}).body || '';
-  const bl = Math.floor((640 - (a+64)) / 13.5);
-  if(blurb && bl >= 2) h += `<div class="abs body" style="left:66pt;top:${a+64}pt;width:480pt;height:${bl*13.5}pt;font-size:10pt;line-height:13.5pt;text-align:center" data-slot="oh.blurb" data-lines="${bl}" data-fill="${Math.min(3, bl)}">${esc(blurb)}</div>`;
+  const blTop = a+64, blAvail = 640 - blTop;
+  if(blurb && blAvail >= 28) h += `<div class="abs body" style="left:56pt;top:${blTop}pt;width:500pt;height:${blAvail}pt;text-align:justify;hyphens:none" data-slot="oh.blurb" data-lines="2" data-fill="2">${esc(blurb)}</div>`;
 
   // contact card (the one logo on the page) + fine print
-  h += Ivory.card(D, {x:36, y:652, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:56, logoH:28, gap:18, brkMin:170,
+  h += Ivory.card(D, {x:36, y:652, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:15, qr:0, brkShift:9, logoH:38, gap:18, brkMin:230,
                       top:{name:8, title:40, callLbl:52, phone:60}});
   h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
 
@@ -98,12 +98,36 @@ Ivory.whenFonts(function(){
   document.getElementById('hairL').style.width = side+'pt';
   document.getElementById('hairR').style.left = (576 - side)+'pt'; document.getElementById('hairR').style.width = side+'pt';
   window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
-  // the description is an excerpt: drop whole sentences from the end until it fits its lines (never shrink the type)
+  // the write-up is an excerpt of the writer's sentences: try the biggest type that fits, keep the most sentences, and
+  // require the last line to be at least 80% full so a justified paragraph never ends on a short line
   const blEl = document.querySelector('[data-slot="oh.blurb"]');
-  if(blEl){ let sents = blEl.textContent.match(/[^.!?]+[.!?]+/g) || [blEl.textContent];
-    while(blEl.scrollHeight > blEl.clientHeight + 1 && sents.length > 1){ sents.pop(); blEl.textContent = sents.join('').trim(); }
-    if(blEl.scrollHeight > blEl.clientHeight + 1) blEl.remove();
-    else blEl.dataset.fill = Math.min(+blEl.dataset.fill, Math.round(blEl.scrollHeight / (13.5*96/72))); }
+  if(blEl){
+    const all = blurb.match(/[^.!?]+[.!?]+/g) || [blurb], avail = blAvail;
+    const measure = (txt, size, lh) => {
+      blEl.textContent = txt; blEl.style.fontSize = size+'pt'; blEl.style.lineHeight = lh+'pt'; blEl.style.textAlignLast = 'left';
+      const r = document.createRange(); r.selectNodeContents(blEl);
+      const rects = Array.from(r.getClientRects()).filter(q=>q.width>1), box = blEl.getBoundingClientRect();
+      const tops = []; rects.forEach(q=>{ if(!tops.some(t=>Math.abs(t-q.top)<3)) tops.push(q.top); });
+      const last = rects.filter(q=>Math.abs(q.top-Math.max(...tops))<3);
+      const lastW = Math.max(...last.map(q=>q.right)) - Math.min(...last.map(q=>q.left));
+      return {lines: tops.length, fill: lastW/box.width};
+    };
+    let best = null;
+    for(let n = all.length; n >= 1 && !best; n--){
+      const txt = all.slice(0, n).join('').trim();
+      for(let size = 14.5; size >= 11.5; size -= .25){
+        const lh = Math.round(size*1.36*4)/4, m = measure(txt, size, lh);
+        if(m.lines >= 2 && m.lines*lh <= avail && m.fill >= .8){ best = {txt, size, lh, m}; break; }
+      }
+    }
+    if(best){
+      measure(best.txt, best.size, best.lh);
+      blEl.style.height = (best.m.lines*best.lh)+'pt'; blEl.style.textAlignLast = best.m.fill >= .93 ? 'justify' : 'left';
+      blEl.dataset.lines = best.m.lines; blEl.dataset.fill = best.m.lines;
+      // center the paragraph in the space between the facts line and the card
+      blEl.style.top = (blTop + Math.max(0, (avail - best.m.lines*best.lh)/2))+'pt';
+    } else blEl.remove();
+  }
   const cardIssues = Ivory.layoutCards();
   window.brochureCheck = () => Ivory.check(cardIssues);
 });

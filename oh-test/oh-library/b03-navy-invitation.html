@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Formal Invitation</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Formal Invitation (from reference B03). Trim 612 x 792 pt. REALTOR(R) or public.
+  The owner liked how high-end it looks and wants the colors to follow the agent's brokerage (the three-color picker).
+  The house across the top, then a formal invitation block in the agent's main color with the logo in white, the
+  event wording in tracked capitals in the accent color, and the date, time and notes; on the paper below, the
+  writer's listing paragraph (left out when it would crowd the page) and the address; the agent on a strip at the foot.
+  Type: EB Garamond (headline, date, paragraph, address), Josefin Sans (tracked labels).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .blk{position:absolute;left:0;width:612pt;background:var(--main)}
+  .blk~.on{color:var(--on-main)}
+  .label{font:600 32pt/40pt 'EB Garamond';letter-spacing:3.5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .eyebrow{font:600 9pt/12pt 'Josefin Sans';letter-spacing:4pt;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .date{font:500 32pt/38pt 'EB Garamond';text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:600 18pt/22pt 'Josefin Sans';letter-spacing:2.4pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .ev{font:400 10.5pt/13pt 'Josefin Sans';text-align:center}
+  .strip{position:absolute;left:0;width:612pt;height:5pt;background:var(--accent)}
+  .body{font:500 14.5pt/19.5pt 'EB Garamond';text-align:center}
+  .addr{font:500 22pt/26pt 'EB Garamond';text-align:center;white-space:nowrap;overflow:hidden}
+  .place{font:400 9pt/12pt 'Josefin Sans';letter-spacing:2.2pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .city{font:500 22pt/26pt 'EB Garamond';text-align:center;white-space:nowrap;overflow:hidden}
+  .foot{position:absolute;left:0;width:612pt;background:var(--main)}
+  .foot~.onf{color:var(--on-main)}
+  .oh-agent-name{font-family:'EB Garamond';font-weight:600}
+  .oh-agent{font-family:'Josefin Sans'}
+  .fine{font:400 6.6pt/8pt 'Josefin Sans';white-space:nowrap;opacity:.6;text-align:center}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt "EB Garamond"', '500 10pt "EB Garamond"', '400 10pt "Josefin Sans"', '600 10pt "Josefin Sans"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  // the house across the top: as short as the photo allows without losing any of the house
+  const fr = OHL.fitHero(D, hero, 612, 300), ph = fr.h;
+  if(fr.w < 612) h += `<div class="abs" style="left:0;top:0;width:612pt;height:${ph}pt;background:var(--main)"></div>`;
+  h += OHL.photo(D, hero, `left:${(612-fr.w)/2}pt;top:0;width:${fr.w}pt;height:${ph}pt`);
+  h += `<div class="strip" style="top:${ph}pt"></div>`;
+  // the invitation block
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], 66, 0, 480, 13, 2);
+  // no notes (there is never an RSVP line, owner 10/27/2026): the date and time grow into the room a line would take
+  const big = !ev.h, dS = big ? 40 : 32, dH = big ? 46 : 38, tS = big ? 22 : 18, tH = big ? 27 : 22;
+  const bt = ph + 5, bh = 22 + 18 + 44 + (big ? 4 : 0) + (dH + 2) + (tH + 4) + (ev.h ? ev.h + 12 : 0) + 18;
+  h += `<div class="blk" style="top:${bt}pt;height:${bh}pt"></div>`;
+  let y = bt + 22;
+  h += `<div class="abs on eyebrow" style="left:36pt;top:${y}pt;width:540pt;height:12pt">You're invited</div>`;
+  y += 18;
+  h += `<div class="abs on label" style="left:36pt;top:${y}pt;width:540pt;height:40pt" data-fit="32,22" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  y += 44;
+  if(big) y += 4;
+  h += `<div class="abs on date" style="left:36pt;top:${y}pt;width:540pt;height:${dH}pt;font-size:${dS}pt;line-height:${dH}pt" data-fit="${dS},24" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  y += dH + 2;
+  if(E.time) h += `<div class="abs on time" style="left:36pt;top:${y}pt;width:540pt;height:${tH}pt;font-size:${tS}pt;line-height:${tH}pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += tH + 4;
+  if(ev.h){ h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + y + 8}pt`); y += ev.h + 12; }
+  y = bt + bh;
+  h += `<div class="strip" style="top:${y}pt"></div>`;
+  y += 5;
+  // on the paper: the writer's paragraph, as long as the room allows (owner 10/27/2026: more than three lines, larger),
+  // then the address with city, state and ZIP under it at the same size, then the facts
+  const footTop = 714;
+  const addrBlock = 26 + 26 + 6 + 12;
+  const room = footTop - 18 - y - 22 - addrBlock;
+  const wu = OHL.writeup(D, 'body', 470, 19.5, Math.min(7, Math.floor((room - 16)/19.5))), body = wu.text, bn = wu.n;
+  let issues = [];
+  if(body && bn*19.5 + 16 <= room){
+    const top = y + 22 + Math.max(0, (room - bn*19.5 - 16)/2);
+    h += `<div class="abs body" style="left:71pt;top:${top}pt;width:470pt;height:${bn*19.5+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`;
+    y = top + bn*19.5 + 16;
+  } else y += 22 + Math.max(0, room)/2;
+  if(y + addrBlock > footTop - 16) issues.push({slot:'oh.note', kind:'overflow', detail:'the invitation block runs into the address'});
+  h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:26pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs city" style="left:36pt;top:${y+26}pt;width:540pt;height:26pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y+58}pt;width:540pt;height:12pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += `<div class="abs fine" style="left:36pt;top:${footTop - 13}pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  // the agent card on a strip at the foot, with the brokerage panel (the brokerage's one logo is here)
+  h += `<div class="foot" style="top:${footTop}pt;height:${792-footTop}pt"></div>`;
+  h += OHL.contact(D, {x:36, y:footTop + 10, w:540, h:62, tone:'knockout', logoW:190, logoH:50, nameSize:17, phoneSize:12.5, lineSize:9, color:'var(--on-main)', panelBg:'color-mix(in srgb, var(--on-main) 20%, transparent)'}).replace('class="abs oh-agent"', 'class="abs onf oh-agent"');
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

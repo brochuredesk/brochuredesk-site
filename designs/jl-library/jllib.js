@@ -8,6 +8,7 @@
    Renderer (renderer/render.py): the page reads #brochure-data (with data.piece and data.mode) and draws itself.
    Site preview:   JLLib.mount(container, designHtmlText, data, {side:'back'}) returns a promise with the checks. */
 (function(){
+  const ME = document.currentScript && document.currentScript.src;
   const W0 = 864, H = 576, BLEED_PX = 12;            // 6 x 9 card: 9 x 6 in at 96 px/in; 0.125 in bleed. 6 x 11 is 1056 px wide.
   const WIDE = 1056;
   const zones = dx => ({postage:[736+dx,16,112,131], address:[540+dx,250,320,150], barcode:[408+dx,516,456,60]});   // mail zones on the back
@@ -232,6 +233,7 @@
       if(e.dataset.spread){ e.style.display = 'flex'; e.style.justifyContent = 'space-between'; e.style.width = mw + 'px'; } });
     // design hooks that ran as page scripts in the approved drawings
     (HOOKS[did] || []).forEach(f => f(card, R, RR));
+    if(dx > 0 && front) (HOOKS11[did] || []).forEach(f => f(card, R, RR));   // 6 x 11 front rules that need the real text sizes
 
     // Agent block: center the name group (headshot, name, divider) and the contact column in their bands
     const ub = els => { let t = 1e9, b = -1e9; els.forEach(e => { const r = R(e); t = Math.min(t, r.top); b = Math.max(b, r.bottom); }); return [t, b]; };
@@ -291,6 +293,23 @@
         if(q.top < rr.bottom - 2 || q.top - rr.bottom > 70) return; if(q.left > cx || q.right < cx || q.left < 500) return; if(!best || q.top < best.top) best = q; });
       if(!best) return; const w = Math.max(best.width, rr.width); r.style.left = (best.left + best.width / 2 - w / 2) + 'px'; r.style.width = w + 'px'; r.style.textAlign = 'center'; });
 
+    // 6 x 11 rule (owner, 10/26/2026): the return address sits tucked right beside the postage area, never floating in
+    // the middle of the mail side. A return address in the postage row moves right until it is 14 px from the postage box.
+    // Two exceptions (owner 10/27, Part 1b): a back with a full row of photos and a shorter photo beside the postage box
+    // (the short one shares the row's bottom edge, with at least two taller photos to its left) keeps the return address
+    // centered above that short photo; one tall and one short photo keeps the tuck. M45 and M49 set it right-justified:
+    // M45 inside its own charcoal bar, M49 ending on the photo under it.
+    if(!front && dx > 0) card.querySelectorAll('[data-k="ret"]').forEach(r => { if(R(r).top > 150) return; r.style.width = 'max-content'; const rr = R(r);
+      const ims = [...card.querySelectorAll('img[data-role]')].map(R).filter(q => q.width > 40);
+      const under = ims.filter(q => q.top >= rr.bottom - 2 && q.top - rr.bottom < 80 && q.left < rr.right && q.right > rr.left).sort((a, b) => a.top - b.top)[0];
+      const row = under ? ims.filter(q => q !== under && Math.abs(q.bottom - under.bottom) < 8 && q.top < under.top - 10 && q.right <= under.left + 2) : [];
+      const place = (l, align) => { r.style.left = l + 'px'; r.style.right = 'auto'; r.style.textAlign = align; };
+      if(under && row.length >= 2){ place(under.left + under.width / 2 - rr.width / 2, 'center'); return; }
+      if(did === 'M49' && under){ place(under.right - rr.width, 'right'); return; }
+      if(did === 'M45'){ const bar = [...card.querySelectorAll('div')].filter(e => !e.textContent.trim() && e.offsetHeight > 60 && e.offsetHeight < 90).map(R)
+          .find(q => q.top < 2 && q.left <= rr.left + 1 && q.right >= rr.left + 20);
+        if(bar){ place(bar.right - 18 - rr.width, 'right'); return; } }   // the street name's margin in the bar beside it (17.7 px)
+      const want = 736 + dx - 14 - rr.right; if(want > 1){ r.style.left = (parseFloat(r.style.left) + want) + 'px'; r.style.right = 'auto'; } });
     // Roofline (rule, 10/24): never cut off the top of the house. Exterior photos with a known house box get recropped.
     card.querySelectorAll('img[data-photo]').forEach(im => {
       const P = (D.photos || {})[im.dataset.photo] || {}, hb = P.house; if(!hb || !im.naturalWidth) return;
@@ -321,7 +340,7 @@
     const w = document.createTreeWalker(card, NodeFilter.SHOW_TEXT); let nd;
     while((nd = w.nextNode())){ if(!nd.textContent.trim()) continue; const p = nd.parentElement; if(p.closest('[data-z]')) continue;
       if(getComputedStyle(p).visibility === 'hidden') continue;
-      const fsPx = parseFloat(getComputedStyle(p).fontSize), fine = !!p.closest('[data-k="disc"]');
+      const fsPx = parseFloat(getComputedStyle(p).fontSize), fine = !!p.closest('[data-k="disc"],.cc-fine');
       if(fsPx * 0.75 < (fine ? 6 : 8) - 0.05) issues.push({kind:'type-too-small', slot:'text', text:nd.textContent.trim().slice(0,30), pt:+(fsPx*0.75).toFixed(1)});
       const rg = document.createRange(); rg.selectNodeContents(nd);
       const vert = /vertical/.test(getComputedStyle(p).writingMode);
@@ -449,7 +468,7 @@
   // Each design can change its 6 x 11 sides after widen(): move or resize parts, add photos, set type sizes.
   // roles: extra photo spots the 6 x 11 side adds (they are picked after the design's own spots, so nothing repeats).
   // h.q('photo:front') finds a photo by its spot; h.q('Just Sold') finds the smallest part whose text contains the words.
-  function helpers(card, pick, v, issues){
+  function helpers(card, pick, v, issues, D){
     const kids = () => [...card.querySelectorAll('*')];
     const h = {
       q(m, all){ let r;
@@ -477,17 +496,48 @@
         return h.box(im, l, t, w, hh); },
       text(s){ return s.replace(TOK, (m, k) => k in v ? v[k] : ''); },
       parts(){ return [...card.children].filter(e => e.tagName !== 'SCRIPT'); },
+      // the agent's contact lines (the part that holds the data-cl / data-clb lines; never found by the name, which changes)
+      lines(){ return kids().filter(e => e.dataset.lines); },   // write-up blocks that plan their lines
+      contact(){ return [...card.children].find(e => e.hasAttribute('data-cl') || e.hasAttribute('data-clb') || e.querySelector('[data-cl],[data-clb]')); },
       // copy that has to fill its lines: the fitter picks the version that fills them best (same as the seller pitch)
       fill(el, alts, lines, min){ el.classList.add('fill'); el.dataset.alts = JSON.stringify(alts.map(h.text)); el.dataset.lines = lines; el.dataset.min = min || 0.85; return el; },
-      v,
+      // multiply the type (size, line height, letter spacing, spacing) of el and everything inside it by k: the 6 x 11 rule that
+      // type fills its space the way the same type fills the 6 x 9 (never left small)
+      scale(el, k, more){ if(!el) return el; const props = ['fontSize', 'lineHeight', 'letterSpacing', 'marginTop', 'marginBottom', 'gap', 'columnGap', 'rowGap'].concat(more || []);
+        [el, ...el.querySelectorAll('*')].forEach(x => props.forEach(p => { const m = /^(-?[\d.]+)px$/.exec(x.style[p] || ''); if(m) x.style[p] = (parseFloat(m[1]) * k) + 'px'; })); return el; },
+      // the listing's write-up sentences (as the writer made them) in story order, for copy that has to fill its lines
+      pool(spec){ return poolAlts(((D.copy || {}).pool || []).map(h.text), spec); },
+      D, v,
     };
     return h;
+  }
+  // Option A / B for a front whose main photo used to get a skinny vertical beside it (owner 10/26): the main photo goes left and
+  // shrinks (same frame shape, so the whole house still fits) and the freed width becomes a column on the right.
+  //   A: three (or two, on a short frame) small horizontal photos stacked;  B: two vertical (portrait) photos stacked.
+  // vc = {top: px kept clear at the top of the column (a tab that overlays the photo)}.
+  function stackColumn(card, im, a, w2, g, option, pick, vc, c, k){
+    const B = option === 'B', eh = im.clientHeight, ewT = a.r - a.l, top = vc.top || 0, r = eh / w2;
+    const n = B ? 2 : (eh - top >= 300 ? 3 : 2), asp = B ? 0.75 : 1.32;
+    // main width m so the column photos have the target shape: m + g + asp * ph = total width, ph = (r*m - top - (n-1)g) / n
+    let m = (ewT - g + asp * (top + (n - 1) * g) / n) / (1 + asp * r / n);
+    m = Math.floor(Math.min(m, w2));
+    const hm = r * m, cw = ewT - g - m, t0 = a.t <= 1 ? a.t : a.t + (eh - hm) / 2, ph = (hm - top - (n - 1) * g) / n;
+    Object.assign(im.style, {left:a.l + 'px', top:t0 + 'px', width:m + 'px', height:hm + 'px'});
+    const out = [];
+    for(let i = 0; i < n; i++){
+      const role = 'xf' + (i + 1), p = pick.pick(role), x = document.createElement('img'); x.alt = ''; x.dataset.role = role;
+      x.style.cssText = im.style.cssText;
+      Object.assign(x.style, {left:(a.l + m + g) + 'px', top:(t0 + top + i * (ph + g)) + 'px', width:cw + 'px', height:ph + 'px', objectPosition:'center'});
+      if(p.id){ x.dataset.photo = p.id; x.src = p.src; } else x.dataset.missing = '1';
+      (out.length ? out[out.length - 1] : im).after(x); out.push(x);
+    }
+    return out;
   }
   // 6 x 11 rule (10/24, as on the Just Sold library): the whole house fits its frame's height. A wider frame can't show the
   // whole house from a 3:2 photo, so the frame narrows to the width that does, keeping the side on the card edge (or the
   // outer side), and a room photo fills the freed space at the row's gap. Frames that would leave under 90 px stay and
   // are reported (house-cut). Runs after the photos load; returns the new photos so the page waits for them too.
-  function houseFit(card, D, pick, side){
+  function houseFit(card, D, pick, side, fix, option){
     const W = card.offsetWidth, P = D.photos || {}, added = [], c = card.getBoundingClientRect(), k = c.width / W;
     const R = el => { const r = el.getBoundingClientRect(); return {l:(r.left - c.left) / k, r:(r.right - c.left) / k, t:(r.top - c.top) / k, b:(r.bottom - c.top) / k}; };
     let n = 0;
@@ -513,6 +563,8 @@
           beside.forEach(({o, q}) => { if(keepRight) o.style.width = (q.r - q.l + d) + 'px'; else { o.style.left = (q.l - d) + 'px'; o.style.width = (q.r - q.l + d) + 'px'; } }); }
         else if(!nb.length && ew - w1 <= 24) shrink(w1);          // a few px narrower, nothing beside it
         return; }
+      const vc = ((fix || {})[side] || {}).vcol;              // 6 x 11 rule (10/26): no skinny vertical photo; the card builds option A or B instead
+      if(vc){ if(!vc.none) added.push(...stackColumn(card, im, a, w2, g, vc.option || option, pick, vc, c, k)); else shrink(w2); return; }
       const xl = keepRight ? a.l : a.l + w2 + g;
       shrink(w2);
       const role = 'x' + side[0] + (++n), p = pick.pick(role);
@@ -526,16 +578,245 @@
 
   // 6 x 11 changes to single designs, made after widen() (same shape as the Just Sold library's WIDE11)
   const WIDE11 = {
-    M19: {back:{run(h){    // the wide top photo 6 px taller so the whole house fits its height (the tab and the text below keep their places)
-      h.box(h.q('photo:family'), null, null, null, 218); }}},
+    // fronts that lose their skinny vertical photo (owner 10/26): vcol builds option A or B in houseFit (see stackColumn)
+    M02: {front:{vcol:{none:true}, run(h){   // owner 10/26: the photo fills the whole front; the side strip is gone; "Just Listed" is white over the photo
+      // (his one exception to no-script-over-photos); the address sits in a smaller cream bar along the bottom
+      const ph = h.q('photo:front'), card = ph.parentElement, title = h.top(h.q(h.v.HEAD.toLowerCase())), st = h.top(h.q(h.v.street.toLowerCase())), sub = h.top(h.q('bedrooms'));
+      h.box(ph, 0, 0, 1056, 576); ph.style.objectPosition = '50% 52%';
+      const bar = document.createElement('div'); h.css(bar, {position:'absolute', background:'#f4f0e7'}); h.box(bar, 0, 494, 1056, 82); card.appendChild(bar);
+      card.appendChild(title); title.textContent = h.v.Head;   // white script (Great Vibes) in the headline's own words
+      h.css(title, {color:'#fff', fontFamily:"'Great Vibes',cursive", fontSize:'104px', lineHeight:'1.1', letterSpacing:'0', paddingLeft:'0',
+        textShadow:'0 2px 22px rgba(0,0,0,.55), 0 1px 4px rgba(0,0,0,.4)'}); h.box(title, null, 18);
+      card.appendChild(st); h.css(st, {fontSize:'28px'}); h.box(st, null, 506);
+      card.appendChild(sub); h.css(sub, {fontSize:'16px'}); h.box(sub, null, 541); }}},
+    // the owner's picks (10/26 Part 1 review): M03 A, M06 B, M18 A, M19 B; the other option is gone
+    M03: {front:{vcol:{option:'A'}}},
+    M06: {front:{vcol:{option:'B'}}},
+    M18: {front:{vcol:{option:'A'}, run(h){   // the agent contact a little larger (owner 10/26 Part 1: x 1.18), still right-aligned in the bar
+      const cb = h.contact(), el = cb && (cb.matches('[data-clb]') ? cb : cb.querySelector('[data-clb]')), k = 1.18; if(!el) return;
+      const up = t => t.replace(/(font-size:|margin-top:)([\d.]+)px/g, (m, a, n) => a + (+n * k).toFixed(1) + 'px');
+      el.dataset.clb = JSON.stringify(JSON.parse(el.dataset.clb).map(up)); el.innerHTML = up(el.innerHTML);
+      const r = h.rect(cb), w = Math.round(r.w * k); h.box(cb, r.r - w, 450, w); [cb, el].forEach(e => { e.dataset.maxw = w; if(e.dataset.maxh) e.dataset.maxh = Math.round(+e.dataset.maxh * k); }); }}},
+    M07: {front:{run(h){   // owner 10/26: the street in the thick blue bar grows to the same proportion as on the 6 x 9 (bar 118 -> 144 px, type x 1.22)
+      const t = h.parts().map(e => [e, ...e.querySelectorAll('*')]).flat().find(e => /vertical/.test(getComputedStyle(e).writingMode)); h.css(t, {fontSize:(36.5 * 1056 / 864) + 'px'}); }}},
+    M08: {front:{run(h){   // the feature list in the blue block, slightly larger
+      h.parts().filter(e => e.style.fontSize === '12.7px').forEach(e => h.css(e, {fontSize:'15px'})); }}},
+    M10: {front:{run(h){   // agent contact: left-justified on the street line above, a bit wider (the box is wider), centered in its box with the logo (hook)
+      const st = h.rect(h.q(h.v.streetShort.toLowerCase())), box = h.parts().filter(e => getComputedStyle(e).backgroundColor === 'rgb(110, 106, 85)' && h.rect(e).t > 250)[0], b = h.rect(box);
+      const cb = h.contact(), lg = h.q('logo'), w = b.r - st.l - 24;
+      h.box(cb, st.l, null, w); cb.dataset.maxw = w; cb.style.textAlign = 'left';
+      h.box(lg, st.l, null, 200); lg.style.objectPosition = 'left center'; }}},
+    M20: {front:{run(h){   // the write-up fills the wider text column like the 6 x 9
+      const p = h.lines()[0]; if(p) h.css(p, {fontSize:'12.4px', lineHeight:'19px'}); }}},
+    M23: {front:{run(h){   // owner 10/26: the paragraph a bit larger and fuller (sentences from the listing's own copy pool); the agent contact centers under it
+      const p = h.lines()[0], r = h.rect(p), cb = h.contact();
+      h.css(p, {fontSize:'14.4px', lineHeight:'22.4px'});
+      h.fill(p, h.pool('0,1,2,3|10|'), 8, 0.85);
+      h.box(cb, r.l, null, r.w); cb.dataset.maxw = r.w; }}},
+    M26: {front:{run(h){   // the red box's corner cut is a true 45 degrees again (it was 14 x 15 px on the 6 x 9, then stretched flat); contact and logo centered in the white box
+      const red = h.parts().find(e => e.style.clipPath); h.css(red, {clipPath:'polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%)'});
+      const r = h.rect(h.q(h.v.street.toLowerCase())), cb = h.contact(), lg = h.q('logo');
+      h.box(cb, r.l, null, r.w); cb.dataset.maxw = r.w; h.box(lg, r.l, null, r.w); lg.style.objectPosition = 'center'; }}},
+    M27: {front:{run(h){   // broker logo to the far right; the white beds/baths/sq ft boxes shift left for separation
+      const lg = h.q('logo'), boxes = h.parts().find(e => getComputedStyle(e).display === 'flex' && e.children.length === 3 && e.textContent.indexOf('BEDS') >= 0), b = h.rect(boxes);
+      h.box(boxes, b.l - 44); h.box(lg, 1056 - 26 - 230, null, 230); lg.style.objectPosition = 'right center'; }}},
+    M29: {front:{run(h){   // the showing line (and the street and web lines with it) larger; no logo on the front (owner 10/26 Part 1, like M02,
+      // M08, M14: the brokerage is on the back's card)
+      const sp = h.q('private showing'), line = sp.parentElement, st = h.q(h.v.street.toLowerCase()), web = h.parts().find(e => e.id === 'web29'), lg = h.q('logo');
+      h.css(st, {fontSize:'36px'}); h.css(line, {fontSize:'22px'}); h.box(line, null, 476, 984); sp.dataset.maxw = 984; h.css(web, {fontSize:'17px'}); h.box(web, null, 516);
+      if(lg) lg.remove(); }}},
+    M30: {front:{run(h){   // agent contact centered in the panel (logo goes under it in the hook)
+      const st = h.rect(h.q(h.v.streetShort.toLowerCase())), cb = h.contact();
+      h.box(cb, st.l + (st.w - 252) / 2, 330, 252); cb.dataset.maxw = 252; }}},
+    M31: {front:{run(h){   // the same write-up in larger type so it fills the space like the 6 x 9; name and contact left-justified under the line above
+      const t = h.parts().find(e => e.style.display === 'flex' && e.style.height === '286px').firstElementChild; h.css(t, {fontSize:'14.6px', lineHeight:'23px'});
+      const L = h.rect(h.q(h.v.HEAD.toLowerCase())).l, cb = h.contact();
+      h.box(cb, L, null, 298); cb.dataset.maxw = 298; }}},
+    M34: {front:{run(h){   // bottom row: the row runs the whole width (name left, phone centered, email right: hook)
+      const row = h.contact(); h.box(row, null, null, 1056 - 2 * h.rect(row).l); row.querySelector('[data-cl]').dataset.maxw = h.rect(row).w; }}},
+    M37: {front:{run(h){   // "Just Listed" at the top moves down a little
+      const t = h.top(h.q((h.v.HEAD2 || h.v.HEAD).toLowerCase())); h.box(t, null, 13); }}},
+    M44: {front:{run(h){   // all the type larger so it fills the same space as on the 6 x 9
+      const k = 1.2, head = h.q(h.v.HEAD.toLowerCase()), call = h.q('call or text'), grid = h.parts().find(e => e.style.display === 'grid' || e.querySelector('div[style*="grid"]')), pan = h.parts().find(e => e.querySelector('[data-fitname]'));
+      [head, call, grid].forEach(e => h.scale(e, k, ['height'])); h.scale(pan, 1.15);
+      h.box(head, null, 342); h.box(call, null, 407); h.box(grid, null, 440);
+      const f = pan.querySelector('[data-fitname]'); f.dataset.fitname = Math.round(h.rect(pan).w - 4); }}},
+    M46: {front:{run(h){   // the red banner runs the whole corner of the photo, ends flush on the photo's edges; the broker logo larger
+      const ph = h.q('photo:living'), card = ph.parentElement, rib = h.parts().find(e => e.hasAttribute('data-rib')), lg = h.q('logo'), p = h.rect(ph);
+      const wrap = document.createElement('div'); h.css(wrap, {position:'absolute', overflow:'hidden'}); h.box(wrap, p.l, p.t, p.w, p.h); ph.after(wrap);
+      wrap.appendChild(rib); h.box(rib, 86 - 190, 86 - 27, 380, 54);
+      h.box(lg, 588 * 1056 / 864, 36, 252 * 1056 / 864, 62);
+      const para = h.lines()[0]; if(para) h.css(para, {fontSize:'13px', lineHeight:'20px'}); }}},
+    M48: {front:{run(h){   // agent name and phone down a little; the logo centered between the rule above it and the card's bottom
+      const line = h.contact(), lg = h.q('logo'), rule = h.parts().find(e => e.style.height === '1px' && h.rect(e).t > 480);
+      h.box(line, null, 534); h.box(lg, null, (h.rect(rule).t + 576) / 2 - 20); }}},
+    M50: {front:{run(h){   // Property Features: a third column, six items
+      const grid = h.parts().find(e => e.style.display === 'grid'), it = [...grid.children], proto = it[it.length - 1];
+      const mk = (svg, txt) => { const d = proto.cloneNode(true); d.innerHTML = svg + txt; return d; };
+      const ic = a => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2e4553" stroke-width="1.6" aria-hidden="true">' + a + '</svg>';
+      grid.appendChild(mk(ic('<path d="M3 10l9-6 9 6M5 9v11h14V9M10 20v-6h4v6"/>'), 'Vaulted primary'));
+      grid.appendChild(mk(ic('<path d="M3 11h18M5 11v9M19 11v9M12 4v7"/>'), 'Covered patio'));
+      const b = h.rect(grid); h.css(grid, {gridTemplateColumns:'repeat(3, 1fr)', height:'64px'}); h.box(grid, null, null, 464); }}},
+    M19: {front:{vcol:{top:56, option:'B'}, run(h){ h.css(h.q('just listed'), {fontWeight:'700'}); }},   // "Just Listed" in bold (owner 10/26 Part 1)
+      back:{run(h){    // the wide top photo 6 px taller so the whole house fits its height (the tab and the text below keep their places)
+      h.box(h.q('photo:family'), null, null, null, 218); h.css(h.q('just listed'), {fontWeight:'700'}); }}},
+    M21: {front:{run(h){   // the street and the beds/baths line larger (owner 10/26 Part 1); the web line moves down with them
+      const st = h.q(h.v.street.toLowerCase()), fa = h.q('bedrooms') || h.q(' beds'), web = h.parts().find(e => e !== st && e !== fa && h.rect(e).t > 505 && h.rect(e).l > 600);
+      h.css(st, {fontSize:'23px', lineHeight:'28px'}); h.box(st, null, 462, null, 28);
+      h.css(fa, {fontSize:'17px', lineHeight:'21px'}); h.box(fa, null, 496, null, 21);
+      if(web) h.box(web, null, 523); }}},
     M40: {front:{run(h){   // three photo columns, the middle one narrow enough to show the whole house; the 8 px black edge stays 8 px
       const col = (roles, l, w) => roles.forEach(r => h.box(h.q('photo:' + r), l, null, w));
       col(['living'], 8, 333); col(['front', 'lawn'], 349, 300); col(['kitchen', 'primary'], 657, 391);
+      // six features (was four) across the extra width, set a little tighter
+      const grid = h.parts().find(e => e.style.display === 'grid'), proto = grid.children[3];
+      const mk = (svg, txt) => { const d = proto.cloneNode(true); d.innerHTML = svg + txt; return d; };
+      const ic = a => '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#161616" stroke-width="1.6" aria-hidden="true">' + a + '</svg>';
+      grid.appendChild(mk(ic('<path d="M3 10l9-6 9 6M5 9v11h14V9M10 20v-6h4v6"/>'), 'Vaulted primary'));
+      grid.appendChild(mk(ic('<path d="M3 11h18M5 11v9M19 11v9M12 4v7"/>'), 'Covered patio'));
+      [...grid.children].forEach(d => { d.style.fontSize = '15px'; d.style.gap = '8px'; });
+      h.css(grid, {gridTemplateColumns:'repeat(3, auto)', justifyContent:'start', columnGap:'30px', rowGap:'14px'}); h.box(grid, null, null, 480);
+
       h.parts().filter(e => { const r = h.rect(e); return r.w < 14 && r.h > 100 && r.t >= 400; })
         .forEach(e => { const r = h.rect(e); h.box(e, r.l < 100 ? 0 : 1048, null, 8); }); }}},
   };
 
+  // 6 x 11 back changes from the owner's 10/26 review of the Just Listed 6x11 book (kept apart from WIDE11, which holds
+  // the front changes; draw() runs both). New bullets are facts from the listing.
+  const MORE_BULLETS = ['Stainless appliances', 'Walk-in shower', 'Lit mirror in the hall bath', 'Desk space in bedroom three'];
+  const bulletColumn = (h, items) => {   // one more column of four bullets on a bullet grid, the columns spread to fill its width
+    const g = h.parts().map(p => p.querySelector('div[style*="grid-auto-flow"]')).find(Boolean); if(!g) return;
+    const cell = g.firstElementChild; items.forEach(s => { const c = cell.cloneNode(true); c.lastChild.textContent = s; g.appendChild(c); });
+    Object.assign(g.style, {justifyContent: 'space-between', width: '100%'}); };
+  const WIDE11_BACK = {
+    M02: {roles: ['nook'], run(h, o){   // three photos across instead of two stretched, each with its caption
+      const a = h.q('photo:kitchen2'), b = h.q('photo:primary'); if(!a || !b) return;
+      const ra = h.rect(a), rb = h.rect(b), g = rb.l - ra.r, w = (rb.r - ra.l - 2 * g) / 3;
+      const caps = ['kitchen2', 'primary'].map(k => h.parts().find(e => e.dataset.cap === k));
+      h.box(a, ra.l, null, w); h.box(b, ra.l + w + g, null, w);
+      h.photo('nook', ra.l + 2 * (w + g), ra.t, w, ra.h, b);
+      caps.forEach((c, i) => c && h.box(c, ra.l + i * (w + g), null, w));
+      if(caps[1]){ const c3 = caps[1].cloneNode(false); c3.dataset.cap = 'nook';
+        c3.dataset.alts = JSON.stringify(((((o.D || {}).copy || {}).captions || {}).nook || []).map(h.text));
+        caps[1].after(c3); h.box(c3, ra.l + 2 * (w + g), null, w); } }},
+    M24: {run(h){   // the black write-up box runs to the right edge of the photo above it (owner 10/26 Part 1), so it meets the dark box under the address
+      const box = h.parts().find(e => e.tagName === 'DIV' && h.rect(e).t < 2 && h.rect(e).h > 500), ph = h.q('photo:office'); if(box && ph) h.box(box, null, null, h.rect(ph).r); }},
+    M50: {run(h){   // the street line and "Home highlights" centered under the "Just Listed" bar (owner 10/26 Part 1)
+      [h.q(h.v.STREET.toLowerCase()), h.q('home highlights')].forEach(e => e && h.css(e, {textAlign:'center'})); }},
+    M28: {run(h){ const f = h.q('fill'); h.css(f, {fontSize: '14px', lineHeight: '20px'}); f.dataset.lines = 6; }},   // bigger, a couple more lines
+    M29: {run(h){ h.css(h.q('fill'), {fontSize: '13.5px', lineHeight: '20px'}); }},                                     // a little bigger
+    M30: {run(h){ h.css(h.q('fill'), {fontSize: '13px', lineHeight: '18px', textAlign: 'justify', textAlignLast: 'left'}); }},   // bigger, justified
+    M45: {run(h){   // the charcoal header bars line up with the photos under them
+      const bars = h.parts().filter(e => e.tagName === 'DIV' && !e.textContent.trim() && h.rect(e).t < 2 && h.rect(e).h > 60 && h.rect(e).h < 90);
+      const ims = ['kitchen2', 'living', 'primary'].map(r => h.q('photo:' + r)).filter(Boolean).map(h.rect);
+      bars.forEach(bar => { const r = h.rect(bar), under = ims.filter(q => q.l >= r.l - 2 && q.l < r.r);
+        if(under.length){ const right = Math.max(...under.map(q => q.r)), left = Math.min(...under.map(q => q.l)); h.box(bar, left, null, right - left); } }); }},
+    M46: {run(h){ bulletColumn(h, MORE_BULLETS); }},   // a third column of four bullets
+    M48: {run(h){ bulletColumn(h, MORE_BULLETS); }},   // three columns of bullets instead of two
+  };
+
   // Page scripts from the approved front drawings, run after the contact lines are set
+  // ---------------------------------------------------------------- the contact card on every back
+  // The standard Right panel card (templates/_shared/agentcard.js here, /designs/shared/agentcard.js on the site; owner,
+  // 10/26/2026: every Just Listed and Just Sold back, 6 x 9 and 6 x 11). The design scripts leave an empty slot
+  // (.ccslot, src/fullc.py card()) with the design's colors and name font; the card fills the slot on the design's own
+  // background (no paper of its own), the logo floating on that background with no box behind it (owner 10/26; on a dark
+  // field, the white version of the logo). A wide slot (400 pt and up) gets the brokerage panel on the
+  // right; a narrower one carries it as a band along the card's bottom, as on Ivory's postcard backs.
+  const HS_PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1560" viewBox="0 0 100 130"><rect width="100" height="130" fill="#d9d6d0"/><circle cx="50" cy="50" r="21" fill="#9c978e"/><path d="M8 130c0-28 19-44 42-44s42 16 42 44z" fill="#9c978e"/></svg>');
+  const cardReady = window.ContactCard ? Promise.resolve() : new Promise(res => {
+    const add = (rel, next) => { const el = document.createElement('script'); el.src = new URL(rel, ME || location.href).href; el.onload = res; el.onerror = next || res; document.head.appendChild(el); };
+    add('../_shared/agentcard.js', () => add('../shared/agentcard.js'));
+  });
+  const lumOf = c => { const m = String(c).match(/[\d.]+/g); if(!m) return 1; const a = m.length > 3 ? +m[3] : 1; if(a === 0) return null;
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(+m[0]) + 0.7152 * f(+m[1]) + 0.0722 * f(+m[2]); };
+  // what the slot sits on: the last colored box under its middle, else the card's own background
+  function fieldUnder(card, slot){
+    const c = card.getBoundingClientRect(), s = slot.getBoundingClientRect(), cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+    let bg = getComputedStyle(card).backgroundColor;
+    [...card.querySelectorAll('div,img,svg')].forEach(e => { if(e === slot || slot.contains(e) || e.closest('[data-z]')) return;
+      const r = e.getBoundingClientRect(); if(!(r.left <= cx && r.right >= cx && r.top <= cy && r.bottom >= cy && r.width > 40 && r.height > 30)) return;
+      if(e.tagName === 'IMG'){ bg = 'rgb(60,60,60)'; return; }
+      const b = getComputedStyle(e).backgroundColor; if(lumOf(b) !== null) bg = b; });
+    return bg;
+  }
+  const FINE = 'Information deemed reliable but not guaranteed. Not intended to solicit property listed with a broker.';
+  // no white seams (owner 10/26): two of the design's boxes in the same color that sit side by side at the contact card's
+  // height with a thin gap between them (8 px on JL M18 and M24 at 6 x 11) close up, so the card reads as one block
+  function closeSeams(card, slot){
+    const c = card.getBoundingClientRect(), k = c.width / card.offsetWidth || 1, s = slot.getBoundingClientRect();
+    const rr = e => { const r = e.getBoundingClientRect(); return {l:(r.left - c.left) / k, r:(r.right - c.left) / k, t:(r.top - c.top) / k, b:(r.bottom - c.top) / k}; };
+    const boxes = [...card.children].filter(e => e.tagName === 'DIV' && e !== slot && lumOf(getComputedStyle(e).backgroundColor) !== null && lumOf(getComputedStyle(e).backgroundColor) < 0.8)
+      .map(e => ({e, q:rr(e), bg:getComputedStyle(e).backgroundColor})).filter(({q}) => q.b > (s.top - c.top) / k && q.t < (s.bottom - c.top) / k);
+    boxes.forEach(a => boxes.forEach(b => { const gap = b.q.l - a.q.r;
+      if(a !== b && a.bg === b.bg && gap > 0.5 && gap <= 12 && Math.min(a.q.b, b.q.b) - Math.max(a.q.t, b.q.t) > 40){ a.e.style.width = (a.q.r - a.q.l + gap) + 'px'; a.q.r = b.q.l; } }));
+  }
+  // a card on a rounded band (JL M10, owner 10/27 Part 1b: a small square poked out on the right of the curved box) takes
+  // the band's exact size and its curve on all four corners, as on Just Sold M06/M07 (jslib.js snapToBox). Square bands are left as they are.
+  function roundBand(card, slot){
+    const c = card.getBoundingClientRect(), k = c.width / card.offsetWidth || 1, st = slot.style, field = fieldUnder(card, slot);
+    const q = {l:parseFloat(st.left), t:parseFloat(st.top), r:parseFloat(st.left) + parseFloat(st.width), b:parseFloat(st.top) + parseFloat(st.height)};
+    const cx = (q.l + q.r) / 2, cy = (q.t + q.b) / 2;
+    const box = [...card.querySelectorAll('div')].filter(e => e !== slot && !e.closest('[data-z]') && getComputedStyle(e).backgroundColor === field && parseFloat(getComputedStyle(e).borderTopRightRadius) > 0)
+      .map(e => { const r = e.getBoundingClientRect(); return {e, l:(r.left - c.left) / k, t:(r.top - c.top) / k, r:(r.right - c.left) / k, b:(r.bottom - c.top) / k}; })
+      .filter(o => o.l <= cx && o.r >= cx && o.t <= cy && o.b >= cy && o.b - o.t < (q.b - q.t) * 2.5).pop();
+    if(!box) return '';
+    Object.assign(st, {left:box.l + 'px', top:box.t + 'px', width:(box.r - box.l) + 'px', height:(box.b - box.t) + 'px'});
+    const m = Math.max(...['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(n => parseFloat(getComputedStyle(box.e)['border' + n + 'Radius']) || 0));
+    return [0, 1, 2, 3].map(() => m + 'px').join(' ');
+  }
+  function makeCards(card, D, hs){
+    if(!window.ContactCard) return [{kind:'agent-card-missing', slot:'agent'}];
+    const A = D.agent || {}, body = getComputedStyle(card).fontFamily;
+    card.querySelectorAll('.ccslot').forEach(slot => {
+      const look = JSON.parse(slot.dataset.cc || "{}"), st = slot.style;
+      closeSeams(card, slot);
+      const radius = roundBand(card, slot);
+      const x = parseFloat(st.left) * 0.75, y = parseFloat(st.top) * 0.75, w = parseFloat(st.width) * 0.75, h = parseFloat(st.height) * 0.75;
+      const field = fieldUnder(card, slot), dark = (lumOf(field) || 0) < 0.3;
+      const b = Object.assign({}, D.brand || {}); if(dark) b.logo = logoFor(b, 'white');
+      const layout = look.layout || (w >= 330 ? 'panel' : 'band');
+      const size = layout === 'band' ? 'band' : h >= 112 && w >= 420 ? 'mid' : 'short';
+      // a short panel card is sized from its slot, as on the Open House flyers (ohlib.js OHL.contact)
+      const pw = Math.round(Math.max(w < 400 ? 130 : 150, Math.min(190, w * 0.36))), lh = Math.min(46, h - 30);
+      const s = size !== 'short' ? {} : {name: Math.max(18, Math.min(26, Math.round(h * (look.fine ? 0.25 : 0.28)))), nameFloor: 13, hsW: Math.round(h * 0.74), panelW: pw,
+        inlineLabel: h < 90, wrap: w - pw - (hs ? h * 0.74 : 0) < 310, lock: 10, logo: {wide: [pw - 20, lh], square: [h - 34, h - 34], tall: [h - 32, h - 32]}};
+      // a full-width card on a 6 x 11 back (owner 10/26): the same type sizes as the fold-over's card (name 30, cell 20,
+      // lines 11, office 10.5, labels 9.5; ContactCard 'full'; sizes checked by a review agent 10/26), set to the slot's height (REALTOR on the name's line, the label on the cell's)
+      const w11 = layout === 'panel' && w >= 680;
+      const n11 = Math.floor(Math.min(30, (h - 10 - 28.6 - (look.fine ? 7.5 : 0) - 3) / 1.12) * 2) / 2;   // the name takes what the slot leaves above the contact row
+      const pw11 = w < 720 ? 214 : 236;   // a hand-placed card a little short of the full width (JL M43) gets a slimmer brokerage side
+      const s11 = {pad: [4, 14, 6], name: n11, nameFloor: 18, desigInline: true, inlineLabel: true, label: 9.5, desig: 9.5, line: 11, office: 10.5, rowGap: w < 720 ? 16 : 22,
+        hsW: Math.round(h * 0.76), panelW: pw11, panelPad: [5, 12], panelGap: 6, lockDir: 'right', officeLH: 1.2, lock: 11,
+        logo: {wide: [pw11 - 24, Math.min(50, h - 24)], square: [h - 28, h - 28], tall: [h - 26, h - 26]}};
+      const agent = Object.assign({}, A, {headshot: hs ? (A.headshot || HS_PLACEHOLDER) : ''});
+      const html = ContactCard.html([x, y, w, h], agent, b, {layout, size: w11 ? 'full' : size, s: w11 ? s11 : s, grow: 0, floor: 8, bottomGap: 0.5, fine: look.fine ? FINE : '',
+        logoStyle: dark && !b.logoKnockout && !b.logoOnDark ? 'filter:brightness(0) invert(1)' : '',
+        fieldAccent: dark});
+      const wrap = document.createElement('div');
+      wrap.className = 'jl-cc'; wrap.dataset.field = field;
+      wrap.style.cssText = `position:absolute;left:0;top:0;width:0;height:0;--cc-paper:${field};--cc-ink:${look.ink};--cc-muted:${look.muted};` +
+        `--cc-line:${dark ? `color-mix(in srgb, ${look.ink} 35%, transparent)` : look.line};--cc-accent:${look.accent};` +
+        `--cc-display:${look.display && look.display !== 'inherit' ? look.display : body};--cc-body:${body}`;
+      wrap.innerHTML = html;
+      wrap.querySelectorAll('.cc-name').forEach(n => n.style.fontWeight = look.weight || 400);
+      // on a rounded card the brokerage side keeps a wider right margin so the logo sits well inside the curve, and the
+      // no-headshot stripe comes off (bent around the corner it reads as a pale edge); the same as Just Sold M06/M07
+      if(radius){ const cc = wrap.querySelector('.cc'); cc.style.borderRadius = radius; cc.style.overflow = 'hidden'; cc.dataset.rounded = '1';
+        wrap.insertAdjacentHTML('beforeend', '<style>.cc[data-rounded] .cc-panel:not(.cc-band){padding-left:6pt!important;padding-right:24pt!important}' +
+          '.cc[data-rounded] .cc-panel .cc-logo{max-width:100%}.cc[data-rounded] .cc-panel .cc-logo img{max-width:100%!important}.cc[data-rounded] .cc-stripe{display:none}</style>'); }
+      slot.replaceWith(wrap);
+    });
+    return [];
+  }
+  // after the fonts load: the shared fit (name, website, hyphen; the brokerage panel). The card's paper is the color of the
+  // field it sits on
+  function fitCards(card){
+    if(!window.ContactCard || !card.querySelector('[data-contactcard]')) return;
+    ContactCard.fit(card);
+    // (the card keeps the field's color as its own: one solid block, no seam where two of the design's boxes meet under it)
+  }
+
   const HOOKS = {
     // M28: the address's capital letters center top to bottom in the space above the facts line
     M28: [(card, R, RR) => { const a = card.querySelector('#adr'), f = card.querySelector('#fct'); if(!a || !f) return;
@@ -544,6 +825,36 @@
       const p = a.parentElement; p.style.top = (parseFloat(p.style.top) + want - capTop) + 'px'; }],
     // M49: the block's widest line ends on the 24 px right margin; the logo shares the block's left edge
     M49: [(card, R) => { const k = card.querySelector('#blk'); if(k) k.style.left = (card.offsetWidth - 24 - R(k).width) + 'px'; }],
+  };
+
+
+  // 6 x 11 fronts: placements that depend on the finished contact lines (they run after the name is sized and fitted)
+  const HOOKS11 = {
+    // M07: the street in the blue bar fills the bar's length like the 6 x 9 (down a step only for a very long street)
+    M07: [(card, R) => { const t = [...card.querySelectorAll('*')].find(e => /vertical/.test(getComputedStyle(e).writingMode)); if(!t) return;
+      let f = parseFloat(t.style.fontSize) || 44.6; while(R(t).height > 548 && f > 24){ f -= 1; t.style.fontSize = f + 'px'; } }],
+    // M10: the contact and the logo sit together in the middle of the olive box
+    M10: [(card, R) => { const box = [...card.children].filter(e => getComputedStyle(e).backgroundColor === 'rgb(110, 106, 85)' && R(e).top > 250)[0];
+      const c = card.querySelector('[data-clb]'), lg = card.querySelector('img[data-logo]'); if(!box || !c || !lg) return;
+      const b = R(box), ch = R(c).height, gap = 14, lh = R(lg).height, top = b.top + (b.height - (ch + gap + lh)) / 2;
+      c.style.top = top + 'px'; lg.style.top = (top + ch + gap) + 'px'; }],
+    // M44: the broker logo sits just under the (larger) agent panel
+    M44: [(card, R) => { const pan = [...card.children].find(e => e.querySelector('[data-fitname]')), lg = card.querySelector('img[data-logo]'); if(!pan || !lg) return;
+      const b = [...pan.children].reduce((m, e) => Math.max(m, R(e).bottom), 0); lg.style.top = (b + 10) + 'px'; }],
+    // M20, M12: the broker logo centers under the agent's name
+    M12: [(card, R, RR) => HOOKS11.M20[0](card, R, RR)],
+    M20: [(card, R, RR) => { const nm = card.querySelector('[data-name]'), lg = card.querySelector('img[data-logo]'); if(!nm || !lg) return;
+      const g = document.createRange(); g.selectNodeContents(nm); const q = RR(g.getBoundingClientRect()), w = R(lg).width;
+      lg.style.objectPosition = 'center'; lg.style.left = ((q.left + q.right) / 2 - w / 2) + 'px'; }],
+    // M30: the contact is centered in the panel and the broker logo sits below it, centered under the contact
+    M30: [(card, R) => { const c = card.querySelector('[data-clb]'), lg = card.querySelector('img[data-logo]'); if(!c || !lg) return;
+      const r = R(c), tx = [...c.children].reduce((m, e) => Math.max(m, R(e).bottom), 0); const w = R(lg).width;
+      lg.style.objectPosition = 'center'; lg.style.left = (r.left + r.width / 2 - w / 2) + 'px'; lg.style.top = (tx + 18) + 'px'; }],
+    // M34: bottom row: name left, phone centered, email right
+    M34: [(card, R) => { const e = card.querySelector('[data-cl]'); if(!e) return; const kids = [...e.children].filter(k => k.textContent.trim());
+      [...e.children].filter(k => !k.textContent.trim()).forEach(k => k.style.display = 'none'); if(kids.length < 2) return;
+      const w = e.parentElement.clientWidth; Object.assign(e.style, {display:'grid', width:w + 'px', gridTemplateColumns:kids.length === 3 ? '1fr auto 1fr' : '1fr auto'});
+      kids.forEach((k, i) => { k.style.justifySelf = i === 0 ? 'start' : (i === kids.length - 1 ? 'end' : 'center'); }); }],
   };
 
   // Print file: the review marks in the mail area don't print (the white areas stay), and the art runs 1/8 in past the trim.
@@ -642,14 +953,21 @@
     // photos are assigned across the whole card (front first, then back) so a photo never shows up twice
     const roles = rolesIn([chooseTemplate(doc, 'front', hs, long), chooseTemplate(doc, 'back', hs, long)]);
     const wide0 = (opts.size || '6x9') === '6x11';
-    if(wide0) roles.push('xf1', 'xf2', 'xb1', 'xb2');   // room photos houseFit() may add on the wider card (front, back)
+    if(wide0 && WIDE11_BACK[did] && WIDE11_BACK[did].roles) WIDE11_BACK[did].roles.forEach(r => { if(roles.indexOf(r) < 0) roles.push(r); });   // named spots before the spare room photos
+    if(wide0) roles.push('xf1', 'xf2', 'xb1', 'xb2', 'xf3');   // room photos houseFit() may add on the wider card (front, back)
     ['front', 'back'].forEach(s => (((wide0 && WIDE11[did]) || {})[s] || {}).roles && WIDE11[did][s].roles.forEach(r => { if(roles.indexOf(r) < 0) roles.push(r); }));
     const assigned = assignPhotos(D, roles);
     const filled = fill(card, D, v, assigned);
     host.appendChild(card);
-    const wide = (opts.size || '6x9') === '6x11', fix = wide ? (WIDE11[did] || {}) : {};
+    const wide = (opts.size || '6x9') === '6x11', fix = wide ? Object.assign({}, WIDE11[did] || {}, WIDE11_BACK[did] ? {back: WIDE11_BACK[did]} : {}) : {};
+    const option = String(opts.option || 'A').toUpperCase() === 'B' ? 'B' : 'A';   // 6 x 11 fronts that lost a skinny vertical photo: each card's own pick (vcol.option) wins
     if(wide){ widen(card, side === 'front');
-      if(fix[side] && fix[side].run) fix[side].run(helpers(card, photoPicker(D, assigned), v, filled), {hs, long}); }
+      if(fix[side] && fix[side].run) fix[side].run(helpers(card, photoPicker(D, assigned), v, filled, D), {hs, long, option, D}); }
+    return cardReady.then(() => draw2(doc, card, D, side, opts, v, hs, long, wide, assigned, filled, fix, option));
+  }
+  function draw2(doc, card, D, side, opts, v, hs, long, wide, assigned, filled, fix, option){
+    const host = card.parentNode, did = ((doc.title || '').match(/M\d\d/i) || [''])[0].toUpperCase();
+    const cardIssues = makeCards(card, D, hs);
     const fonts = fontsOf(doc);
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
     const imgs = [...card.querySelectorAll('img')].filter(i => i.getAttribute('src'));
@@ -659,11 +977,12 @@
       faces.add(`${cs.fontStyle} ${cs.fontWeight} 16px ${cs.fontFamily}`); });
     const loaded = list => Promise.all(list.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })));
     return loaded(imgs)
-      .then(() => wide ? loaded(houseFit(card, D, photoPicker(D, assigned), side)) : 0)
+      .then(() => wide ? loaded(houseFit(card, D, photoPicker(D, assigned), side, fix, option)) : 0)
       .then(() => Promise.all([...faces].map(f => document.fonts.load(f).catch(() => null))))
       .then(() => document.fonts.ready)
-      .then(() => { const edited = applyEdits(card, side, D.textEdits || {}, fonts);
-        const r = layout(card, D, side === 'front', did); r.issues.push(...editChecks(card, edited)); if(opts.print) forPrint(card);
+      .then(() => { fitCards(card); const edited = applyEdits(card, side, D.textEdits || {}, fonts);
+        const r = layout(card, D, side === 'front', did); r.issues.push(...cardIssues);
+        if(window.ContactCard && card.querySelector('[data-contactcard]')) r.issues.push(...ContactCard.check(card).map(c => typeof c === 'string' ? {kind:'agent-card', detail:c} : c)); r.issues.push(...editChecks(card, edited)); if(opts.print) forPrint(card);
         // a name that won't fit this design: one plain message for the agent (shorten the mailer name or pick another design)
         if(r.issues.some(c => c.slot === 'agent.name' || (/overflow|safe-area|mail-zone/.test(c.kind) && c.text &&
             [v.agentName, v.agentFirst, v.agentLast].filter(x => x && x.length > 2).some(x => c.text.toLowerCase().indexOf(x.toLowerCase().slice(0, 12)) >= 0))))

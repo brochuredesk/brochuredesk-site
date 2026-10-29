@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Warm Collage</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Warm Collage (from reference P06), in the agent's colors and branding. Trim 612 x 792 pt. Public or REALTOR(R).
+  A warm tint of the agent's main color for the page; the house large at left top with a block of the main color at its
+  right holding the event wording; rooms in a collage below; a small date block in the accent color as the anchor, the
+  listing facts, and the agent and logo along the foot. No price.
+  Type: Bitter (headline, date), Schibsted Grotesk (details).
+-->
+<style>
+  .sheet{color:var(--ink)}
+  .blk{position:absolute;background:var(--main);color:var(--on-main)}
+  .blk~.on{color:var(--on-main)}
+  .hl{font:700 34pt/36pt Bitter;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-align:center}
+  .sub{font:500 10pt/13pt 'Schibsted Grotesk';letter-spacing:2.6pt;text-transform:uppercase;white-space:nowrap;text-align:center}
+  .wu{font:400 10pt/13.5pt 'Schibsted Grotesk'}
+  .dblk{position:absolute;background:var(--accent);color:var(--on-accent);text-align:center}
+  .wd{font:700 10pt/12pt 'Schibsted Grotesk';letter-spacing:2.4pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .md{font:700 30pt/34pt Bitter;white-space:nowrap;overflow:hidden}
+  .time{font:500 18pt/21pt 'Schibsted Grotesk';white-space:nowrap;overflow:hidden}
+  .facts{font:500 10pt/14pt 'Schibsted Grotesk';white-space:nowrap;overflow:hidden}
+  .addr{font:700 19pt/23pt Bitter}
+  .place{font:400 9.5pt/12pt 'Schibsted Grotesk';letter-spacing:1.4pt;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10pt/13pt 'Schibsted Grotesk'}
+  .oh-agent-name{font-family:Bitter;font-weight:700}
+  .oh-agent{font-family:'Schibsted Grotesk'}
+  .fine{font:400 6.6pt/8pt 'Schibsted Grotesk';white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt Bitter', '500 10pt "Schibsted Grotesk"', '700 10pt "Schibsted Grotesk"', '400 10pt "Schibsted Grotesk"'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 4);
+  let h = `<div class="abs" style="left:0;top:0;width:612pt;height:792pt;background:${OHL.mix(k.main, '#f6efe6', .82)}"></div>`;
+  // the house with the main-color block at its right
+  const X = 26, G = 8;
+  const fr = OHL.fitHero(D, hero, 400, 266);
+  h += OHL.photo(D, hero, `left:${X + (400 - fr.w)/2}pt;top:26pt;width:${fr.w}pt;height:266pt`);
+  const bx = X + 400 + G, bw = 612 - X - bx;
+  h += `<div class="blk" style="left:${bx}pt;top:26pt;width:${bw}pt;height:266pt"></div>`;
+  const lines = OHL.labelLines(E.label);
+  // the headline and "Come on by" centered in the block (owner 10/27/2026)
+  lines.forEach((t, i) => h += `<div class="abs on hl" style="left:${bx+8}pt;top:${60 + i*36}pt;width:${bw-16}pt;height:40pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  const hlTop = 60;
+  h += `<div class="abs on sub" style="left:${bx+8}pt;top:${60 + lines.length*36 + 12}pt;width:${bw-16}pt;height:13pt">${E.kind === 'public' ? 'Come on by' : 'Agents welcome'}</div>`;
+  // the date block, anchored at the block's foot
+  h += `<div class="dblk" style="left:${bx+14}pt;top:172pt;width:${bw-28}pt;height:112pt"></div>`;
+  if(E.weekday) h += `<div class="abs wd" style="left:${bx+18}pt;top:180pt;width:${bw-36}pt;height:12pt;text-align:center;color:var(--on-accent)" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
+  h += `<div class="abs md" style="left:${bx+18}pt;top:193pt;width:${bw-36}pt;height:34pt;text-align:center;color:var(--on-accent)" data-fit="30,18" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthShort + ' ' + E.day : E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:${bx+18}pt;top:232pt;width:${bw-36}pt;height:44pt;text-align:center;white-space:normal;color:var(--on-accent)" data-slot="oh.time" data-lines="2">${esc(E.time)}</div>`;
+  // rooms collage
+  const ry = 26 + 266 + G, rw = (612 - 2*X - G)/2, rh = 150;
+  rooms.slice(0, 2).forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(rw+G)}pt;top:${ry}pt;width:${rw}pt;height:${rh}pt`));
+  const evH0 = [E.note, E.refreshments].filter(Boolean).reduce((a, t) => a + Ivory.linesNeeded('ev', t, 560, 13)*13 + 2, 0);
+  const rh3 = Math.max(112, 692 - 26 - (evH0 ? evH0 + 12 : 0) - (ry + rh + G));
+  const r2 = ry + rh + G, rw3 = (612 - 2*X - 2*G)/3;
+  // address, facts and event lines take the first slot of the third row; two rooms beside them
+  const ax = X, aw = rw3 + 24;
+  rooms.slice(2, 4).forEach((id, i) => h += OHL.photo(D, id, `left:${X + aw + G + i*((612 - 2*X - aw - G - G)/2 + G)}pt;top:${r2}pt;width:${(612 - 2*X - aw - G - G)/2}pt;height:${rh3}pt`));
+  // a main-color block the size of a photo slot holds the address, city, state and ZIP, the facts and a short
+  // paragraph (owner 10/27/2026), matching the block at the top right
+  h += `<div class="blk" style="left:${ax}pt;top:${r2}pt;width:${aw}pt;height:${rh3}pt"></div>`;
+  const P = 14, iw = aw - 2*P;
+  const an = Ivory.linesNeeded('addr', L.address, iw, 23);
+  h += `<div class="abs on addr" style="left:${ax+P}pt;top:${r2 + P}pt;width:${iw}pt;height:${an*23+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs on place" style="left:${ax+P}pt;top:${r2 + P + 4 + an*23}pt;width:${iw}pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  let fy = r2 + P + 24 + an*23;
+  Ivory.facts(L).slice(0, 3).forEach((t, i) => h += `<div class="abs on facts" style="left:${ax+P}pt;top:${fy + i*14}pt;width:${iw}pt;height:14pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  fy += Math.min(3, Ivory.facts(L).length)*14 + 8;
+  const wu = OHL.writeup(D, 'wu', iw, 13.5, Math.floor((r2 + rh3 - P + 2 - fy)/13.5));
+  if(wu.text) h += `<div class="abs on wu" style="left:${ax+P}pt;top:${fy}pt;width:${iw}pt;height:${wu.n*13.5+3}pt" data-slot="listing.body" data-lines="${wu.n}">${esc(wu.text)}</div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], X, r2 + rh3 + 12, 560, 13, 2);
+  h += ev.html;
+  const cy = Math.max(r2 + rh3 + 12 + ev.h + 14, 692);
+  const issues = cy > 704 || fy > r2 + rh3 ? [{slot:'oh.note', kind:'overflow', detail:'the details run into the agent card'}] : [];
+  h += OHL.contact(D, {x:X, y:Math.min(cy, 704), w:612 - 2*X, h:62, tone:'light', nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:778pt;width:${612-2*X}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 34, 18, hlTop, 1.05);
+  return f;
+});
+</script>
+</body>
+</html>

@@ -61,7 +61,7 @@
     const real = !!(D.plan && D.plan.levels && D.plan.levels.length);
     // the rough-draft preview's simple plan (D.planPreview, one image per floor) picks the plan version too
     const pre = !real && !!(D.planPreview && D.planPreview.length), plan = real || pre;
-    const levels = real ? D.plan.levels.filter(l=>!l.garageApartment).length : pre ? D.planPreview.length : 0;
+    const levels = real ? D.plan.levels.filter(l=>!l.garageApartment && !l.roof).length : pre ? D.planPreview.length : 0;
     const stories = Math.max(1, Math.min(4, Math.round(+L.stories || levels || 1)));
     return {stories, plan, id: `${stories}-story-${plan ? 'plan' : 'noplan'}`};
   };
@@ -160,7 +160,9 @@
     'west virginia':'WV',wisconsin:'WI',wyoming:'WY'};
   // "Houston, TX": city and two-letter state (Open House v5 city line, 10/25/2026)
   Ivory.cityST = L => [L.city, ST[String(L.state||'').trim().toLowerCase()] || L.state].filter(Boolean).join(', ');
-  Ivory.place = L => [L.city, L.state].filter(Boolean).join(', ');   // city and state only, no neighborhood or ZIP (owner, 10/21/2026)
+  Ivory.place = L => [L.city, L.state].filter(Boolean).join(', ');   // the approved place line: city and state (owner 10/21/2026); a design choice, not a rule (neighborhood names allowed on every piece, owner 10/28/2026)
+  // Open House flyers only: city, state and ZIP under the street so people can find the house, "Houston, TX 77023" (owner 10/27/2026)
+  Ivory.placeZip = L => [Ivory.cityST(L), L.zip].filter(Boolean).join(' ');
 
   // Photos for the companion pieces: written order if given, else listing order (exterior first).
   Ivory.photoOrder = function(D){
@@ -174,7 +176,7 @@
      The card carries the piece's one brokerage logo. */
   Ivory.card = function(D, o){
     const A = D.agent || {}, hs = Ivory.src(D, A.headshot) || (/^(file|https?|data):/.test(A.headshot || '') ? A.headshot : '');
-    return ContactCard.html([o.x, o.y, o.w, o.h], Object.assign({}, A, {headshot: hs}), D.brand || {}, {layout: o.layout, grow: o.grow || 0, s: o.s, bottomGap: 0.5});
+    return ContactCard.html([o.x, o.y, o.w, o.h], Object.assign({}, A, {headshot: hs}), D.brand || {}, {layout: o.layout, grow: o.grow || 0, s: o.s, bottomGap: 0.5, bandTint: !!o.bandTint});
   };
 
   // Lay out every contact card (the card's own fitting); the print checks read the cards at check time (Ivory.check)
@@ -196,7 +198,7 @@
   /* Footer print checks (owner, 10/25/2026, every footer on every piece):
      1. The agent's contact info never touches the bottom line: every line's box ends at least 0.5 pt above the card's
         bottom edge (its rule); a line running onto the edge fails, and the card keeps at least 4 pt above the trim (the field edge on flyers).
-     2. The brokerage logo and contact are centered in their own space (the tinted panel or band), within 1.5 pt,
+     2. The brokerage logo and contact are centered in their own space (the panel or band), within 1.5 pt,
         whatever the agent's name. */
   Ivory.footerChecks = function(){
     const issues = [], PT = 96/72;
@@ -371,17 +373,21 @@
        long     "Saturday, November 7"       weekday "Saturday"   monthDay "November 7"
        month    "November"  monthShort "Nov"  day "7"  (empty when the date isn't an ISO date; long then shows the raw text)
        time     "1:00 to 4:00 pm" (or openHouse.timeText as written)
-       note          openHouse.note (special notes: RSVP, door prize, co-op terms), agent-entered
+       note          openHouse.note (special notes: door prize, co-op terms), agent-entered; never an RSVP line (owner
+                     10/27/2026): any part of the note that asks for an RSVP is dropped
        refreshments  openHouse.refreshments, agent-entered
        Both lines show only on broker and REALTOR(R) opens and only when filled; a public open house shows date and time only.
        (openHouse.coop from the 10/19 drafts is read as the note when no note is set.)  */
+  // no RSVP on any open house flyer (owner 10/27/2026): drop each part of a note (split at · ; | or a sentence end) that asks for one
+  Ivory.noRSVP = s => { s = String(s||'').trim(); const ask = /\brsvp|r\.s\.v\.p|please reply|reply by\b/i; if(!ask.test(s)) return s;
+    return s.split(/\s*(?:[·;|•]|(?<=[.!?])\s)\s*/).filter(p => p && !ask.test(p)).join('  ·  ').trim(); };
   Ivory.openHouse = function(D){
     const O = D.openHouse || {}, A = D.agent || {};
     const kinds = {public:'Public Open House', broker:'Broker Open House', realtor:'REALTOR® Open House'};
     let kind = O.kind in kinds ? O.kind : 'public';
     if(kind==='realtor' && !A.nar) kind = 'broker';
     const r = {kind, label:kinds[kind], long:'', weekday:'', monthDay:'', month:'', monthShort:'', day:'', time:'', note:'', refreshments:''};
-    if(kind!=='public'){ r.note = String(O.note||O.coop||'').trim(); r.refreshments = String(O.refreshments||'').trim(); }
+    if(kind!=='public'){ r.note = Ivory.noRSVP(O.note||O.coop||''); r.refreshments = String(O.refreshments||'').trim(); }
     const dt = /^\d{4}-\d{2}-\d{2}$/.test(O.date||'') ? new Date(O.date+'T12:00:00') : null;
     if(dt && !isNaN(dt)){
       const f = o => dt.toLocaleDateString('en-US', o);

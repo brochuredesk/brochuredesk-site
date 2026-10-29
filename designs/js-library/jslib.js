@@ -7,6 +7,7 @@
    Renderer (renderer/render.py): the page reads #brochure-data (with data.piece and data.mode) and draws itself.
    Site preview:   JSLib.mount(container, designHtmlText, data, {side:'back'}) returns a promise with the checks. */
 (function(){
+  const ME = document.currentScript && document.currentScript.src;
   const W0 = 864, H = 576, BLEED_PX = 12;            // 6 x 9 card: 9 x 6 in at 96 px/in; 0.125 in bleed. 6 x 11 is 1056 px wide.
   const WIDE = 1056;
   // mail zones on a 6 x 9 back; on a 6 x 11 back they sit the same distance from the right edge
@@ -114,9 +115,6 @@
   }
   function isLong(doc, v){
     const n = Math.max(v.agentFirst.length, v.agentLast.length);
-    const t = doc.querySelector('template[data-side="back"][data-long="0"]');
-    const nf = t && t.content.querySelector('[data-nf]');
-    if(nf){ const [avail, em] = nf.dataset.nf.split('|').map(Number); if(avail / (n * em) < 24) return true; }
     return n > 10;
   }
   const TOK = /\{\{([^}]+)\}\}/g;
@@ -148,12 +146,6 @@
       im.dataset.headshot = '1';
       im.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;object-position:center 25%';
       el.appendChild(im);
-    });
-    // agent name size from its length (the approved sizing: avail / (letters x em), within the design's limits)
-    root.querySelectorAll('[data-nf]').forEach(el => {
-      const [avail, em, capPx, min] = el.dataset.nf.split('|').map(Number);
-      const lines = el.innerHTML.split(/<br\s*\/?>/i).map(h => h.replace(/<[^>]*>/g, '').replace(/&[a-z#0-9]+;/gi, 'x')), n = Math.max(...lines.map(s => s.trim().length), 1);
-      el.style.fontSize = (Math.round(Math.max(min, Math.min(capPx, avail / (n * em))) * 10) / 10) + 'px';
     });
     return issues.concat(pick.notes);
   }
@@ -222,22 +214,12 @@
       const left = (dw - ew) * px / dw, right = left + ew / dw;
       if(hb.left < left - 0.01 || hb.right > right + 0.01) notes.push({kind:'house-sides-cropped', slot:'photo.' + im.dataset.role});
     });
-    // No-headshot card (rule, 10/24): the name's top lines up with the phone number's top; the pair is centered in its space.
-    card.querySelectorAll('[data-nohs]').forEach(el => {
-      const nm = el.querySelector('.nm'), cc = el.querySelector('#cc'); if(!nm || !cc) return;
-      const nTop = nm.querySelector('div').getBoundingClientRect().top, pTop = cc.firstElementChild.getBoundingClientRect().top;
-      nm.style.top = (parseFloat(nm.style.top || 0) + (pTop - nTop) / scale) + 'px';
-      const a = nm.getBoundingClientRect(), b = cc.getBoundingClientRect(), o = el.getBoundingClientRect();
-      const d = ((o.top + o.height / 2) - (Math.min(a.top, b.top) + Math.max(a.bottom, b.bottom)) / 2) / scale;
-      nm.style.top = (parseFloat(nm.style.top) + d) + 'px'; cc.style.top = (parseFloat(cc.style.top || 0) + d) + 'px';
-      el.querySelectorAll(':scope > div:not(.nm):not(#cc)').forEach(v => { if(v.offsetWidth < 3) v.style.top = (parseFloat(v.style.top || 0) + d) + 'px'; });
-    });
     // ---- print checks
     const Z = front ? {} : zones(dx);
     const hit = (r, z) => r.left < z[0] + z[2] && r.right > z[0] && r.top < z[1] + z[3] && r.bottom > z[1];
     const w = document.createTreeWalker(card, NodeFilter.SHOW_TEXT); let nd;
     while((nd = w.nextNode())){ if(!nd.textContent.trim()) continue; const p = nd.parentElement; if(p.closest('[data-z]')) continue;
-      const fsPx = parseFloat(getComputedStyle(p).fontSize), fine = !!p.closest('[data-k="disc"]');
+      const fsPx = parseFloat(getComputedStyle(p).fontSize), fine = !!p.closest('[data-k="disc"],.cc-fine');
       if(fsPx * 0.75 < (fine ? 6 : 8) - 0.05) issues.push({kind:'type-too-small', slot:'text', text:nd.textContent.trim().slice(0,30), pt:+(fsPx*0.75).toFixed(1)});
       const rg = document.createRange(); rg.selectNodeContents(nd);
       for(const q of rg.getClientRects()){ if(q.width < 1) continue; const c = card.getBoundingClientRect();
@@ -254,7 +236,7 @@
     card.querySelectorAll('img, [data-blk]').forEach(el => { if(el.closest('[data-z]')) return; const r = RC(el);
       for(const k in Z) if(hit(r, Z[k])) issues.push({kind:'image-in-mail-zone', slot:k}); });
     card.querySelectorAll('*').forEach(el => { if(el.scrollWidth > el.clientWidth + 1 && getComputedStyle(el).whiteSpace === 'nowrap' && el.clientWidth > 0)
-      issues.push({kind:'overflow', slot:el.closest('[data-nf],[data-k="ret"]') ? 'agent.name' : 'text', text:el.textContent.trim().slice(0,30)}); });
+      issues.push({kind:'overflow', slot:el.closest('[data-k="ret"]') ? 'agent.name' : 'text', text:el.textContent.trim().slice(0,30)}); });
     if(!front){ const A = {l:532 + dx, t:242, r:W, b:H};
       card.querySelectorAll('*').forEach(el => { if(el.closest('[data-z]')) return; const cs = getComputedStyle(el);
         const vis = el.tagName === 'IMG' || (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'rgb(255, 255, 255)') || cs.backgroundImage !== 'none';
@@ -354,6 +336,7 @@
       const cr = card.getBoundingClientRect(), er = el.getBoundingClientRect();   // (SVG has no offsetLeft)
       const l = er.left - cr.left, w = er.width, t = er.top - cr.top, r = l + w, s = el.style;
       if(s.right && s.right !== 'auto' && !s.left) return;   // pinned to the right edge: it stays there
+      if(!front && el.classList.contains('ccslot')){ s.width = (w + dx) + 'px'; return; }   // the contact card keeps its left edge and takes the new width
       let nl, nr;
       if(front){ nl = l * kF; nr = r * kF; }
       else if(el.hasAttribute('data-z') || l >= 528){ nl = l + dx; nr = r + dx; }
@@ -671,6 +654,132 @@
               pt:+(parseFloat(cs.fontSize) * 0.75).toFixed(1), edited:!!e.dataset.edited, locked:LOCKED(e)}; });
   }
 
+  // ---------------------------------------------------------------- the contact card on every back
+  // The standard Right panel card (templates/_shared/agentcard.js here, /designs/shared/agentcard.js on the site; owner,
+  // 10/26/2026: every Just Listed and Just Sold back, 6 x 9 and 6 x 11). The design scripts leave an empty slot
+  // (.ccslot, src/fullc.py card()) with the design's colors and name font; the card fills the slot on the design's own
+  // background (no paper of its own), the logo floating on that background with no box behind it (owner 10/26; on a dark
+  // field, the white version of the logo). A wide slot (330 pt and up) gets the brokerage panel on the
+  // right; a narrower one carries it as a band along the card's bottom, as on Ivory's postcard backs.
+  const HS_PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1560" viewBox="0 0 100 130"><rect width="100" height="130" fill="#d9d6d0"/><circle cx="50" cy="50" r="21" fill="#9c978e"/><path d="M8 130c0-28 19-44 42-44s42 16 42 44z" fill="#9c978e"/></svg>');
+  const cardReady = window.ContactCard ? Promise.resolve() : new Promise(res => {
+    const add = (rel, next) => { const el = document.createElement('script'); el.src = new URL(rel, ME || location.href).href; el.onload = res; el.onerror = next || res; document.head.appendChild(el); };
+    add('../_shared/agentcard.js', () => add('../shared/agentcard.js'));
+  });
+  const lumOf = c => { const m = String(c).match(/[\d.]+/g); if(!m) return 1; const a = m.length > 3 ? +m[3] : 1; if(a === 0) return null;
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(+m[0]) + 0.7152 * f(+m[1]) + 0.0722 * f(+m[2]); };
+  // what the slot sits on: the last colored box under its middle, else the card's own background
+  function fieldUnder(card, slot){
+    const s = slot.getBoundingClientRect(), cx = (s.left + s.right) / 2, cy = (s.top + s.bottom) / 2;
+    let bg = getComputedStyle(card).backgroundColor;
+    [...card.querySelectorAll('div,img,svg')].forEach(e => { if(e === slot || slot.contains(e) || e.closest('[data-z]')) return;
+      const r = e.getBoundingClientRect(); if(!(r.left <= cx && r.right >= cx && r.top <= cy && r.bottom >= cy && r.width > 40 && r.height > 30)) return;
+      if(e.tagName === 'IMG'){ bg = 'rgb(60,60,60)'; return; }
+      const b = getComputedStyle(e).backgroundColor; if(lumOf(b) !== null) bg = b; });
+    return bg;
+  }
+  const FINE = 'If your property is currently listed with a broker, please disregard this notice. It is not intended to solicit listed property.';
+  // no white seams (owner 10/26): two of the design's boxes in the same color that sit side by side at the contact card's
+  // height with a thin gap between them (8 px on JL M18 and M24 at 6 x 11) close up, so the card reads as one block
+  function closeSeams(card, slot){
+    const c = card.getBoundingClientRect(), k = c.width / card.offsetWidth || 1, s = slot.getBoundingClientRect();
+    const rr = e => { const r = e.getBoundingClientRect(); return {l:(r.left - c.left) / k, r:(r.right - c.left) / k, t:(r.top - c.top) / k, b:(r.bottom - c.top) / k}; };
+    const boxes = [...card.children].filter(e => e.tagName === 'DIV' && e !== slot && lumOf(getComputedStyle(e).backgroundColor) !== null && lumOf(getComputedStyle(e).backgroundColor) < 0.8)
+      .map(e => ({e, q:rr(e), bg:getComputedStyle(e).backgroundColor})).filter(({q}) => q.b > (s.top - c.top) / k && q.t < (s.bottom - c.top) / k);
+    boxes.forEach(a => boxes.forEach(b => { const gap = b.q.l - a.q.r;
+      if(a !== b && a.bg === b.bg && gap > 0.5 && gap <= 12 && Math.min(a.q.b, b.q.b) - Math.max(a.q.t, b.q.t) > 40){ a.e.style.width = (a.q.r - a.q.l + gap) + 'px'; a.q.r = b.q.l; } }));
+  }
+  // flush on its box (owner 10/26, Part 3): the card takes the field's color, so where the slot pokes past the design's own
+  // box in that color (3 px above it on JS M03, M05, M06, M07, M10, M23, M24, M34, M36, M37) it read as a separate layer
+  // with an edge of the page showing. The slot moves down into the box and closes up to its edges; a box with rounded
+  // corners passes them to the card's corners that sit on its edges (JS M06, M07), so nothing square shows over them.
+  function snapToBox(card, slot){
+    const c = card.getBoundingClientRect(), k = c.width / card.offsetWidth || 1, s = slot.getBoundingClientRect(), st = slot.style;
+    const q = {l:parseFloat(st.left), t:parseFloat(st.top), r:parseFloat(st.left) + parseFloat(st.width), b:parseFloat(st.top) + parseFloat(st.height)};
+    const cx = (q.l + q.r) / 2, cy = (q.t + q.b) / 2, field = fieldUnder(card, slot);
+    const box = [...card.querySelectorAll('div')].filter(e => e !== slot && !e.closest('[data-z]') && getComputedStyle(e).backgroundColor === field).map(e => {
+      const r = e.getBoundingClientRect(); return {e, l:(r.left - c.left) / k, t:(r.top - c.top) / k, r:(r.right - c.left) / k, b:(r.bottom - c.top) / k}; })
+      .filter(o => o.l <= cx && o.r >= cx && o.t <= cy && o.b >= cy && o.b - o.t < (q.b - q.t) * 2.5).pop();   // the band the card sits on, not the whole page
+    if(!box) return '';
+    const h = q.b - q.t;
+    if(q.t < box.t - 0.2 && box.t - q.t <= 8){ q.t = box.t; q.b = Math.min(box.b, q.t + h); }
+    else if(q.b > box.b + 0.2 && q.b - box.b <= 8) q.b = box.b;
+    if(q.l < box.l - 0.2 && box.l - q.l <= 16) q.l = box.l;
+    if(q.r > box.r + 0.2 && q.r - box.r <= 16) q.r = box.r;
+    if(q.b < box.b - 0.2 && box.b - q.b <= 3) q.b = box.b;   // a card a pixel short of its band's bottom (JS M30-green) reaches it
+    // owner 10/27 (Part 3b): the card sits under a thin rule along its band's top edge (the gold rule on JS M30-green),
+    // never over it
+    // (at 6 x 11 the widened design leaves that rule short of the band's ends, 96-960 px: it runs the band's full width, as on the 6 x 9)
+    const rule = [...card.querySelectorAll('div')].filter(e => e !== slot && !e.closest('[data-z]') && e.offsetHeight > 0 && e.offsetHeight <= 3 && getComputedStyle(e).backgroundColor !== field)
+      .map(e => { const r = e.getBoundingClientRect(); return {e, l:(r.left - c.left) / k, t:(r.top - c.top) / k, r:(r.right - c.left) / k, b:(r.bottom - c.top) / k}; })
+      .find(o => Math.min(o.r, q.r) - Math.max(o.l, q.l) >= (q.r - q.l) / 2 && o.t >= q.t - 1 && o.t <= q.t + 2);
+    if(rule){ q.t = rule.b; Object.assign(rule.e.style, {left:box.l + 'px', width:(box.r - box.l) + 'px'}); }
+    // the band and a box of the same color right under it (the strip beside the barcode) overlap by a pixel: where they met on a
+    // fraction of a pixel the printer's edge blend left a pale line under the card, so the card read as sitting above the strip
+    [...card.children].filter(e => e.tagName === 'DIV' && e !== box.e && getComputedStyle(e).backgroundColor === field).forEach(e => {
+      const r = e.getBoundingClientRect(), t = (r.top - c.top) / k, l = (r.left - c.left) / k, rt = (r.right - c.left) / k;
+      if(Math.abs(t - box.b) < 0.6 && l < box.r && rt > box.l){ e.style.top = (parseFloat(e.style.top) - 1) + 'px'; e.style.height = (e.offsetHeight + 1) + 'px'; } });
+    Object.assign(st, {left:q.l + 'px', top:q.t + 'px', width:(q.r - q.l) + 'px', height:(q.b - q.t) + 'px'});
+    const cs = getComputedStyle(box.e), on = (a, b) => Math.abs(a - b) < 1;
+    const rad = (corner, ok) => ok ? cs['border' + corner + 'Radius'] : '0px';
+    const r = [rad('TopLeft', on(q.l, box.l) && on(q.t, box.t)), rad('TopRight', on(q.r, box.r) && on(q.t, box.t)),
+               rad('BottomRight', on(q.r, box.r) && on(q.b, box.b)), rad('BottomLeft', on(q.l, box.l) && on(q.b, box.b))];
+    // a card on a rounded band takes the curve on all four corners (owner 10/27: the bottom corners too)
+    const m = Math.max(...r.map(parseFloat)); return m ? [0, 1, 2, 3].map(() => m + 'px').join(' ') : '';
+  }
+  function makeCards(card, D, hs){
+    if(!window.ContactCard) return [{kind:'agent-card-missing', slot:'agent'}];
+    const A = D.agent || {}, body = getComputedStyle(card).fontFamily;
+    card.querySelectorAll('.ccslot').forEach(slot => {
+      const look = JSON.parse(slot.dataset.cc || "{}"), st = slot.style;
+      closeSeams(card, slot);
+      const radius = snapToBox(card, slot);
+      const x = parseFloat(st.left) * 0.75, y = parseFloat(st.top) * 0.75, w = parseFloat(st.width) * 0.75, h = parseFloat(st.height) * 0.75;
+      const field = fieldUnder(card, slot), dark = (lumOf(field) || 0) < 0.3;
+      const b = Object.assign({}, D.brand || {}); if(dark) b.logo = logoFor(b, 'white');
+      const layout = look.layout || (w >= 330 ? 'panel' : 'band');
+      const size = layout === 'band' ? 'band' : h >= 112 && w >= 420 ? 'mid' : 'short';
+      // a short panel card is sized from its slot, as on the Open House flyers (ohlib.js OHL.contact)
+      const pw = Math.round(Math.max(150, Math.min(190, w * 0.36))) - (hs && look.fine ? 16 : 0), lh   /* the 6 pt notice runs in the name column: a little less panel when a headshot narrows it */ = Math.min(46, h - 30);
+      const s = size !== 'short' ? {} : {name: Math.max(18, Math.min(26, Math.round(h * (look.fine ? 0.25 : 0.28)))), nameFloor: w < 420 ? 14 : 15, hsW: Math.round(h * 0.74), panelW: pw,
+        inlineLabel: h < 90, wrap: w - pw - (hs ? h * 0.74 : 0) < 310, lock: 10, logo: {wide: [pw - 20, lh], square: [h - 34, h - 34], tall: [h - 32, h - 32]}};
+      // a full-width card on a 6 x 11 back (owner 10/26): the same type sizes as the fold-over's card (name 30, cell 20,
+      // lines 11, office 10.5, labels 9.5; ContactCard 'full'; sizes checked by a review agent 10/26), set to the slot's height (REALTOR on the name's line, the label on the cell's)
+      const w11 = layout === 'panel' && w >= 680;
+      const n11 = Math.floor(Math.min(30, (h - 10 - 28.6 - (look.fine || look.fineRoom ? 7.5 : 0) - 3) / 1.12) * 2) / 2;   // the name takes what the slot leaves above the contact row (fineRoom: the notice moved off the card, JS M06/M07; the name keeps its size so a long name still has room for REALTOR®)
+      const pw11 = w < 720 ? 214 : 236;   // a hand-placed card a little short of the full width (JL M43) gets a slimmer brokerage side
+      const s11 = {pad: [4, 14, 6], name: n11, nameFloor: 18, desigInline: true, inlineLabel: true, label: 9.5, desig: 9.5, line: 11, office: 10.5, rowGap: w < 720 ? 16 : 22,
+        hsW: Math.round(h * 0.76), panelW: pw11, panelPad: [5, 12], panelGap: 6, lockDir: 'right', officeLH: 1.2, lock: 11,
+        logo: {wide: [pw11 - 24, Math.min(50, h - 24)], square: [h - 28, h - 28], tall: [h - 26, h - 26]}};
+      const agent = Object.assign({}, A, {headshot: hs ? (A.headshot || HS_PLACEHOLDER) : ''});
+      const html = ContactCard.html([x, y, w, h], agent, b, {layout, size: w11 ? 'full' : size, s: w11 ? s11 : s, grow: 0, floor: 8, bottomGap: 0.5, fine: look.fine ? FINE : '',
+        logoStyle: dark && !b.logoKnockout && !b.logoOnDark ? 'filter:brightness(0) invert(1)' : '',
+        fieldAccent: dark});
+      const wrap = document.createElement('div');
+      wrap.className = 'js-cc'; wrap.dataset.field = field;
+      wrap.style.cssText = `position:absolute;left:0;top:0;width:0;height:0;--cc-paper:${field};--cc-ink:${look.ink};--cc-muted:${look.muted};` +
+        `--cc-line:${dark ? `color-mix(in srgb, ${look.ink} 35%, transparent)` : look.line};--cc-accent:${look.accent};` +
+        `--cc-display:${look.display && look.display !== 'inherit' ? look.display : body};--cc-body:${body}`;
+      wrap.innerHTML = html;
+      wrap.querySelectorAll('.cc-name').forEach(n => n.style.fontWeight = look.weight || 400);
+      // on a rounded card the brokerage logo is centered in its panel, across and top to bottom (owner 10/27, Part 1c; JS M06/M07:
+      // the same margin on both sides, still well inside the curve, the logo at most the space left), and the no-headshot stripe
+      // comes off (bent around the corner it read as a pale edge). Every corner takes the curve and nothing inside paints over it.
+      if(radius){ const cc = wrap.querySelector('.cc'); cc.style.borderRadius = radius; cc.style.overflow = 'hidden'; cc.dataset.rounded = '1';
+        wrap.insertAdjacentHTML('beforeend', '<style>.cc[data-rounded] .cc-panel:not(.cc-band){padding-left:15pt!important;padding-right:15pt!important;justify-content:center!important;align-items:center!important}' +
+          '.cc[data-rounded] .cc-panel .cc-logo{max-width:100%}.cc[data-rounded] .cc-panel .cc-logo img{max-width:100%!important}.cc[data-rounded] .cc-stripe{display:none}</style>'); }
+      slot.replaceWith(wrap);
+    });
+    return [];
+  }
+  // after the fonts load: the shared fit (name, website, hyphen; the brokerage panel). The card's paper is the color of the
+  // field it sits on
+  function fitCards(card){
+    if(!window.ContactCard || !card.querySelector('[data-contactcard]')) return;
+    ContactCard.fit(card);
+    // (the card keeps the field's color as its own: one solid block, no seam where two of the design's boxes meet under it)
+  }
+
   // ---------------------------------------------------------------- public: draw one side
   function draw(doc, host, D, side, opts){
     opts = opts || {};
@@ -695,6 +804,28 @@
       if(fix[side] && fix[side].run) fix[side].run(h, {hs, long});
       // the plain version of a specialty card leaves out the sale detail (days on market, offers)
       if(opts.plain && fix.plain) fix.plain(h, side, {hs, long}); }
+    return cardReady.then(() => draw2(doc, card, D, v, side, opts, hs, long, filled));
+  }
+  // return address (owner 10/27, Part 3b): a back with a full row of photos and a shorter photo beside the postage box (the
+  // short one shares the row's bottom edge, with at least two taller photos to its left) centers the return address above
+  // that short photo (JS M11 6 x 9, M17, M38). One tall and one short photo (M16) keeps it left-aligned on the photo.
+  // M49 keeps its height and sets it right-justified, its right edge on the photo under it.
+  function placeReturn(card, did){
+    const c = card.getBoundingClientRect(), k = c.width / card.offsetWidth || 1;
+    const R = e => { const r = e.getBoundingClientRect(); return {l:(r.left - c.left) / k, t:(r.top - c.top) / k, r:(r.right - c.left) / k, b:(r.bottom - c.top) / k}; };
+    card.querySelectorAll('[data-k="ret"]').forEach(ret => {
+      ret.style.width = 'max-content'; const rr = R(ret), w = rr.r - rr.l;
+      const ims = [...card.querySelectorAll('img')].filter(i => !i.closest('[data-contactcard]') && i.offsetWidth > 40 && i.offsetHeight > 40).map(R);
+      const under = ims.filter(q => q.t >= rr.b - 2 && q.t - rr.b < 80 && q.l < rr.r && q.r > rr.l).sort((a, b) => a.t - b.t)[0];
+      if(!under) return;
+      const row = ims.filter(q => q !== under && Math.abs(q.b - under.b) < 8 && q.t < under.t - 10 && q.r <= under.l + 2);
+      const place = (l, align) => Object.assign(ret.style, {left:l + 'px', right:'auto', textAlign:align});
+      if(row.length >= 2) place((under.l + under.r) / 2 - w / 2, 'center');
+      else if(did === 'M49') place(under.r - w, 'right');
+    });
+  }
+  function draw2(doc, card, D, v, side, opts, hs, long, filled){
+    const cardIssues = makeCards(card, D, hs);
     const fonts = fontsOf(doc), edited = applyEdits(card, side, D.textEdits || {}, fonts);
     if(hs && !(D.agent || {}).headshot) card.querySelectorAll('[data-hs]').forEach(el => el.dataset.placeholder = '1');
     const imgs = [...card.querySelectorAll('img')].filter(i => i.getAttribute('src'));
@@ -705,7 +836,10 @@
     return Promise.all(imgs.map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; })))
       .then(() => Promise.all([...faces].map(f => document.fonts.load(f).catch(() => null))))
       .then(() => document.fonts.ready)
-      .then(() => { const r = layout(card, D, side === 'front'); r.issues.push(...editChecks(card, edited)); if(opts.print) forPrint(card);
+      .then(() => { fitCards(card); if(side !== 'front') placeReturn(card, ((doc.title || '').match(/M\d\d(?:-[a-z]+)?/i) || [''])[0].toUpperCase());
+        const r = layout(card, D, side === 'front'); r.issues.push(...cardIssues);
+        if(window.ContactCard && card.querySelector('[data-contactcard]')) r.issues.push(...ContactCard.check(card).map(c => typeof c === 'string' ? {kind:'agent-card', detail:c} : c));
+        r.issues.push(...editChecks(card, edited)); if(opts.print) forPrint(card);
         // a name that won't fit this design: one plain message for the agent (shorten the mailer name or pick another design)
         const parts = [v.agentName, v.agentFirst, v.agentLast].filter(x => x && x.length > 2).map(x => x.toLowerCase().slice(0, 12));
         if(r.issues.some(c => /overflow|safe-area|mail-zone/.test(c.kind) && c.text && parts.some(x => c.text.toLowerCase().indexOf(x) >= 0)))

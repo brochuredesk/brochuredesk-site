@@ -76,7 +76,7 @@ OHL.start(['700 10pt "Plex Condensed"', '400 10pt "Plex Condensed"', '600 10pt M
   // address and agent under the grid
   const ay = 24 + 3*RH + 2*G + 18;
   h += `<div class="abs addr" style="left:${X}pt;top:${ay}pt;width:340pt;height:28pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:${X}pt;top:${ay+30}pt;width:340pt;height:13pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:${X}pt;top:${ay+30}pt;width:340pt;height:13pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   Ivory.facts(L).slice(0, 3).forEach((t, i) => h += `<div class="abs facts" style="left:388pt;top:${ay+2+i*14}pt;width:200pt;height:13pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
   const cy = 700;
   h += `<div class="hr" style="top:${cy - 12}pt"></div>`;

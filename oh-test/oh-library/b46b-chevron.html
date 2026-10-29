@@ -62,7 +62,7 @@ OHL.start(['700 10pt Sora', '600 10pt Sora', '400 10pt Sora'], D => {
   y += 22;
   h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:22pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
   y += 24;
-  h += `<div class="abs place" style="left:36pt;top:${y}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city, Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([OHL.place(L), Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  '))}</div>`;
   y += 12;
   const cy = 704;
   const issues = y > cy - 16 ? [{slot:'oh.note', kind:'overflow', detail:'the event runs into the agent card'}] : [];

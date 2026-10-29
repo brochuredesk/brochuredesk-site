@@ -20,8 +20,8 @@
   .field~.on{color:var(--on-main)}
   .label{font:500 30pt/40pt Spectral;letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
   .addr{font:500 14pt/18pt Jost;letter-spacing:1.2pt;text-align:center;white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
-  .date{font:500 30pt/38pt Spectral;white-space:nowrap;overflow:hidden}
-  .time{font:600 20pt/38pt Jost;text-align:right;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .date{font:500 40pt/46pt Spectral;text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:600 22pt/28pt Jost;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
   .ev{font:500 10.5pt/13pt Jost}
   .rule{position:absolute;left:36pt;width:540pt;height:.8pt;background:currentColor;opacity:.35}
   .fact{position:absolute;text-align:center}
@@ -41,27 +41,33 @@ OHL.start(['500 10pt Spectral', '500 10pt Jost', '600 10pt Jost', '400 10pt Jost
   const E = OHL.event(D), hero = OHL.hero(D, 'straight');
   let h = '';
   h += `<div class="abs label" style="left:36pt;top:30pt;width:540pt;height:40pt" data-fit="30,20" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
-  h += `<div class="abs addr" style="left:36pt;top:74pt;width:540pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs addr" style="left:36pt;top:74pt;width:540pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join('  ·  '))}</div>`;
   // the field of the main color starts halfway down the photo
   h += `<div class="field" style="top:290pt;height:502pt"></div>`;
-  h += OHL.photo(D, hero, `left:36pt;top:108pt;width:540pt;height:360pt`);
-  // date and time on one line, large
-  let y = 486;
-  h += `<div class="abs on date" style="left:36pt;top:${y}pt;width:340pt;height:38pt" data-fit="30,22" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
-  if(E.time) h += `<div class="abs on time" style="left:376pt;top:${y}pt;width:200pt;height:38pt" data-fit="20,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
-  y += 46;
-  h += `<div class="on rule" style="top:${y}pt"></div>`;
-  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], 36, y + 12, 540, 13, 3);
-  h += ev.html;
-  // facts with line icons
-  const fy = Math.max(y + 22 + ev.h + 14, 584), cells = OHL.factCells(L), cw = 540/cells.length;
-  cells.forEach(([ic, v, kk], i) => h += `<div class="on fact" style="left:${36+i*cw}pt;top:${fy}pt;width:${cw}pt;height:62pt"><div style="width:20pt;margin:0 auto">${OHL.icon(ic, 20, 'var(--accent-on-main)')}</div><div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(kk)}</div></div>`);
-  const cy = 694;
+  const hp = Math.max(320, OHL.minFrameH(D, hero, 540, 360));
+  h += OHL.photo(D, hero, `left:36pt;top:108pt;width:540pt;height:${hp}pt`);
+  // the date centered under the photo, large; the time just under it
+  let y = 108 + hp + 14;
+  h += `<div class="abs on date" style="left:36pt;top:${y}pt;width:540pt;height:46pt" data-fit="40,26" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  y += 48;
+  if(E.time) h += `<div class="abs on time" style="left:36pt;top:${y}pt;width:540pt;height:28pt" data-fit="22,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 38;
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], 36, y, 540, 13, 3);
+  h += ev.html; y += ev.h + (ev.h ? 6 : 0);
+  // a row of small interior photos, margin to margin, kept above the agent line
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 4);
+  const cy = 694, G = 10, py = y, ph2 = 96;
+  if(rooms.length){ const pw = (540 - (rooms.length - 1)*G)/rooms.length;
+    rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${36 + i*(pw + G)}pt;top:${py}pt;width:${pw}pt;height:${ph2}pt`)); y += ph2 + 18; }
+  // the facts, one compact row
+  const fy = y, cells = OHL.factCells(L), cw = 540/cells.length;
+  cells.forEach(([ic, v, kk], i) => h += `<div class="on abs" style="left:${36+i*cw}pt;top:${fy}pt;width:${cw}pt;height:34pt;display:flex;align-items:center;justify-content:center;gap:7pt"><div style="width:26pt">${OHL.icon(ic, 26, 'var(--accent-on-main)')}</div><div class="v" style="font:500 24pt/32pt Spectral;white-space:nowrap" data-slot="fact.${i}" data-lines="1">${esc(v)} <span style="font:500 9.5pt Jost;letter-spacing:1pt;text-transform:uppercase;opacity:.85" data-slot="fact.${i}.k" data-lines="1">${esc(kk)}</span></div></div>`);
+  y = fy + 36;
   h += `<div class="on rule" style="top:${cy - 10}pt"></div>`;
   h += OHL.contact(D, {x:36, y:cy, w:540, h:66, tone:OHL.toneOn(k.main), nameSize:18, phoneSize:13, lineSize:9.5, logoW:180, logoH:52, color:'var(--on-main)'});
   h += `<div class="abs on fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
   const f = OHL.frame(D, h);
-  f.issues = fy + 62 > cy - 14 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines push the facts into the agent card'}] : [];
+  f.issues = y > cy - 14 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines push the facts into the agent card'}] : [];
   return f;
 });
 </script>

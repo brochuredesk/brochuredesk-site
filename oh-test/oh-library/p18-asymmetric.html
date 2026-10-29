@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Asymmetric</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Asymmetric (from reference P18). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: "also awesome looking." A narrow left column with the event wording stacked in the main color over a tall room
+  photo and the listing facts; a wide right column with the house (a block of the main color offset behind it, an
+  accent triangle at its corner), the writer's kicker and paragraph, and the date and time large. A band of the main
+  color across the foot carries the address and the agent card (the logo is in the card's brokerage panel).
+  Type: Red Hat Display (headline, date, address), Outfit (details).
+-->
+<style>
+  .sheet{background:var(--paper);color:var(--ink)}
+  .hl{font:700 44pt/44pt 'Red Hat Display';text-transform:uppercase;white-space:nowrap;overflow:hidden;color:var(--main-on-paper);letter-spacing:-.3pt}
+  .kick{font:700 19pt/23pt 'Red Hat Display'}
+  .body{font:400 12pt/16.5pt Outfit}
+  .wd{font:600 9.5pt/12pt Outfit;letter-spacing:2.6pt;text-transform:uppercase;color:var(--accent-on-paper);white-space:nowrap}
+  .date{font:700 30pt/36pt 'Red Hat Display';white-space:nowrap;overflow:hidden;color:var(--main-on-paper)}
+  .time{font:500 21pt/26pt 'Red Hat Display';white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Outfit}
+  .fact{position:absolute;display:flex;align-items:center;gap:8pt;font:600 10.5pt/13pt Outfit;white-space:nowrap;overflow:hidden}
+  .band{position:absolute;left:0;width:612pt;background:var(--main)}
+  .band~.on{color:var(--on-main)}
+  .addr{font:700 22pt/27pt 'Red Hat Display';white-space:nowrap;overflow:hidden}
+  .place{font:400 9.5pt/12pt Outfit;letter-spacing:1.4pt;text-transform:uppercase;white-space:nowrap;overflow:hidden;opacity:.9}
+  .oh-agent-name{font-family:'Red Hat Display';font-weight:700}
+  .oh-agent{font-family:Outfit}
+  .fine{font:400 6.6pt/8pt Outfit;white-space:nowrap;opacity:.65}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Red Hat Display"', '500 10pt "Red Hat Display"', '400 10pt Outfit', '600 10pt Outfit'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const room = OHL.photos(D).find(id => id !== hero && /kitchen|living/i.test(D.photos[id].tags||'')) || OHL.photos(D).find(id => id !== hero && !Ivory.fullHouse(D, id));
+  let h = '';
+  // right: the house, a main-color block offset behind it, an accent triangle at its top-left corner
+  const RX = 222, RW = 360, RH = 240;
+  h += `<div class="abs" style="left:${RX+16}pt;top:46pt;width:${RW}pt;height:${RH}pt;background:var(--main)"></div>`;
+  h += `<svg class="abs" style="left:${RX-18}pt;top:12pt;width:44pt;height:44pt" viewBox="0 0 44 44"><polygon points="0,0 44,0 0,44" fill="var(--accent)"/></svg>`;
+  h += OHL.photo(D, hero, `left:${RX}pt;top:30pt;width:${RW}pt;height:${RH}pt`);
+  // left: headline, tall room, facts
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:30pt;top:${34 + i*44}pt;width:176pt;height:48pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  h += OHL.photo(D, room, `left:30pt;top:150pt;width:176pt;height:320pt`);
+  OHL.factCells(L).slice(0, 3).forEach(([ic, v, kk], i) => h += `<div class="fact" style="left:30pt;top:${490 + i*26}pt;width:176pt;height:18pt"><span style="color:var(--main-on-paper)">${OHL.icon(ic, 16)}</span><span data-slot="fact.${i}" data-lines="1">${esc(v + ' ' + kk.toLowerCase())}</span></div>`);
+  // right, under the photo: kicker, paragraph, date and time
+  let y = 30 + RH + 38;
+  const mid0 = h.length, y0 = y;
+  const kick = String((C.listing||{}).kicker || '').trim();
+  if(kick){ h += `<div class="abs kick" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:24pt;white-space:nowrap;overflow:hidden" data-slot="kicker" data-lines="1">${esc(kick)}</div>`; y += 30; }
+  const ev = [[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']].filter(l => l[0]);
+  const evH = ev.reduce((a, l) => a + Ivory.linesNeeded('ev', l[0], RW, 13)*13 + 3, 0);
+  const bandTop = 626, needed = 16 + 12 + 36 + 26 + (evH ? evH + 8 : 0);
+  // the write-up fills the room down to the date as a full paragraph (owner 10/27/2026)
+  const wu = OHL.writeup(D, 'body', RW, 16.5, Math.floor((bandTop - 16 - needed - y - 16)/16.5)), body = wu.text, bn = wu.n;
+  if(body && y + bn*16.5 + 16 + needed <= bandTop - 16){ h += `<div class="abs body" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:${bn*16.5+4}pt" data-slot="listing.body" data-lines="${bn}">${esc(body)}</div>`; y += bn*16.5 + 16; }
+  if(E.weekday){ h += `<div class="abs wd" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:12pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`; }
+  y += 15;
+  h += `<div class="abs date" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:36pt" data-fit="30,22" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;
+  y += 37;
+  if(E.time) h += `<div class="abs time" style="left:${RX}pt;top:${y}pt;width:${RW}pt;height:26pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 32;
+  const evl = Ivory.eventLines(ev, RX, y, RW, 13, 3);
+  h += evl.html; y += evl.h;
+  const issues = y > bandTop - 12 ? [{slot:'oh.note', kind:'overflow', detail:'the event runs into the band'}] : [];
+  const shift = Math.max(0, Math.min(36, (bandTop - 14 - y)/2));
+  h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;
+  // the band: address, then the agent card with the brokerage panel
+  h += `<div class="band" style="top:${bandTop}pt;height:${792-bandTop}pt"></div>`;
+  h += `<div class="abs on addr" style="left:30pt;top:${bandTop+14}pt;width:360pt;height:27pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
+  h += `<div class="abs on place" style="left:30pt;top:${bandTop+43}pt;width:360pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  h += `<div class="abs on" style="left:30pt;top:${bandTop+68}pt;width:552pt;height:.8pt;background:currentColor;opacity:.35"></div>`;
+  h += OHL.contact(D, {x:30, y:bandTop+78, w:552, h:60, tone:OHL.toneOn(k.main), logoW:180, logoH:46, nameSize:18, phoneSize:12, lineSize:9, color:'var(--on-main)'}).replace('class="abs oh-agent"', 'class="abs on oh-agent"');
+  h += `<div class="abs on fine" style="left:30pt;top:780pt;width:552pt;height:8pt;text-align:right" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => OHL.stack([...document.querySelectorAll('.hl')], 44, 24, 34, 1.0);
+  return f;
+});
+</script>
+</body>
+</html>

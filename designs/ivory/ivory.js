@@ -2,6 +2,12 @@
    Brand, captions, the contact card and the print checks live here so all pieces behave the same. */
 (function(){
   const Ivory = {};
+  // the standard contact card (Right panel, 10/25/2026): templates/_shared/agentcard.js here, /designs/shared/agentcard.js on the site
+  const ME = document.currentScript && document.currentScript.src;
+  Ivory.cardReady = window.ContactCard ? Promise.resolve() : new Promise(res => {
+    const add = (rel, next) => { const el = document.createElement('script'); el.src = new URL(rel, ME || location.href).href; el.onload = res; el.onerror = next || res; document.head.appendChild(el); };
+    add('../_shared/agentcard.js', () => add('../shared/agentcard.js'));
+  });
 
   Ivory.data = function(){
     return JSON.parse(document.getElementById('brochure-data').textContent || '{}');
@@ -55,7 +61,7 @@
     const real = !!(D.plan && D.plan.levels && D.plan.levels.length);
     // the rough-draft preview's simple plan (D.planPreview, one image per floor) picks the plan version too
     const pre = !real && !!(D.planPreview && D.planPreview.length), plan = real || pre;
-    const levels = real ? D.plan.levels.filter(l=>!l.garageApartment).length : pre ? D.planPreview.length : 0;
+    const levels = real ? D.plan.levels.filter(l=>!l.garageApartment && !l.roof).length : pre ? D.planPreview.length : 0;
     const stories = Math.max(1, Math.min(4, Math.round(+L.stories || levels || 1)));
     return {stories, plan, id: `${stories}-story-${plan ? 'plan' : 'noplan'}`};
   };
@@ -145,7 +151,18 @@
     if(L.sqft) f.push(`${Number(L.sqft).toLocaleString('en-US')} sq ft`);
     return f.join('  /  ');
   };
-  Ivory.place = L => [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : '')].filter(Boolean).join('  /  ');
+  const ST = {alabama:'AL',alaska:'AK',arizona:'AZ',arkansas:'AR',california:'CA',colorado:'CO',connecticut:'CT',delaware:'DE',
+    'district of columbia':'DC',florida:'FL',georgia:'GA',hawaii:'HI',idaho:'ID',illinois:'IL',indiana:'IN',iowa:'IA',kansas:'KS',
+    kentucky:'KY',louisiana:'LA',maine:'ME',maryland:'MD',massachusetts:'MA',michigan:'MI',minnesota:'MN',mississippi:'MS',
+    missouri:'MO',montana:'MT',nebraska:'NE',nevada:'NV','new hampshire':'NH','new jersey':'NJ','new mexico':'NM','new york':'NY',
+    'north carolina':'NC','north dakota':'ND',ohio:'OH',oklahoma:'OK',oregon:'OR',pennsylvania:'PA','rhode island':'RI',
+    'south carolina':'SC','south dakota':'SD',tennessee:'TN',texas:'TX',utah:'UT',vermont:'VT',virginia:'VA',washington:'WA',
+    'west virginia':'WV',wisconsin:'WI',wyoming:'WY'};
+  // "Houston, TX": city and two-letter state (Open House v5 city line, 10/25/2026)
+  Ivory.cityST = L => [L.city, ST[String(L.state||'').trim().toLowerCase()] || L.state].filter(Boolean).join(', ');
+  Ivory.place = L => [L.city, L.state].filter(Boolean).join(', ');   // the approved place line: city and state (owner 10/21/2026); a design choice, not a rule (neighborhood names allowed on every piece, owner 10/28/2026)
+  // Open House flyers only: city, state and ZIP under the street so people can find the house, "Houston, TX 77023" (owner 10/27/2026)
+  Ivory.placeZip = L => [Ivory.cityST(L), L.zip].filter(Boolean).join(' ');
 
   // Photos for the companion pieces: written order if given, else listing order (exterior first).
   Ivory.photoOrder = function(D){
@@ -154,116 +171,68 @@
     return ids.filter(id => Ivory.src(D, id));
   };
 
-  /* Contact card for the companion pieces.
-     opts: x, y, w, h, nameSize (start size; steps down to 18 pt), phoneSize, lineSize, qr (pt), brokerage (bool), slot prefix */
+  /* Contact card for the companion pieces: the standard Right panel card (templates/_shared/agentcard.js, 10/25/2026).
+     opts: x, y, w, h (pt), layout ('panel' / 'band'; default by width), grow (pt it may grow upward), s (size overrides).
+     The card carries the piece's one brokerage logo. */
   Ivory.card = function(D, o){
-    const A = D.agent || {}, b = D.brand || {};
-    const portrait = !!(A.headshot && Ivory.src(D, A.headshot));
-    const pw = portrait ? Math.round(o.h * 0.8) : 0;
-    const L0 = portrait ? pw + 3 + 14 : 16;
-    const t = o.top || {};
-    const rows = Object.assign({name:8, title:o.nameSize+12, callLbl:o.nameSize+25, phone:o.nameSize+32}, t);
-    const lineTop = rows.phone + o.phoneSize + 4;
-    let h = `<div class="card" data-card="1" style="left:${o.x}pt;top:${o.y}pt;width:${o.w}pt;height:${o.h}pt" data-l0="${L0}" data-gap="${o.gap||20}" data-brkmin="${o.brkMin||110}">
-      <div class="stripe"></div>
-      ${portrait ? `<div class="portrait" style="width:${pw}pt;height:${o.h}pt"><img src="${esc(Ivory.src(D,A.headshot))}" alt=""></div>` : ''}
-      <div class="agent" style="position:absolute;left:${L0}pt;top:0;bottom:0;width:${o.agentMax||260}pt">
-        <div class="agent-name" style="position:absolute;left:0;top:${rows.name}pt;font-family:var(--font-display);font-size:${o.nameSize}pt;line-height:${o.nameSize+3}pt;color:var(--ink);white-space:nowrap" data-slot="agent.name" data-lines="1" data-start="${o.nameSize}">${esc(A.name)}</div>
-        ${A.designation ? `<div class="lbl" style="left:1pt;top:${rows.title}pt" data-slot="agent.title" data-fine="1">${esc(A.designation)}</div>` : ''}
-        <div class="lbl" style="left:1pt;top:${rows.callLbl}pt" data-fine="1">${esc(A.phoneLabel||'Call / Text')}</div>
-        <div style="position:absolute;left:0;top:${rows.phone}pt;font:700 ${o.phoneSize}pt/${o.phoneSize+2}pt var(--font-body);color:var(--ink);white-space:nowrap" data-slot="agent.phone" data-lines="1">${esc(A.phone)}</div>
-        <div style="position:absolute;left:0;top:${lineTop}pt;font-size:${o.lineSize}pt;line-height:${o.lineSize+2}pt;color:var(--ink);white-space:nowrap" data-slot="agent.email" data-lines="1">${esc(A.email||'')}</div>
-        ${o.agentWeb!==false && A.web ? `<div style="position:absolute;left:0;top:${lineTop+o.lineSize+2.5}pt;font-size:${o.lineSize}pt;line-height:${o.lineSize+2}pt;color:var(--ink);white-space:nowrap" data-slot="agent.web" data-lines="1">${esc(A.web)}</div>` : ''}
-      </div>`;
-    if(o.brokerage !== false){
-      h += `<div class="divider d1" style="top:10pt;bottom:10pt"></div>
-      <div class="brk" style="position:absolute;top:0;bottom:0;text-align:center">
-        ${o.brokerageLogo===false
-          ? `<div style="position:absolute;left:0;right:0;top:${rows.name+2}pt;height:${o.logoH||24}pt;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:${o.brkNameSize||13}pt;line-height:1.1;color:var(--ink);white-space:nowrap" data-slot="broker.name" data-lines="1">${esc(b.brokerage||'')}</div>`
-          : Ivory.logo(b, '', `left:-16pt;right:-16pt;top:${rows.name}pt;height:${Math.round((o.logoH||24)*1.3)}pt;justify-content:center`)}
-        <div class="lbl" style="left:0;right:0;top:${rows.callLbl}pt;text-align:center" data-fine="1">${esc(b.officeLabel||'Office')}</div>
-        <div style="position:absolute;left:0;right:0;top:${rows.phone+2}pt;font:700 ${o.officeSize||13}pt/${(o.officeSize||13)+2}pt var(--font-body);color:var(--ink);white-space:nowrap" data-slot="broker.phone" data-lines="1">${esc(b.phone||'')}</div>
-        <div style="position:absolute;left:0;right:0;top:${lineTop}pt;font-size:${o.lineSize}pt;line-height:${o.lineSize+2}pt;color:var(--ink);white-space:nowrap" data-slot="broker.web" data-lines="1">${esc(b.web||'')}</div>
-      </div>`;
-    }
-    h += `<div class="divider d2" style="top:10pt;bottom:10pt"></div>
-      <div class="qrcol" style="position:absolute;top:0;bottom:0;width:${o.qr+12}pt;right:12pt">
-        <div style="position:absolute;left:6pt;top:${(o.h - o.qr - 14)/2}pt;width:${o.qr}pt;height:${o.qr}pt">${A.qr ? `<img src="${esc(A.qr)}" alt="" style="width:100%;height:100%">` : ''}</div>
-        <div class="lbl" style="left:-10pt;right:-10pt;top:${(o.h - o.qr - 14)/2 + o.qr + 6}pt;text-align:center;letter-spacing:.6pt;text-transform:none;font-weight:600" data-slot="agent.qrurl" data-fine="1">${esc(A.web||'')}</div>
-      </div>
-    </div>`;
-    return h;
+    const A = D.agent || {}, hs = Ivory.src(D, A.headshot) || (/^(file|https?|data):/.test(A.headshot || '') ? A.headshot : '');
+    return ContactCard.html([o.x, o.y, o.w, o.h], Object.assign({}, A, {headshot: hs}), D.brand || {}, {layout: o.layout, grow: o.grow || 0, s: o.s, bottomGap: 0.5, bandTint: !!o.bandTint});
   };
 
-  // Lay out every contact card: equal gutters, hairlines centered in them, the name steps down
-  // from its start size to an 18 pt floor only when the columns can't fit. Nothing else shrinks.
-  Ivory.layoutCards = function(){
-    const issues = [];
-    const pt = px => px*72/96;
-    document.querySelectorAll('[data-card]').forEach(card=>{
-      const W = pt(card.clientWidth);
-      const L0 = +card.dataset.l0, minGap = +card.dataset.gap;
-      const agent = card.querySelector('.agent'), brk = card.querySelector('.brk'), qr = card.querySelector('.qrcol');
-      const name = agent.querySelector('.agent-name');
-      const qrW = pt(qr.offsetWidth) + 12;
-      const nat = el => { const s=document.createElement('span'); const cs=getComputedStyle(el); s.style.cssText='position:absolute;white-space:nowrap;visibility:hidden'; s.style.font=cs.font; s.style.letterSpacing=cs.letterSpacing; s.textContent=el.textContent; card.appendChild(s); const w=pt(s.offsetWidth); s.remove(); return w; };
-      const agentW = () => Math.max(...[...agent.children].map(nat));
-      // a brokerage name standing in for a missing logo is a wordmark: it scales to the column, like the fold-over
-      const wm = brk && brk.querySelector('.logo .text');
-      const brkText = brk ? Math.max(+card.dataset.brkmin||110, ...[...brk.querySelectorAll('[data-slot]')].map(nat)) : 0;
-      if(wm){ const ww = nat(wm), cap = Math.max(brkText, 150); if(ww > cap) wm.style.fontSize = (parseFloat(getComputedStyle(wm).fontSize)*72/96*cap/ww)+'pt'; }
-      const brkW = brk ? Math.max(brkText, wm ? nat(wm) : 0) : 0;
-      const cols = brk ? 2 : 1;
-      let fs = parseFloat(name.dataset.start), aw = agentW();
-      let free = W - L0 - aw - brkW - qrW;
-      while(free < minGap*cols && fs > 18){ fs -= 1; name.style.fontSize = fs+'pt'; name.style.lineHeight=(fs+3)+'pt'; aw = agentW(); free = W - L0 - aw - brkW - qrW; }
-      // Still too wide at the 18 pt floor: break the widest line instead of shrinking type.
-      //   long email -> two lines, broken before the @
-      //   long name  -> two lines, first name over the rest
-      // Rows below move down only as far as needed; the agent's web line (also printed under the QR code)
-      // is dropped when it no longer fits inside the card's fixed height. Anything else that won't fit is flagged.
-      const H = pt(card.clientHeight);
-      const lineW = (el, html) => Math.max(...html.split('<br>').map(x=>{ const s=document.createElement('span'); const cs=getComputedStyle(el); s.style.cssText='position:absolute;white-space:nowrap;visibility:hidden'; s.style.font=cs.font; s.style.letterSpacing=cs.letterSpacing; s.innerHTML=x; card.appendChild(s); const w=pt(s.offsetWidth); s.remove(); return w; }));
-      const widthOf = el => el.style.display==='none' ? 0 : lineW(el, el.innerHTML);
-      const below = (top) => [...agent.children].filter(el => parseFloat(el.style.top) > top + 0.5);
-      const fitRows = () => [...agent.children].forEach(el => {
-        if(el.style.display==='none') return;
-        const bottom = parseFloat(el.style.top) + el.offsetHeight*72/96;
-        if(bottom > H - 2){ if(el.dataset.slot === 'agent.web') el.style.display = 'none';
-          else issues.push({slot:el.dataset.slot||'agent', kind:'overflow', detail:'the contact card is full; shorten this line'}); }
-      });
-      const email = agent.querySelector('[data-slot="agent.email"]');
-      for(let guard = 0; free < minGap*cols && guard < 2; guard++){
-        const cands = [name, email].filter(el => el && !el.dataset.split);
-        if(!cands.length) break;
-        const wide = cands.sort((a,b)=>widthOf(b)-widthOf(a))[0];
-        const t = wide.textContent.trim();
-        const cut = wide === email ? t.indexOf('@') : t.indexOf(' ');
-        if(cut <= 0) break;
-        const lh = parseFloat(getComputedStyle(wide).lineHeight)*72/96;
-        const top = parseFloat(wide.style.top), nextTop = Math.min(...below(top).map(el=>parseFloat(el.style.top)));
-        wide.dataset.split = '1';
-        wide.innerHTML = Ivory.esc(t.slice(0, cut)) + '<br>' + Ivory.esc(wide === email ? t.slice(cut) : t.slice(cut+1));
-        wide.style.height = (2*lh)+'pt';
-        const shift = Math.max(0, top + 2*lh + 1 - nextTop);
-        below(top).forEach(el => el.style.top = (parseFloat(el.style.top) + shift)+'pt');
-        fitRows();
-        aw = Math.max(...[...agent.children].map(widthOf));
-        free = W - L0 - aw - brkW - qrW;
-      }
-      if(free < minGap*cols) issues.push({slot:'contact-card', kind:'overflow', detail:'columns need '+Math.round(minGap*cols-free)+'pt more'});
-      const g = free/cols;
-      agent.style.width = aw+'pt';
-      if(brk){
-        brk.style.left = (L0+aw+g)+'pt'; brk.style.width = brkW+'pt';
-        card.querySelector('.d1').style.left = (L0+aw+g/2)+'pt';
-        card.querySelector('.d2').style.left = (L0+aw+g+brkW+g/2)+'pt';
-      } else {
-        card.querySelector('.d2').style.left = (L0+aw+g/2)+'pt';
-      }
-      // the QR code sits centered between its hairline and the card's right edge (10/21/2026)
-      const d2 = parseFloat(card.querySelector('.d2').style.left), qw = pt(qr.offsetWidth);
-      qr.style.right = 'auto'; qr.style.left = ((d2 + W)/2 - qw/2)+'pt';
+  // Lay out every contact card (the card's own fitting); the print checks read the cards at check time (Ivory.check)
+  Ivory.layoutCards = function(){ ContactCard.fit(document); return []; };
+
+
+  // MLS room sizes for a postcard back: living spaces, kitchen, primary, then the other bedrooms (numbered), at most n rows
+  Ivory.roomRows = (L, n) => {
+    const rs = (L.rooms || []).filter(r => r && r.name && r.size && !/bath|closet|utility|laundry|garage|covered|porch|patio|structure/i.test(r.name));
+    const rank = r => /living|family|great|game|media/i.test(r.name) ? 0 : /kitchen/i.test(r.name) ? 1 : /primary|master/i.test(r.name) ? 2 : /^bed/i.test(r.name) ? 3 : /dining/i.test(r.name) ? 4 : 5;
+    let bed = 1;
+    const out = rs.map((r, i) => ({r, i})).sort((a, c) => rank(a.r) - rank(c.r) || a.i - c.i).map(({r}) => {
+      let nm = r.name.replace(/^Living$/i, 'Living room').replace(/^Primary Bedroom$/i, 'Primary bedroom');
+      if(/^bedroom$/i.test(r.name)){ bed += 1; nm = 'Bedroom ' + bed; }
+      return [nm, r.size]; });
+    return out.slice(0, n);
+  };
+
+  /* Footer print checks (owner, 10/25/2026, every footer on every piece):
+     1. The agent's contact info never touches the bottom line: every line's box ends at least 0.5 pt above the card's
+        bottom edge (its rule); a line running onto the edge fails, and the card keeps at least 4 pt above the trim (the field edge on flyers).
+     2. The brokerage logo and contact are centered in their own space (the panel or band), within 1.5 pt,
+        whatever the agent's name. */
+  Ivory.footerChecks = function(){
+    const issues = [], PT = 96/72;
+    document.querySelectorAll('.cc[data-contactcard]').forEach(card => {
+      const k = card.getBoundingClientRect().height / card.offsetHeight || 1, r = card.getBoundingClientRect();
+      const toPt = px => px / k / PT;
+      const vis = e => !!(e.offsetParent || e.getClientRects().length);
+      let low = -1e9;
+      card.querySelectorAll('.cc-agent *, .cc-panel *').forEach(e => {
+        if(!vis(e) || ![...e.childNodes].some(c => c.nodeType === 3 && c.textContent.trim())) return;
+        const rg = document.createRange(); rg.selectNodeContents(e);
+        [...rg.getClientRects()].forEach(q => { if(q.width) low = Math.max(low, q.bottom); }); });
+      const gap = toPt(r.bottom - low);
+      if(low > -1e9 && gap < 0.5) issues.push({slot:'contact-card', kind:'footer-touches-bottom-line', gapPt:+gap.toFixed(2), detail:'contact text runs onto the card bottom'});
+      const sheet = card.closest('.sheet') || card.closest('.page');
+      if(sheet){ const sr = sheet.getBoundingClientRect(), field = document.querySelector('.field');
+        const edge = (document.body.dataset.mode === 'print' && field && field.getBoundingClientRect().bottom < sr.bottom) ? field.getBoundingClientRect().bottom : sr.bottom;
+        const g2 = toPt(edge - r.bottom);
+        if(g2 < 4) issues.push({slot:'contact-card', kind:'footer-too-close-to-edge', gapPt:+g2.toFixed(1)}); }
+      const panel = card.querySelector('.cc-panel');
+      if(panel && vis(panel)){
+        const pr = panel.getBoundingClientRect(), kids = [...panel.children].filter(vis);
+        if(kids.length){
+          const bx = kids.map(e => e.getBoundingClientRect());
+          // content box: the logo image's drawn box and each office line's text, not their full-width containers
+          const parts = [];
+          panel.querySelectorAll('img, .cc-office, .cc-lock, .cc-brkname').forEach(e => { if(!vis(e)) return;
+            if(e.tagName === 'IMG'){ parts.push(e.getBoundingClientRect()); return; }
+            const rg = document.createRange(); rg.selectNodeContents(e); [...rg.getClientRects()].forEach(q => q.width && parts.push(q)); });
+          const L = Math.min(...parts.map(q => q.left)), R = Math.max(...parts.map(q => q.right));
+          const T = Math.min(...bx.map(q => q.top)), B = Math.max(...bx.map(q => q.bottom));
+          const dx = toPt(((L - pr.left) - (pr.right - R)) / 2), dy = toPt(((T - pr.top) - (pr.bottom - B)) / 2);
+          if(Math.abs(dx) > 1.5 || Math.abs(dy) > 1.5) issues.push({slot:'contact-card', kind:'brokerage-not-centered', dxPt:+dx.toFixed(1), dyPt:+dy.toFixed(1)});
+        } }
     });
     return issues;
   };
@@ -271,7 +240,7 @@
   // Print checks, read by the renderer: overflow per slot, type under 8 pt (6 pt for fine print),
   // photos under 300 ppi at print size, empty or missing photos.
   Ivory.check = function(extra){
-    const issues = [...(extra||[]), ...Ivory.fontIssues];
+    const issues = [...(extra||[]), ...Ivory.fontIssues, ...(window.ContactCard ? ContactCard.check(document) : []), ...Ivory.footerChecks()];
     // rough-draft preview text and the preview plan never reach a paid or downloaded piece (10/25/2026)
     const PD = Ivory.data() || {};
     if(PD.preview) issues.push({slot:'copy', kind:'preview-text', detail:'rough-draft preview lines; the writer has not run'});
@@ -296,6 +265,16 @@
           issues.push({slot:name, kind:'underfilled', lines:rows.length, need, lastLine:Math.round(lastFill*100)+'%', detail:`write it out to ${need} full lines`});
       }
     });
+    // a brokerage logo never touches text (owner 10/26: the inside-top header logo ran into a long title). The drawn
+    // logo (image, or the typeset name) needs 3 pt clear of every line of text outside its own box.
+    const pad = 3*96/72, textRects = [];
+    document.querySelectorAll('[data-slot]').forEach(el=>{ if(el.closest('.logo') || !el.textContent.trim()) return;
+      const rg = document.createRange(); rg.selectNodeContents(el);
+      [...rg.getClientRects()].filter(r=>r.width > .5 && r.height > .5).forEach(r=>textRects.push({slot:el.dataset.slot, r})); });
+    document.querySelectorAll('.logo img, .logo .text').forEach(lg=>{ if(lg.closest('.card,[data-card]')) return;
+      const q = lg.getBoundingClientRect(); if(!q.width) return;
+      const hit = textRects.find(({r})=> r.left < q.right + pad && r.right > q.left - pad && r.top < q.bottom + pad && r.bottom > q.top - pad);
+      if(hit) issues.push({slot:hit.slot, kind:'logo-touches-text', detail:'the brokerage logo runs into this text'}); });
     // no photo twice in one piece unless the listing is short on photos
     const D = Ivory.data(), seen = {};
     document.querySelectorAll('.photo[data-photo]').forEach(el=>{ const id = el.dataset.photo; if(id) seen[id] = (seen[id]||0) + 1; });
@@ -312,7 +291,8 @@
       if(meta.roofCut) issues.push({slot:el.dataset.photo, kind:'roof-cut-in-original', detail:'pick a photo that shows the whole roof, or ask the agent for one'});
       // roofline: a full-house shot is pinned to its top; flag it when the frame is so much wider than the photo
       // that more than a quarter of the height comes off (the house itself, not just ground, would be cut)
-      if(el.dataset.fullhouse){
+      if(el.dataset.box === '0') issues.push({slot:el.dataset.photo, kind:'house-box-cut', detail:'the whole house does not fit this frame'});
+      if(el.dataset.fullhouse && !el.dataset.box){
         const fr = el.clientWidth/el.clientHeight, ir = img.naturalWidth/img.naturalHeight;
         const lost = fr > ir ? 1 - ir/fr : 0;
         if(lost > 0.25) issues.push({slot:el.dataset.photo, kind:'full-house-frame-too-wide', heightCropped:Math.round(lost*100)+'%'});
@@ -377,7 +357,7 @@
     window.brochureReady = spec.then(s => Ivory.applyFonts(D, s)).then(issues => {
       Ivory.fontIssues = issues;
       const cs = getComputedStyle(document.documentElement), d = cs.getPropertyValue('--font-display'), b = cs.getPropertyValue('--font-body');
-      return Promise.all([`400 10pt ${d}`, `400 10pt ${b}`, `600 10pt ${b}`, `700 10pt ${b}`].map(f => document.fonts.load(f)));
+      return Promise.all([`400 10pt ${d}`, `400 10pt ${b}`, `600 10pt ${b}`, `700 10pt ${b}`].map(f => document.fonts.load(f)).concat(Ivory.cardReady));
     }).then(fn, fn);
   };
 
@@ -393,17 +373,21 @@
        long     "Saturday, November 7"       weekday "Saturday"   monthDay "November 7"
        month    "November"  monthShort "Nov"  day "7"  (empty when the date isn't an ISO date; long then shows the raw text)
        time     "1:00 to 4:00 pm" (or openHouse.timeText as written)
-       note          openHouse.note (special notes: RSVP, door prize, co-op terms), agent-entered
+       note          openHouse.note (special notes: door prize, co-op terms), agent-entered; never an RSVP line (owner
+                     10/27/2026): any part of the note that asks for an RSVP is dropped
        refreshments  openHouse.refreshments, agent-entered
        Both lines show only on broker and REALTOR(R) opens and only when filled; a public open house shows date and time only.
        (openHouse.coop from the 10/19 drafts is read as the note when no note is set.)  */
+  // no RSVP on any open house flyer (owner 10/27/2026): drop each part of a note (split at · ; | or a sentence end) that asks for one
+  Ivory.noRSVP = s => { s = String(s||'').trim(); const ask = /\brsvp|r\.s\.v\.p|please reply|reply by\b/i; if(!ask.test(s)) return s;
+    return s.split(/\s*(?:[·;|•]|(?<=[.!?])\s)\s*/).filter(p => p && !ask.test(p)).join('  ·  ').trim(); };
   Ivory.openHouse = function(D){
     const O = D.openHouse || {}, A = D.agent || {};
     const kinds = {public:'Public Open House', broker:'Broker Open House', realtor:'REALTOR® Open House'};
     let kind = O.kind in kinds ? O.kind : 'public';
     if(kind==='realtor' && !A.nar) kind = 'broker';
     const r = {kind, label:kinds[kind], long:'', weekday:'', monthDay:'', month:'', monthShort:'', day:'', time:'', note:'', refreshments:''};
-    if(kind!=='public'){ r.note = String(O.note||O.coop||'').trim(); r.refreshments = String(O.refreshments||'').trim(); }
+    if(kind!=='public'){ r.note = Ivory.noRSVP(O.note||O.coop||''); r.refreshments = String(O.refreshments||'').trim(); }
     const dt = /^\d{4}-\d{2}-\d{2}$/.test(O.date||'') ? new Date(O.date+'T12:00:00') : null;
     if(dt && !isNaN(dt)){
       const f = o => dt.toLocaleDateString('en-US', o);

@@ -58,7 +58,7 @@ OHL.start(['600 10pt Lexend', '500 10pt Lexend', '400 10pt Lexend'], D => {
   h += `<div class="rbox" style="left:${X}pt;top:${by}pt;width:${W}pt;height:${bh}pt"></div>`;
   const an = Ivory.linesNeeded('addr', L.address, 270, 21);
   h += `<div class="abs addr" style="left:${X+20}pt;top:${by+14}pt;width:270pt;height:${an*21+4}pt;margin-top:8pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:${X+20}pt;top:${by+18+an*21}pt;width:270pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, [L.city, L.state].filter(Boolean).join(', ')].filter(Boolean).join(', '))}</div>`;
+  h += `<div class="abs place" style="left:${X+20}pt;top:${by+18+an*21}pt;width:270pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   // weekday as a small label, the month and day large, then the time
   if(E.weekday) h += `<div class="abs wd" style="left:${X+290}pt;top:${by+12}pt;width:${W-310}pt;height:12pt" data-slot="oh.weekday" data-lines="1">${esc(E.weekday)}</div>`;
   h += `<div class="abs date" style="left:${X+290}pt;top:${by+25}pt;width:${W-310}pt;height:27pt" data-fit="22,18" data-slot="oh.date" data-lines="1">${esc(E.weekday ? E.monthDay : E.long)}</div>`;

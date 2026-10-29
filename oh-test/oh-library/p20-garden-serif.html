@@ -57,7 +57,7 @@ OHL.start(['italic 700 10pt "Libre Baskerville"', '700 10pt "Libre Baskerville"'
   h += `<div class="abs" style="left:${X+312}pt;top:${y+4}pt;width:.9pt;height:52pt;background:var(--on-main);opacity:.4"></div>`;
   const an = Ivory.linesNeeded('addr', L.address, W - 330, 16);
   h += `<div class="abs addr" style="left:${X+326}pt;top:${y+4}pt;width:${W-330}pt;height:${an*16+3}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:${X+326}pt;top:${y+6+an*16}pt;width:${W-330}pt;height:13pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join(', '))}</div>`;
+  h += `<div class="abs place" style="left:${X+326}pt;top:${y+6+an*16}pt;width:${W-330}pt;height:13pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   h += `<div class="abs place" style="left:${X+326}pt;top:${y+20+an*16}pt;width:${W-330}pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, ' · '))}</div>`;
   y += 66;
   if(ev.h){ h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + y}pt`); y += ev.h + 8; }

@@ -1,0 +1,285 @@
+{
+ "title": "Houston Answer Book",
+ "lede": "The current build, all 7 versions (approved 10/28). Test design: not on the live site.",
+ "groups": [
+  {
+   "title": "Fold-over (11 x 17)",
+   "note": "Sample copy predates the 10/28 no-repeated-facts rule, so a few lines repeat the facts bar.",
+   "items": [
+    {
+     "id": "AB 32-plan",
+     "title": "3/2 with floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/32-plan-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/32-plan-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/32-plan-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/32-plan-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 32-plan-hs",
+     "title": "3/2 with floor plan, headshot",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/32-plan-hs-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/32-plan-hs-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/32-plan-hs-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/32-plan-hs-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 32-noplan",
+     "title": "3/2 no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/32-noplan-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/32-noplan-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/32-noplan-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/32-noplan-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 32-noplan-hs",
+     "title": "3/2 no floor plan, headshot",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/32-noplan-hs-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/32-noplan-hs-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/32-noplan-hs-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/32-noplan-hs-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 32-noclaim",
+     "title": "3/2 no big claim (Room Sizes table)",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/32-noclaim-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/32-noclaim-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/32-noclaim-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/32-noclaim-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 21-noplan",
+     "title": "2/1 no floor plan",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/21-noplan-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/21-noplan-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/21-noplan-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/21-noplan-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    },
+    {
+     "id": "AB 21-noplan-hs",
+     "title": "2/1 no floor plan, headshot",
+     "approved": true,
+     "images": [
+      {
+       "src": "img/21-noplan-hs-4-back.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/21-noplan-hs-1-front.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Cover"
+      },
+      {
+       "src": "img/21-noplan-hs-2-left.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside left"
+      },
+      {
+       "src": "img/21-noplan-hs-3-right.jpg",
+       "wh": [
+        1167,
+        1500
+       ],
+       "label": "Inside right"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

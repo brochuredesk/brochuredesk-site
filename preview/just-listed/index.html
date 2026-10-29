@@ -23,6 +23,9 @@
   .list{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
   .list button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 2px;font:600 13px Figtree,sans-serif;color:var(--ink);cursor:pointer}
   .list button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+  .list button.inrev{color:#8b8b8b;border-style:dashed}
+  .rev{display:inline-block;font:600 11px/1 Figtree,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#666;background:#ececec;border-radius:999px;padding:4px 8px;margin-left:10px;vertical-align:middle}
+  .rev[hidden]{display:none}
   .list button.needs::after{content:"•";color:#c08a2b;margin-left:2px}
   fieldset{border:0;padding:0;margin:0 0 14px}
   legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
@@ -81,7 +84,7 @@
 <body>
 <header>
   <h1>Just Listed postcards · test page</h1>
-  <p>Every approved design. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
+  <p>Every design, approved or still in review (a gray “In review” tag marks the ones the owner hasn’t approved yet; it never prints). Dashed buttons are designs whose 6 x 9 is in review. Add ?approved=1 to the address to see only approved ones. Pick a design, change the details on the left and the cards redraw. Not linked from the site.</p>
 </header>
 <main>
   <aside>
@@ -115,9 +118,8 @@
     </fieldset>
   </aside>
   <section class="view">
-    <div class="vtitle"><h2 id="t-name"></h2><span id="t-sub"></span></div>
+    <div class="vtitle"><h2 id="t-name"></h2><span class="rev" id="t-rev" hidden>In review</span><span id="t-sub"></span></div>
     <p class="note" id="t-note"></p>
-    <p class="draft" id="t-draft">This design's 6 x 11 isn't approved yet.</p>
     <p class="note">Click any text on a card to change its wording, font, color or size. The print checks run on your changes.</p>
     <div class="sides">
       <div class="side" data-side="front"><h3>Front</h3><div class="frame"><div class="host"></div></div><div class="checks"></div>
@@ -203,7 +205,7 @@
     const d = JSON.parse(JSON.stringify(data)); d.textEdits = JSON.parse(JSON.stringify(myEdits()));
     d.agent.headshot = $('hs').querySelector('[aria-pressed="true"]').dataset.v === '1' ? LIB + 'sample-headshot.jpg' : null;
     $('t-hs').textContent = d.agent.headshot ? '· with headshot' : '· no headshot';
-    $('t-draft').style.display = size() === '6x11' && (cur.no11 || /[?&]all=1/.test(location.search)) ? 'block' : 'none';
+    $('t-rev').hidden = spec.okOf(cur.id, size());
     getDesign(cur.file).then(t => Promise.all(['front','back'].map(side => {
       const el = document.querySelector(`.side[data-side="${side}"]`), host = el.querySelector('.host');
       el.querySelector('.frame').classList.toggle('wide', size() === '6x11');
@@ -270,13 +272,17 @@
   $('reset').onclick = () => { data = JSON.parse(JSON.stringify(sample)); fillForm(); render(); };
   let t; document.querySelectorAll('aside input, aside textarea').forEach(i => i.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 450); }));
   Promise.all([fetch(LIB + 'pieces.json').then(r => r.json()), fetch(LIB + 'sample.json').then(r => r.json())]).then(([s, smp]) => {
-    const all = /[?&]all=1/.test(location.search), ok = (id, sz) => { const ps = s.pieces.filter(p => p.design === id && p.size === sz); return ps.length && ps.every(p => p.approved); };
-    if(!all) s.designs = s.designs.filter(d => ok(d.id, '6x9'));
-    if(!all && !s.designs.some(d => ok(d.id, '6x11'))){ const b = $('size').querySelector('[data-v="6x11"]'); if(b) b.remove(); }
-    else if(!all) s.designs.forEach(d => { d.no11 = !ok(d.id, '6x11'); });
+    // every design, approved or in review (10/28): the In review tag is on the page only, never on the card; ?approved=1 shows only approved
+    const only = /[?&]approved=1/.test(location.search), ok = (id, sz) => { const ps = s.pieces.filter(p => p.design === id && p.size === sz); return !!ps.length && ps.every(p => p.approved); };
+    const has = (id, sz) => s.pieces.some(p => p.design === id && p.size === sz);
+    s.okOf = ok;
+    if(only) s.designs = s.designs.filter(d => ok(d.id, '6x9'));
+    s.designs.forEach(d => { d.no11 = !has(d.id, '6x11') || (only && !ok(d.id, '6x11')); });
+    if(!s.designs.some(d => !d.no11)){ const b = $('size').querySelector('[data-v="6x11"]'); if(b) b.remove(); }
     spec = s; sample = fix(smp); data = JSON.parse(JSON.stringify(sample)); fillForm();
     for(const d of spec.designs){ const b = document.createElement('button'); b.type = 'button'; b.dataset.id = d.id; b.textContent = d.id.replace('M','');
-      b.title = d.id + (d.title ? ' · ' + d.title : ''); b.onclick = () => pick(d.id);
+      b.title = d.id + (d.title ? ' · ' + d.title : '') + (ok(d.id, '6x9') ? '' : ' (in review)'); b.onclick = () => pick(d.id);
+      if(!ok(d.id, '6x9')) b.classList.add('inrev');
       $('list-' + d.group).appendChild(b); }
     const h = decodeURIComponent(location.hash.slice(1));
     pick(spec.designs.some(d => d.id === h) ? h : spec.designs[0].id);

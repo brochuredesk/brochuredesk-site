@@ -44,7 +44,7 @@ OHL.start(['700 10pt "Hanken Grotesk"', '600 10pt "Hanken Grotesk"', '500 10pt "
   h += `<div class="abs eyebrow" style="left:${X}pt;top:${y}pt;width:${W}pt;height:13pt">Please join us for a</div>`; y += 16;
   h += `<div class="abs hl" style="left:${X}pt;top:${y}pt;width:${W}pt;height:50pt" data-fit="46,26" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`; y += 54;
   h += `<div class="abs ink when" style="left:${X}pt;top:${y}pt;width:${W}pt;height:26pt" data-slot="oh.date" data-lines="1">${esc(E.long)}<span data-slot="oh.time" style="font-weight:500">${E.time ? '  ·  ' + esc(E.time) : ''}</span></div>`; y += 28;
-  h += `<div class="abs ink addr" style="left:${X}pt;top:${y}pt;width:${W}pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, L.neighborhood, L.city].filter(Boolean).join(', '))}</div>`; y += 24;
+  h += `<div class="abs ink addr" style="left:${X}pt;top:${y}pt;width:${W}pt;height:18pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join(', '))}</div>`; y += 24;
   const ev = Ivory.eventLines([[E.note,'oh.note','ink ev'],[E.refreshments,'oh.refreshments','ink ev']], X, y, W, 13, 2);
   h += ev.html; y += ev.h + (ev.h ? 8 : 0);
   // about this home, then rooms, then the agent; the house takes what is left

@@ -43,6 +43,8 @@
   let CFG = {base: '/designs/', test: false}, LIST = [], SPEC = {};
   const tplCache = {}, fontCache = {};
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+  // the small tag on a flyer that isn't approved: "test", or the page's own word (the all-pieces test page says "In review")
+  const testTag = () => ' <span class="oh-test' + (CFG.testLabel ? ' oh-rev' : '') + '">' + esc(CFG.testLabel || 'test') + '</span>';
   const key = e => e.design + '/' + e.piece;
   const clone = o => JSON.parse(JSON.stringify(o));
 
@@ -173,7 +175,7 @@
     if(!cur){ el.innerHTML = '<p class="oh-note">No Open House design is ready for this listing yet.</p>'; return; }
     const rec = cur.recommended, more = options(pkg).length > 1;
     el.innerHTML = `<div class="oh-card">
-        <p class="oh-badge${rec ? '' : ' alt'}">${rec ? 'Recommended with your design' : `You picked the ${esc(cur.name)} flyer`}${cur.test ? ' <span class="oh-test">test</span>' : ''} ${favBtn('pieces', key(cur), cur.name)}</p>
+        <p class="oh-badge${rec ? '' : ' alt'}">${rec ? 'Recommended with your design' : `You picked the ${esc(cur.name)} flyer`}${cur.test ? testTag() : ''} ${favBtn('pieces', key(cur), cur.name)}</p>
         <div class="oh-box oh-proofbox"></div>
         ${photoChoice(pkg)}
         <p class="oh-fontnote" hidden></p>
@@ -218,7 +220,7 @@
     dlg.innerHTML = `<div class="oh-sheet-head"><h2>Open House designs</h2><label class="oh-favonly"><input type="checkbox"> Favorites only</label><button type="button" class="oh-x" aria-label="Close">×</button></div>
       <p class="oh-sub">Each one is drawn with your photos, address and contact card. Pick one and it goes with this listing. The rest of your package stays the same.</p>
       <div class="oh-grid">${options(pkg).map(e => `<div class="oh-optwrap" data-k="${esc(key(e))}"><button type="button" class="oh-opt${cur && key(cur) === key(e) ? ' on' : ''}" data-k="${esc(key(e))}">
-          <div class="oh-box"></div><span class="oh-name">${esc(e.name)}${e.test ? ' <span class="oh-test">test</span>' : ''}</span>
+          <div class="oh-box"></div><span class="oh-name">${esc(e.name)}${e.test ? testTag() : ''}</span>
           ${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}${cur && key(cur) === key(e) ? '<span class="oh-cur">Your flyer now</span>' : ''}
           <span class="oh-why" hidden></span></button>${favBtn('pieces', key(e), e.name)}</div>`).join('')}</div>
       <p class="oh-note oh-favnone" hidden>No favorites yet. Tap the heart on any design to save it here for next time.</p>`;
@@ -297,7 +299,7 @@
           <label>Are refreshments being served?<select name="rtype">${RTYPES.map(([v, t]) => `<option value="${v}"${(O.refreshmentType || '') === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
           <label class="oh-rtext">What you're serving <span class="oh-opt-l">optional</span><input type="text" name="refreshments" maxlength="${LIMITS.refreshments}" value="${esc(O.refreshments || '')}" placeholder="Catered lunch and iced tea"></label>
           <fieldset class="oh-food" hidden><legend>Pick a food photo <span class="oh-opt-l">for flyers that show one</span></legend><div class="oh-foodgrid"></div></fieldset>
-          <label>Special notes <span class="oh-opt-l">optional</span><input type="text" name="note" maxlength="${LIMITS.note}" value="${esc(O.note || '')}" placeholder="RSVP, door prize, co-op terms"></label>
+          <label>Special notes <span class="oh-opt-l">optional</span><input type="text" name="note" maxlength="${LIMITS.note}" value="${esc(O.note || '')}" placeholder="Door prize, co-op terms"></label>
           <p class="oh-hint">Left blank, a line simply doesn't appear on the flyer.</p></div>
         <div class="oh-actions"><button type="submit" class="oh-btn">Download flyer</button>
           ${hooks.printer ? '<button type="button" class="oh-btn line" data-a="printer">Send to my printer</button>' : ''}</div>
@@ -353,7 +355,7 @@
       el.querySelector('.oh-extra').hidden = form.elements.kind.value === 'public';
       foodGrid();
       const badge = el.querySelector('.oh-main .oh-badge');
-      badge.innerHTML = (shown.recommended ? 'Recommended with your design' : `${esc(shown.name)}${shown.test ? ' <span class="oh-test">test</span>' : ''}`) + ' ' + favBtn('pieces', key(shown), shown.name);
+      badge.innerHTML = (shown.recommended ? 'Recommended with your design' : `${esc(shown.name)}${shown.test ? testTag() : ''}`) + ' ' + favBtn('pieces', key(shown), shown.name);
       draw(main, p, shown).ready.then(r => {
         if(!r) return;
         const n = el.querySelector('.oh-main .oh-fontnote'); n.textContent = r.fontNote; n.hidden = !r.fontNote;
@@ -364,7 +366,7 @@
       if(grid.dataset.k !== alts.map(key).join()){
         grid.dataset.k = alts.map(key).join();
         grid.innerHTML = alts.map(e => `<div class="oh-optwrap"><button type="button" class="oh-opt" data-k="${esc(key(e))}"><div class="oh-box"></div>
-          <span class="oh-name">${esc(e.name)}${e.test ? ' <span class="oh-test">test</span>' : ''}</span>${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}<span class="oh-why" hidden></span></button>${favBtn('pieces', key(e), e.name)}</div>`).join('');
+          <span class="oh-name">${esc(e.name)}${e.test ? testTag() : ''}</span>${e.recommended ? '<span class="oh-rec">Recommended with your design</span>' : ''}<span class="oh-why" hidden></span></button>${favBtn('pieces', key(e), e.name)}</div>`).join('');
       }
       const by = Object.fromEntries(alts.map(e => [key(e), e]));
       grid.querySelectorAll('.oh-opt').forEach(b => draw(b.querySelector('.oh-box'), p, by[b.dataset.k]).ready.then(r => {
@@ -410,6 +412,7 @@
 .oh-badge{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--a);margin:0 0 10px}
 .oh-badge.alt{color:var(--i)}
 .oh-test{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:#f3e3b8;color:#5b4310;border-radius:3px;padding:1px 5px;vertical-align:middle}
+.oh-test.oh-rev{background:#ececec;color:#666}
 .oh-links{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 0}
 .oh-photo{border:0;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .oh-photo legend{font-size:14px;font-weight:700;margin-bottom:6px;padding:0}

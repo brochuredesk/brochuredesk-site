@@ -1,0 +1,784 @@
+{
+ "title": "Two-sided 8.5 x 11 flyers",
+ "lede": "SF-IVORY and the extras library, front and back, from the design canvas (2614 Calder Street sample).",
+ "groups": [
+  {
+   "title": "Set flyers",
+   "note": "",
+   "items": [
+    {
+     "id": "SF-IVORY",
+     "title": "Ivory set flyer, no floor plan",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/Main.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/SF-IVORY-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/SF-IVORY-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "SF-IVORY-PLAN",
+     "title": "Ivory set flyer, floor plan on the back",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/Main.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/SF-IVORY-back-plan.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/SF-IVORY-back-plan-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "title": "Extras library",
+   "note": "Agent-photo versions are shown where a board has one (the boards changed in Review 3 and FX11 onward; the others get theirs at final placement).",
+   "items": [
+    {
+     "id": "FX01",
+     "title": "Extras flyer FX01 (from JL-S12)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX01-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX01-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX02",
+     "title": "Extras flyer FX02 (from JL-S25)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX02-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX02-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX03",
+     "title": "Extras flyer FX03 (from JL-S41)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX03-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX03-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX03-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX04",
+     "title": "Extras flyer FX04 (from JS-S09)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX04-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX04-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX05",
+     "title": "Extras flyer FX05 (from JS-S38)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX05-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX05-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX05-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX06",
+     "title": "Extras flyer FX06 (from JL-S07)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX06-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX06-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX06-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX07",
+     "title": "Extras flyer FX07 (from JL-S20)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX07-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX07-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX08",
+     "title": "Extras flyer FX08 (from JS-S40)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX08-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX08-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX09",
+     "title": "Extras flyer FX09 (new design)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX09-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX09-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      }
+     ]
+    },
+    {
+     "id": "FX10",
+     "title": "Extras flyer FX10 (from JS-S02)",
+     "approved": true,
+     "review": [],
+     "images": [
+      {
+       "src": "img/FX10-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX10-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX10-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX11",
+     "title": "Extras flyer FX11",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX11-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX11-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX11-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX11-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX12",
+     "title": "Extras flyer FX12",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX12-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX12-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX12-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX12-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX13",
+     "title": "Extras flyer FX13",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX13-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX13-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX13-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX13-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX14",
+     "title": "Extras flyer FX14",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX14-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX14-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX14-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX14-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX15",
+     "title": "Extras flyer FX15",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX15-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX15-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX15-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX15-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX16",
+     "title": "Extras flyer FX16",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX16-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX16-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX16-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX16-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX17",
+     "title": "Extras flyer FX17",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX17-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX17-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX17-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX17-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX18",
+     "title": "Extras flyer FX18",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX18-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX18-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX18-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX18-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX19",
+     "title": "Extras flyer FX19",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX19-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX19-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX19-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX19-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    },
+    {
+     "id": "FX20",
+     "title": "Extras flyer FX20",
+     "approved": false,
+     "review": [
+      "front",
+      "back"
+     ],
+     "images": [
+      {
+       "src": "img/FX20-front.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front"
+      },
+      {
+       "src": "img/FX20-back.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back"
+      },
+      {
+       "src": "img/FX20-front-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Front \u00b7 agent photo"
+      },
+      {
+       "src": "img/FX20-back-headshot.jpg",
+       "wh": [
+        1082,
+        1400
+       ],
+       "label": "Back \u00b7 agent photo"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

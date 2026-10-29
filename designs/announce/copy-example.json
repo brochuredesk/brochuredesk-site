@@ -94,14 +94,14 @@
    "offersOk": false,
    "overAsking": false,
    "ctaHead": "Thinking about selling?",
-   "cta": "Call or text me for a free home value estimate and a plan for your home.",
-   "ctaShort": "Call or text for a free home value estimate.",
+   "cta": "Curious what your home is worth in today's market? Let's set a time to talk.",
+   "ctaShort": "Call today to schedule a private home consultation.",
    "ctaNext": "Your home could be next.",
    "master": [
     "I just helped sell 2614 Calder Street.",
-    "If you've wondered what your home would sell for today, I'd be glad to put together a free estimate based on recent sales near you.",
+    "If you've wondered what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them.",
     "I'll walk you through it in person, along with a plan for pricing, prep and marketing.",
-    "There's no cost and no pressure to list.",
+    "There's no cost and no obligation to list.",
     "Call or text me any time."
    ],
    "drop": [
@@ -109,7 +109,7 @@
     4,
     5
    ],
-   "letter": "I just helped sell the home at 2614 Calder Street. If you've been wondering what your home would sell for today, I'd be glad to put together a free estimate and walk you through it. There's no cost and no pressure to list. When you're ready, call or text me.",
+   "letter": "I just helped sell the home at 2614 Calder Street. If you've been wondering what your home would sell for today, I'd be glad to pull recent sales near you and walk you through them. There's no cost and no obligation to list. When you're ready, call or text me.",
    "offerList": [
     "Go over recent sales near you",
     "Walk through your house with you",
@@ -119,9 +119,9 @@
    ],
    "listLabel": "Here's how I'd start",
    "nohsLines": [
-    "Free home value estimate",
     "Recent sales near you",
-    "No pressure to list"
+    "A plan before you list",
+    "No obligation to list"
    ],
    "quote": null
   }

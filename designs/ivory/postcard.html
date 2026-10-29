@@ -6,31 +6,60 @@
 <link rel="stylesheet" href="ivory.css">
 <script src="ivory.js"></script>
 <!--
-  Ivory design · Just Listed and Just Sold postcards. data.piece.card = "listed" (default) | "sold",
+  Ivory design · Just Listed and Just Sold postcards, postcard-standard layout (the owner picked the markup-page designs,
+  10/25/2026 A09 round 2; spec designs/src/ivory-postcards/ivcards.py). data.piece.card = "listed" (default) | "sold",
   data.piece.size = "6x11" (trim 792 x 432 pt) or "6x9" (648 x 432 pt), data.piece.side = "front" | "back".
-  The 6x9 reflows the 6x11: narrower photos and fewer where needed, never smaller type.
-  Just Listed copy: data.companion.postcard. Just Sold copy: data.companion.sold (heading, lede, label, notes, photos),
-  all from the writer. Neither card has a price slot, a sale price, days on market or a "sold for" line. Print mode adds 0.125 in bleed on every edge (TrimBox set by the renderer).
-  The back's right half is the mail vendor's address and postage zone, drawn from data.mailVendor;
-  until a vendor is chosen it is a provisional box.
+
+  Front: the status ("Just Listed" / "Just Sold") in big Playfair with the brokerage logo (the side's one logo), a rule,
+  a whole-house photo with a supporting column (two captioned interiors, or the sold note), then a bottom band: address and
+  facts with "Presented by" (listed), or the call to action with the agent (sold).
+  Back: status line, photos that never repeat the front, the write-up (listed) or the steps list (sold), a rule, then the
+  shared Right panel contact card (templates/_shared/agentcard.js, band preset), which carries the back's one logo. On the
+  6 x 11 Just Listed back the MLS room sizes sit beside the card; when the card needs that width (a headshot, a long
+  name) they move up beside the write-up instead, so nothing collides.
+  The right 289.5 pt (4.02 in) is the mail vendor's panel: return address, postage and address zones from data.mailVendor;
+  until one is chosen they are drawn as guides on proofs and left clear in print.
+
+  Copy: Just Listed data.companion.postcard {eyebrow, master: [sentences, most important first], drop: [1-based sentence
+  numbers in the order they give way], captions: {photoId: the front's one-line room detail, e.g. 'Marble-look counters,
+  seats three'; else the photo's tags}, notes}; Just Sold data.companion.sold {lead, steps, stepsLabel, call, cta, ctaSub}.
+  No price, no QR, no "virtually staged", no sale price or days on market. Print mode adds 0.125 in bleed (TrimBox set by
+  the renderer).
 -->
 <style>
-  .eyebrow{left:27pt;top:22pt;font-size:8pt}
-  .address{left:26pt;top:33pt;font-size:24pt;line-height:29pt;height:29pt}
-  .hdr-logo{right:27pt;top:23pt;height:28pt;width:160pt}
-  .hdr-logo[data-shape=square],.hdr-logo[data-shape=tall]{top:18pt;height:40pt}
-  .placeline{left:27pt;height:9pt}
-  .factline{left:27pt;font:700 10pt/12pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden;height:12pt}
-  .notes-lbl{font-size:8pt;letter-spacing:1.2pt}
-  .vendor{position:absolute;border:.6pt dashed rgba(0,0,0,.28)}
-  .vendor .vlbl{position:absolute;left:12pt;top:12pt;font:600 6.5pt/1 var(--font-body);letter-spacing:1.3pt;text-transform:uppercase;color:var(--accent)}
-  .vendor .vnote{position:absolute;left:12pt;top:24pt;font-size:7pt;line-height:9pt;color:var(--muted)}
-  .vendor .stamp{position:absolute;border:.6pt solid rgba(0,0,0,.28);font:600 5.5pt/1 var(--font-body);letter-spacing:1pt;color:var(--muted);display:flex;align-items:center;justify-content:center;text-transform:uppercase}
-  .vendor .aline{position:absolute;height:.5pt;background:rgba(0,0,0,.2)}
-  .vendor .vfoot{position:absolute;left:12pt;bottom:10pt;font-size:6pt;line-height:7.5pt;color:var(--muted)}
-  .sold-tag{padding:0 9pt;height:20pt;display:flex;align-items:center;background:var(--accent);color:#fff;font:700 9pt/1 var(--font-body);letter-spacing:2.4pt;text-transform:uppercase;white-space:nowrap}
-  .sold-head{font-size:19pt;line-height:23pt;white-space:normal}
-  .fine{font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
+  .pc-head{font-family:var(--font-display);font-weight:400;color:var(--accent);white-space:nowrap;overflow:hidden;letter-spacing:-.4pt}
+  .pc-logo{position:absolute;display:flex;align-items:center;justify-content:flex-end}
+  .pc-logo img{max-width:100%;max-height:100%;width:auto;height:auto}
+  .pc-logo .text{font-family:var(--font-display);font-size:22pt;color:var(--ink);white-space:nowrap}
+  .pc-rule{position:absolute;height:1.1pt;background:var(--accent)}
+  .pc-cap{font:600 9.4pt/11pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+  .pc-cap span{font-weight:400;color:var(--muted)}
+  .pc-addr{font-family:var(--font-display);font-weight:400;color:var(--ink);white-space:nowrap;overflow:hidden}
+  .pc-facts{font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden}
+  .pc-sep{color:var(--accent);opacity:.55;padding:0 .35em}
+  .pc-lbl{font:600 8pt/1 var(--font-body);letter-spacing:1.95pt;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden}
+  .pc-center{text-align:center}
+  .pc-status{display:flex;align-items:center;white-space:nowrap;overflow:hidden}
+  .pc-status .st{font:700 12.75pt/1 var(--font-body);letter-spacing:2.1pt;color:var(--accent);text-transform:uppercase}
+  .pc-status .ln{flex:1;height:1.1pt;background:var(--accent);opacity:.35;margin:0 10.5pt;min-width:20pt}
+  .pc-status .ad{font:500 12.75pt/1 var(--font-body);letter-spacing:2.25pt;color:var(--ink);opacity:.65;text-transform:uppercase}
+  .pc-bcap .n{font:600 9.4pt/11pt var(--font-body);color:var(--ink);white-space:nowrap;overflow:hidden}
+  .pc-bcap .d{font:400 8.6pt/12pt var(--font-body);color:var(--muted)}
+  .pc-about{font:400 9.75pt/15.1pt var(--font-body);color:var(--ink);overflow:hidden}
+  .pc-steps{color:var(--ink);overflow:hidden}
+  .pc-steps .it{display:flex;gap:7.5pt;align-items:baseline}
+  .pc-steps .bx{width:4.5pt;height:4.5pt;background:var(--accent);flex:none;transform:translateY(-1.5pt)}
+  .pc-rooms{overflow:hidden}
+  .pc-rooms .r{display:flex;justify-content:space-between;gap:9pt;font:400 9pt/13.5pt var(--font-body);color:var(--ink);white-space:nowrap}
+  .pc-rooms .r b{font-weight:600}
+  .pc-hair{position:absolute;height:.75pt;background:var(--accent);opacity:.5}
+  .pc-disc{font-size:6pt;line-height:7.5pt;color:var(--ink);opacity:.75;overflow:hidden}
+  .mail{position:absolute;top:0;background:#fbfaf7;border-left:.75pt solid var(--line)}
+  .mail .ret{position:absolute;font:400 6.4pt/8pt var(--font-body);color:#444}
+  .mail .ret b{font-weight:600;letter-spacing:.45pt;text-transform:uppercase}
+  .mail .guide{position:absolute;font:600 6pt/1.4 var(--font-body);letter-spacing:.45pt;color:#9a958b;text-transform:uppercase}
+  .mail .stamp{border:.75pt dashed #b9b4aa;text-align:center;padding-top:13pt}
+  .mail .aline{position:absolute;height:.75pt;background:#d9d5cc}
 </style>
 </head>
 <body data-mode="email">
@@ -40,83 +69,154 @@
 Ivory.whenFonts(function(){
   const D = Ivory.data();
   if(!D.listing){ document.getElementById('pages').innerHTML='<p style="color:#fff;padding:20pt">No data injected.</p>'; return; }
-  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{};
+  const esc = Ivory.esc, b = D.brand||{}, L = D.listing, C = D.companion||{}, A = D.agent||{};
   const sold = D.piece.card === 'sold', PC = (sold ? C.sold : C.postcard) || {};
   document.body.dataset.mode = D.mode||'email';
   Ivory.applyBrand(b);
-  const big = D.piece.size === '6x11';
+  const big = D.piece.size === '6x11', front = D.piece.side === 'front';
   const W = big ? 792 : 648, H = 432;
+  const P = D.photos || {};
+  const pending = !!D.copyPending;
+
+  // ---------- photos ----------
+  // hero frame: whole-house exterior. A photo with a house box (photo.box = [x0, y0, x1, y1], fractions of the photo)
+  // is placed so the whole box stays in frame (claude/just-listed-crop-rule.md); one without a box is pinned to its top.
+  const M = 27, top = 106.5, phH = 217.5, col = big ? 270 : 189, heroW = W - 2*M - col - 13.5, cx = M + heroW + 13.5;
   const ids = Ivory.photoOrder(D);
-  const pick = (PC.photos && PC.photos.length>=5) ? PC.photos.slice() : [ids[0], ids[1], ids[2], ids[5]||ids[3], ids[6]||ids[4]];
-  // the hero frame is wide: a full-house shot that would lose more than a quarter of its height (roofline) is swapped
-  // for the next photo that fits, so the house is never cut off
-  { const fr = (big ? 480 : 392) / 272, P = D.photos || {};
-    const fits = id => { const p = P[id] || {}; return id && (!Ivory.fullHouse(D, id) || !(p.w && p.h) || 1 - (p.w/p.h)/fr <= 0.25); };
-    if(!fits(pick[0])){ const alt = ids.find(id => fits(id) && !pick.slice(1).includes(id) && Ivory.fullHouse(D, id)) || ids.find(id => fits(id) && !pick.includes(id)); if(alt) pick[0] = alt; }
-    // the smaller slots are wider still; a whole-house shot goes only in the hero
-    for(let i = 1; i < pick.length; i++) if(Ivory.fullHouse(D, pick[i])){ const alt = ids.find(id => !pick.includes(id) && !Ivory.fullHouse(D, id)); if(alt) pick[i] = alt; } }
+  const house = id => Ivory.fullHouse(D, id);
+  const boxPos = (id, w, h) => {   // spec house_pos: center the box, clamp to the photo
+    const p = P[id] || {}, bx = p.box; if(!bx || !(p.w && p.h)) return null;
+    const a = p.w/p.h, AR = w/h, vx = AR >= a ? 1 : AR/a, vy = AR >= a ? a/AR : 1;   // a photo, AR frame
+    const axis = (lo, hi, v) => { if(v >= 0.999) return 50; const s = Math.min(Math.max((lo+hi)/2 - v/2, 0), 1 - v); return s/(1 - v)*100; };
+    return {pos: `${axis(bx[0], bx[2], vx).toFixed(1)}% ${axis(bx[1], bx[3], vy).toFixed(1)}%`, fits: bx[2]-bx[0] <= vx + .005 && bx[3]-bx[1] <= vy + .005};
+  };
+  const fitsHero = id => { if(!id) return false; const p = P[id] || {};
+    const bp = boxPos(id, heroW, phH); if(bp) return bp.fits;
+    return !house(id) || !(p.w && p.h) || 1 - (p.w/p.h)/(heroW/phH) <= 0.25; };
+  const firstPick = (C.postcard && C.postcard.photos && C.postcard.photos[0]) || ids[0];
+  const hero = (house(firstPick) && fitsHero(firstPick)) ? firstPick : ids.find(id => house(id) && fitsHero(id)) || ids.find(fitsHero) || ids[0];
+  const ph = (id, x, y, w, h, isHero) => {
+    const bp = isHero ? boxPos(id, w, h) : null;
+    let html = Ivory.photo(D, '', id, `left:${x}pt;top:${y}pt;width:${w}pt;height:${h}pt`);
+    if(bp) html = html.replace('class="photo ', `data-box="${bp.fits ? 1 : 0}" class="photo `).replace(/(<img [^>]*style=")[^"]*"/, `$1object-position:${bp.pos}"`);
+    return html;
+  };
+  // interiors (never a whole-house shot, never the hero): kitchen and living room on the front, the next rooms on the back
+  const want = (PC.photos || []).filter(id => id !== hero && Ivory.src(D, id) && !house(id));
+  const inner = want.concat(ids.filter(id => id !== hero && !house(id) && !want.includes(id)));
+  const roomOrder = sold ? ['kitchen','living','primary','openplan','nook'] : ['kitchen','living','primary','patio','nook'];
+  const ordered = [...new Set(roomOrder.filter(r => inner.includes(r)).concat(inner))];
+  const frontIds = sold ? [] : ordered.slice(0, 2);
+  const backPool = ordered.filter(id => !frontIds.includes(id));
+  const cap = id => Ivory.caption(D, id);
+
+  const statusWord = sold ? 'Just Sold' : 'Just Listed';
+  const city = Ivory.place(L);
+  const facts = [];
+  if(L.beds) facts.push(`${L.beds} Bed${L.beds == 1 ? '' : 's'}`);
+  if(L.baths) facts.push(`${L.baths} Bath${L.baths == 1 ? '' : 's'}`);
+  if(L.halfBaths) facts.push(`${L.halfBaths} Half Bath${L.halfBaths == 1 ? '' : 's'}`);
+  if(L.sqft) facts.push(`${Number(L.sqft).toLocaleString('en-US')} Sq Ft`);
+  const factsHTML = facts.map(esc).join('<span class="pc-sep">|</span>');
+  const fine = [C.fineprint || 'Information deemed reliable but not guaranteed.',
+                'If your property is currently listed with a broker, please disregard this notice. It is not intended to solicit listed property.'].join(' ');
+  const name = A.name || '';
   let h = '';
 
-  if(D.piece.side === 'front' && sold){
-    // Just Sold: hero with a SOLD tag, one captioned photo and the writer's short sold note on the right
-    const heroW = big ? 480 : 392, colX = 27 + heroW + 12, colW = W - 27 - colX;
-    h += `<div class="abs label eyebrow" style="width:${W-260}pt" data-slot="eyebrow" data-lines="1">${esc(PC.eyebrow || 'Just sold')}</div>`;
-    h += `<div class="abs display address" style="width:${W-27-27-180}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-    h += Ivory.logo(b, 'hdr-logo');
-    h += Ivory.fullRule(D, W, 70);
-    h += Ivory.photo(D, '', pick[0], `left:27pt;top:82pt;width:${heroW}pt;height:272pt`);
-    h += `<div class="abs sold-tag" style="left:27pt;top:334pt" data-slot="sold.tag" data-lines="1">Sold</div>`;
-    h += Ivory.photo(D, '', pick[1], `left:${colX}pt;top:82pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[1], colX, 190, colW, 'stack0');
-    h += `<div class="hair" style="left:${colX}pt;top:226pt;width:${colW}pt"></div>`;
-    // the heading takes one to three lines (never shrunk; a fourth is flagged) and the note follows it,
-    // (6 pt of room under the last line: tall-lettered picker fonts reach below a 23 pt line)
-    // with as many lines as fit above the place line (5 at most)
-    const pending = D.copyPending || !PC.heading;
-    const hn = pending ? 2 : Math.min(3, Ivory.linesNeeded('display sold-head', PC.heading, colW, 23));
-    h += pending ? Ivory.ghost(colX, 238, colW, 2, 23)
-       : `<div class="abs display sold-head" style="left:${colX}pt;top:238pt;width:${colW}pt;height:${hn*23+6}pt" data-slot="sold.heading" data-lines="3">${esc(PC.heading)}</div>`;
-    const ledeY = 238 + hn*23 + 8;
-    h += Ivory.text(D, PC.lede, colX, ledeY, colW, Math.min(5, Math.floor((360 - ledeY)/11)), 11, 8.5, 'sold.lede');
-    h += `<div class="abs place placeline" style="top:370pt;width:${W-54}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
-    h += `<div class="abs factline" style="top:386pt;width:${W-54}pt" data-slot="facts" data-lines="1">${esc(Ivory.facts(L).join('  /  '))}</div>`;
-  } else if(D.piece.side === 'front'){
-    const heroW = big ? 480 : 392, colX = 27 + heroW + 12, colW = W - 27 - colX;
-    h += `<div class="abs label eyebrow" style="width:${W-260}pt" data-slot="eyebrow" data-lines="1">${esc(PC.eyebrow || 'Just listed')}</div>`;
-    h += `<div class="abs display address" style="width:${W-27-27-180}pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-    h += Ivory.logo(b, 'hdr-logo');
-    h += Ivory.fullRule(D, W, 70);
-    h += Ivory.photo(D, '', pick[0], `left:27pt;top:82pt;width:${heroW}pt;height:272pt`);
-    h += Ivory.photo(D, '', pick[1], `left:${colX}pt;top:82pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[1], colX, 190, colW, 'stack0');
-    h += Ivory.photo(D, '', pick[2], `left:${colX}pt;top:218pt;width:${colW}pt;height:104pt`) + Ivory.captionHTML(D, pick[2], colX, 326, colW, 'stack1');
-    h += `<div class="abs place placeline" style="top:370pt;width:${W-54}pt" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
-    h += `<div class="abs factline" style="top:386pt;width:${W-54}pt" data-slot="facts" data-lines="1">${esc(Ivory.facts(L).join('  /  '))}</div>`;
+  if(front){
+    // ---------- front ----------
+    h += `<div class="abs pc-head" style="left:${M}pt;top:12pt;width:${W - 2*M - 210}pt;height:72pt;font-size:63pt;line-height:72pt" data-slot="status" data-lines="1">${esc(statusWord)}</div>`;
+    h += `<div class="pc-logo logo" style="right:${M}pt;top:22.5pt;width:195pt;height:58.5pt">${b.logo ? `<img src="${esc(b.logo)}" alt="">` : `<span class="text">${esc(b.brokerage||'')}</span>`}</div>`;
+    h += `<div class="pc-rule" style="left:${M}pt;top:93pt;width:${W - 2*M}pt"></div>`;
+    h += ph(hero, M, top, heroW, phH, true);
+    const by = top + phH + (big ? 16.5 : 12);
+    if(!sold){
+      // two interiors, each with a one-line caption
+      const sh = 91, y1 = top + phH - sh - 13.5;
+      frontIds.forEach((id, k) => {
+        const y = k ? y1 : top, c = Object.assign({}, cap(id), (PC.captions || {})[id] ? {detail: PC.captions[id]} : {}), cy = k ? top + phH - 9.75 : top + sh + 4.5;
+        h += ph(id, cx, y, col, sh);
+        h += `<div class="abs pc-cap" style="left:${cx}pt;top:${cy}pt;width:${col}pt;height:11pt" data-slot="front${k}.caption" data-lines="1" data-shorten="1">${esc(c.name)}${c.detail ? `<span> · ${esc(c.detail)}</span>` : ''}</div>`;
+      });
+      h += `<div class="abs pc-addr" style="left:${M}pt;top:${by}pt;width:${heroW}pt;height:${big ? 41 : 32}pt;font-size:${big ? 39 : 30}pt;line-height:${big ? 41 : 32}pt" data-slot="address" data-lines="1" data-fitw="21">${esc(L.address)}</div>`;
+      h += `<div class="abs pc-facts" style="left:${M}pt;top:${by + (big ? 48 : 38)}pt;width:${heroW}pt;height:${big ? 19 : 17}pt;font-size:${big ? 15.75 : 13.5}pt;line-height:${big ? 19 : 17}pt" data-slot="facts" data-lines="1">${esc(city)}<span class="pc-sep">|</span>${factsHTML}</div>`;
+      // "Presented by": 6 x 11 as designed; 6 x 9 a little bigger, centered between the caption and the card bottom (10/25)
+      const s = big ? {lbl: 9, nm: 24, phn: 16.5} : {lbl: 8.5, nm: 21, phn: 14};
+      h += `<div class="abs pc-center" id="presented" data-center="${big ? 0 : 1}" style="left:${cx}pt;top:${by + 3}pt;width:${col}pt">
+          <div class="pc-lbl" style="font-size:${s.lbl}pt;line-height:${s.lbl + 1}pt;height:${s.lbl + 1}pt" data-slot="presented.label" data-lines="1">Presented by</div>
+          <div class="display" style="font-size:${s.nm}pt;line-height:${s.nm*1.15}pt;height:${s.nm*1.15}pt;margin-top:4pt" data-slot="agent.name" data-lines="1" data-fitw="15">${esc(name)}</div>
+          <div style="font:400 ${s.phn}pt/${s.phn*1.2}pt var(--font-body);color:var(--ink);letter-spacing:.3pt;margin-top:3pt;white-space:nowrap;overflow:hidden" data-slot="agent.phone" data-lines="1">${esc(A.phone||'')}</div></div>`;
+    } else {
+      // the sold column: address, city, a rule and the agent's note; the note grows (never shrinks) to fill the column
+      const lf = big ? 12.4 : 10.9, lmax = big ? 16.9 : 15.4;
+      const lead = PC.lead || `I just helped sell ${L.address}. If you've been thinking about selling, I'm glad to tell you what your home could bring in today's market. I can walk you through recent sales near you, too.${big ? " Ask me what buyers liked about this home." : ''}`;
+      h += `<div class="abs" id="soldcol" style="left:${cx}pt;top:${top - 1.5}pt;width:${col}pt;height:${phH + 1.5}pt;display:flex;flex-direction:column;justify-content:space-between">
+          <div><div class="pc-lbl" style="font-size:8.25pt;height:9pt">Recently sold</div>
+          <div class="display" style="font-size:22.5pt;line-height:25.2pt;height:25.2pt;margin-top:7.5pt" data-slot="address" data-lines="1" data-fitw="16.5">${esc(L.address)}</div>
+          <div class="place" style="font-size:9.75pt;line-height:11pt;height:11pt;letter-spacing:1.65pt;margin-top:6pt" data-slot="place" data-lines="1">${esc(city)}</div>
+          <div style="height:1.1pt;background:var(--accent);opacity:.35;margin-top:12pt"></div></div>
+          ${pending ? `<div style="position:relative;height:110pt">${Ivory.ghost(0, 10, col, 6, 18)}</div>` :
+          `<div id="soldlead" data-grow="${lmax}" data-slot="sold.lead" style="font:400 ${lf}pt/1.48 var(--font-body);color:var(--ink);margin:9pt 0 -.3em">${esc(lead)}</div>`}</div>`;
+      h += `<div class="abs display" style="left:${M}pt;top:${by + 4.5}pt;width:${heroW}pt;height:31pt;font-size:27pt;line-height:31pt;color:var(--accent)" data-slot="sold.cta" data-lines="1" data-fitw="19.5">${esc(PC.cta || 'Thinking of selling? Let’s talk.')}</div>`;
+      h += `<div class="abs" style="left:${M}pt;top:${by + 41}pt;width:${heroW}pt;height:14pt;font:400 11.25pt/14pt var(--font-body);color:var(--muted);white-space:nowrap;overflow:hidden" data-slot="sold.ctaSub" data-lines="1">${esc(PC.ctaSub || 'Call or text anytime. I’m happy to help.')}</div>`;
+      // the agent: on the 6 x 9, centered between the bottom of the note and the card bottom (10/25); 6 x 11 as designed
+      h += `<div class="abs pc-center" id="soldagent" data-center="${big ? 0 : 1}" style="left:${cx}pt;top:${by + 1.5}pt;width:${col}pt">
+          <div class="display" style="font-size:22.5pt;line-height:25.2pt;height:25.2pt" data-slot="agent.name" data-lines="1" data-fitw="15">${esc(name)}</div>
+          ${(A.designation || A.nar) ? `<div class="pc-lbl" style="font-size:8.25pt;line-height:9pt;height:9pt;margin-top:3pt">${/^realtor/i.test(A.designation || 'Realtor') ? 'REALTOR®' : esc(A.designation)}</div>` : ''}
+          <div style="font:700 15.75pt/18pt var(--font-body);color:var(--ink);letter-spacing:.3pt;margin-top:4pt;white-space:nowrap;overflow:hidden" data-slot="agent.phone" data-lines="1">${esc(A.phone||'')}</div></div>`;
+    }
   } else {
-    // left half: logo + address line, two captioned photos, property notes, rule, contact card + QR
-    const half = W/2, LW = half - 27 - 18;            // left content width
-    const pw = (LW - 12)/2;
-    h += Ivory.logo(b, '', `left:27pt;top:22pt;height:24pt;width:150pt;justify-content:flex-start`);
-    h += `<div class="abs place" style="left:27pt;top:52pt;width:${LW}pt;height:9pt" data-slot="place" data-lines="1" data-fine="1">${esc([L.address, L.neighborhood].filter(Boolean).join('  /  '))}</div>`;
-    [[pick[3],27],[pick[4],27+pw+12]].forEach(([id,x],i)=>{
-      h += Ivory.photo(D, '', id, `left:${x}pt;top:68pt;width:${pw}pt;height:${big?100:84}pt`) + Ivory.captionHTML(D, id, x, (big?172:156), pw, 'back'+i);
-    });
-    const nt = big ? 204 : 188;
-    h += `<div class="abs label notes-lbl" style="left:27pt;top:${nt}pt;width:${LW}pt" data-slot="notes.label" data-lines="1">${esc(PC.label || (sold ? 'To our neighbors' : 'Property notes'))}</div>`;
-    h += Ivory.text(D, PC.notes, 27, nt+13, LW, big?3:4, 11, 8.5, 'notes');
-    h += `<div class="hair" style="left:27pt;top:${big?262:268}pt;width:${LW}pt"></div>`;
-    h += Ivory.card(D, {x:27, y:big?274:280, w:LW, h:big?118:112, nameSize:24, phoneSize:16, lineSize:8.5, qr:58, gap:14, brokerage:false,
-                        top:{name:8, title:38, callLbl:51, phone:59}});
-    h += `<div class="abs fine" style="left:27pt;top:410pt;width:${LW}pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+    // ---------- back ----------
+    const X = 22.5, mailX = W - 289.5, cw = mailX - 2*X;
+    const short = String(L.address||'').replace(/\s+(street|st\.?|avenue|ave\.?|drive|dr\.?|road|rd\.?|lane|ln\.?|boulevard|blvd\.?|court|ct\.?|way|place|pl\.?)$/i, '');
+    h += `<div class="abs pc-status" style="left:${X}pt;top:22pt;width:${cw}pt;height:14pt" data-slot="status" data-lines="1"><span class="st">${esc(statusWord)}</span><span class="ln"></span><span class="ad">${esc(sold && big ? L.address : short)}</span></div>`;
+    const cardH = 108, fineY = 432 - 9 - 15, cardY = fineY - 6 - cardH, hairY = cardY - 7;
+    if(!sold){
+      const n = big ? 3 : 2, gw = 13.5, pw = (cw - gw*(n - 1))/n, ps = backPool.slice(0, n);
+      ps.forEach((id, i) => { const x = X + i*(pw + gw), c = cap(id);
+        h += ph(id, x, 48, pw, 81);
+        h += `<div class="abs pc-bcap" style="left:${x}pt;top:133pt;width:${pw}pt;height:36pt"><div class="n" data-slot="back${i}.name" data-lines="1">${esc(c.name)}</div>` +
+             `<div class="d" style="height:24pt;overflow:hidden" data-slot="back${i}.detail" data-lines="2">${esc(c.detail)}</div></div>`; });
+      h += `<div class="abs pc-lbl" style="left:${X}pt;top:176pt;width:${cw}pt;height:9pt">About this home</div>`;
+      // the write-up: the master sentences, least important dropping first until it fits above the rule
+      const ss = (PC.master && PC.master.length) ? PC.master : (PC.notes ? (PC.notes.match(/[^.!?]+[.!?]+/g) || [PC.notes]) : []);
+      const drop = PC.drop || [3, 5, 6, 4, 7, 2];
+      const pri = k => { const i = drop.indexOf(k); return i < 0 ? 99 : i; };
+      const aH = Math.floor((hairY - 6 - 188)/15.1)*15.1;
+      h += pending ? Ivory.ghost(X, 190, cw, 5, 15.1)
+         : `<div class="abs pc-about" id="about" data-slot="about" style="left:${X}pt;top:188pt;width:${cw}pt;height:${aH}pt">${ss.map((s, k) => `<span data-p="${pri(k + 1)}">${esc(s.trim())} </span>`).join('')}</div>`;
+    } else {
+      const pw = big ? 187.5 : 147, gap = 4.5, sh = (hairY - 12 - 48 - 2*gap)/3;
+      backPool.slice(0, 3).forEach((id, k) => h += ph(id, X, 48 + k*(sh + gap), pw, sh));
+      const lx = X + pw + 16.5, lw = cw - pw - 16.5;
+      const steps = PC.steps || ['Walk through your home with you and hear your plans.', 'Pull recent sales on your street and nearby.',
+        'Give you a price range in writing, at no cost.', 'Point out what to fix and what to leave alone.', 'Talk through timing that works for you.'];
+      const fs = big ? 12 : 9.75, gapI = big ? 9 : 5.25;
+      h += `<div class="abs" id="steps" style="left:${lx}pt;top:46pt;width:${lw}pt;height:${hairY - 12 - 46}pt;display:flex;flex-direction:column;overflow:hidden">
+          <div class="pc-lbl" style="height:9pt;flex:none">${esc(PC.stepsLabel || 'Here’s how I’d start')}</div>
+          <div class="pc-steps" data-slot="sold.steps" style="font:400 ${fs}pt/1.38 var(--font-body);margin-top:${big ? 10.5 : 7.5}pt">${steps.map(s => `<div class="it" style="margin-bottom:${gapI}pt"><span class="bx"></span><span>${esc(s)}</span></div>`).join('')}</div>
+          <div class="display" style="font-size:${big ? 17.25 : 12.75}pt;line-height:1.25;color:var(--accent);margin-top:${big ? 6 : 3}pt;white-space:normal" data-slot="sold.call">${esc(PC.call || 'Call or text me anytime.')}</div></div>`;
+    }
+    h += `<div class="pc-hair" style="left:${X}pt;top:${hairY}pt;width:${cw}pt"></div>`;
+    // the contact card (band preset); on the 6 x 11 Just Listed back the room sizes sit beside it
+    const rooms = (!sold && big) ? Ivory.roomRows(L, 5) : [];
+    const roomsW = 124, rgap = 12;
+    const cardW = rooms.length ? cw - roomsW - rgap : cw;
+    // the 6 x 9 backs keep the gray brokerage band across the card's bottom (owner 10/27); the 6 x 11 backs keep the standard card
+    h += Ivory.card(D, {x: X, y: cardY, w: cardW, h: cardH, layout: 'band', bandTint: !big});
+    if(rooms.length)
+      h += `<div class="abs pc-rooms" id="rooms" style="left:${X + cardW + rgap}pt;top:${cardY}pt;width:${roomsW}pt;height:${cardH}pt;border-left:.75pt solid var(--line);padding-left:10pt">
+          <div class="pc-lbl" style="height:9pt;margin:5pt 0 6pt">Room sizes</div>${rooms.map(r => `<div class="r"><span>${esc(r[0])}</span><b>${esc(r[1])}</b></div>`).join('')}</div>`;
+    h += `<div class="abs pc-disc" style="left:${X}pt;top:${fineY}pt;width:${cw}pt;height:15pt" data-slot="fineprint" data-lines="2" data-fine="1">${esc(fine)}</div>`;
 
-    // right half: the mail vendor's address and postage zone
-    const V = D.mailVendor || {};
-    const vx = half + 9, vy = 18, vw = W - vx - 18, vh = H - 36;
-    const stampW = 54, stampH = 62;
-    h += `<div class="vendor" style="left:${vx}pt;top:${vy}pt;width:${vw}pt;height:${vh}pt">
-        <div class="vlbl">Address and postage area</div>
-        <div class="vnote">${esc(V.name ? 'Laid out to ' + V.name + "'s template" : 'Reserved for the mail vendor')}</div>
-        <div class="stamp" style="right:12pt;top:12pt;width:${stampW}pt;height:${stampH}pt">Postage</div>
-        ${[0,1,2,3].map(i=>`<div class="aline" style="left:${vw*0.18}pt;width:${vw*0.64}pt;top:${vh*0.52+i*18}pt"></div>`).join('')}
-        <div class="vfoot">${esc(V.name ? '' : 'Provisional. Final address, postage and clear zones follow the chosen vendor’s template.')}</div>
+    // the mail panel
+    const V = D.mailVendor || {}, guide = (D.mode || 'email') !== 'print', mw = W - mailX;
+    const bl = (D.mode === 'print') ? 9 : 0;
+    h += `<div class="mail" data-mail="1" style="left:${mailX}pt;top:${-bl}pt;width:${mw + bl}pt;height:${H + 2*bl}pt">
+        <div class="ret" style="left:18pt;top:${21 + bl}pt;width:170pt"><b>${esc(b.brokerage || '')}</b>${[].concat(b.address || []).length ? '<br>' + esc([].concat(b.address).join(', ')) : ''}</div>
+        ${guide ? `<div class="guide stamp" style="right:${18 + bl}pt;top:${18 + bl}pt;width:72pt;height:49.5pt">Postage<br><span style="text-transform:none">mail vendor</span></div>
+        ${[0,1,2,3].map(i => `<div class="aline" style="left:49.5pt;width:${mw - 90}pt;top:${225 + bl + i*17.25}pt"></div>`).join('')}
+        <div class="guide" style="left:49.5pt;top:${296 + bl}pt;width:${mw - 70}pt">${esc(V.name ? 'Mailing address area · laid out to ' + V.name + '’s template' : 'Mailing address area · filled by the mail vendor')}</div>` : ''}
       </div>`;
   }
 
@@ -124,7 +224,76 @@ Ivory.whenFonts(function(){
   document.getElementById('pages').innerHTML = f.html;
   Ivory.shapeLogos();
   window.pieceSize = {W:f.W, H:f.H, bleed:f.bleed};
+
+  // ---------- fitting ----------
+  // one-line captions: the detail gives way a phrase at a time, then goes
+  document.querySelectorAll('[data-shorten]').forEach(el => { const sp = el.querySelector('span'); if(!sp) return;
+    const parts = sp.textContent.replace(/^ · /, '').split(', ');
+    while(el.scrollWidth > el.clientWidth + 0.5 && parts.length > 1){ parts.pop(); sp.textContent = ' · ' + parts.join(', '); }
+    if(el.scrollWidth > el.clientWidth + 0.5) sp.remove(); });
+  // a long address or name comes down to its floor on the front, never below (overflow is flagged past that)
+  document.querySelectorAll('[data-fitw]').forEach(el => { const mn = +el.dataset.fitw; let s = parseFloat(getComputedStyle(el).fontSize)*72/96; el.dataset.start = s;
+    while(el.scrollWidth > el.clientWidth + 0.5 && s > mn){ s -= 0.5; el.style.fontSize = s + 'pt'; }
+    // a name still too wide at the floor goes to two lines (at the hyphen, else first over last), back at its start size
+    // and shrinking again only as far as the floor (the contact card's rule)
+    if(el.dataset.slot === 'agent.name' && el.scrollWidth > el.clientWidth + 0.5){
+      const t = el.textContent, hy = t.indexOf('-'), sp = t.indexOf(' ');
+      const cut = hy > 0 ? [t.slice(0, hy + 1), t.slice(hy + 1)] : sp > 0 ? [t.slice(0, sp), t.slice(sp + 1)] : null;
+      if(cut){ const s0 = parseFloat(el.dataset.start || s), lh = parseFloat(el.style.lineHeight) / parseFloat(el.style.fontSize);
+        el.innerHTML = Ivory.esc(cut[0]) + '<br>' + Ivory.esc(cut[1]); el.style.whiteSpace = 'nowrap'; el.dataset.lines = '2';
+        const set = z => { el.style.fontSize = z + 'pt'; el.style.lineHeight = (z*lh) + 'pt'; el.style.height = (2*z*lh) + 'pt'; };
+        let z = s0; set(z); while(el.scrollWidth > el.clientWidth + 0.5 && z > mn){ z -= 0.5; set(z); } } } });
+  // the write-up: drop the least important sentences until it fits; put back any that fit again
+  const about = document.getElementById('about');
+  const fitAbout = () => { if(!about) return; const over = () => about.scrollHeight > about.clientHeight + 1;
+    const sp = [...about.querySelectorAll('span[data-p]')].sort((a, c) => a.dataset.p - c.dataset.p), hid = [];
+    sp.forEach(x => x.style.display = '');
+    for(const x of sp){ if(!over()) break; if(sp.length - hid.length <= 2) break; x.style.display = 'none'; hid.push(x); }
+    for(const x of hid.slice().reverse()){ x.style.display = ''; if(over()) x.style.display = 'none'; }
+    about.dataset.sentences = sp.filter(x => x.style.display !== 'none').length; };
+  fitAbout();
+  // the sold note grows (never shrinks) until it fills the column
+  const lead = document.getElementById('soldlead');
+  if(lead){ const colEl = document.getElementById('soldcol'), mx = +lead.dataset.grow;
+    const topBlk = colEl.firstElementChild, PX = 96/72;
+    const ok = () => topBlk.offsetHeight + lead.offsetHeight + 9*PX <= colEl.clientHeight + 0.5;
+    // the largest size up to the cap that fits (a size step can wrap a line, so every step is tried)
+    const s0 = parseFloat(getComputedStyle(lead).fontSize)*72/96; let best = s0;
+    for(let s = s0; s <= mx + 0.001; s += 0.25){ lead.style.fontSize = s + 'pt'; if(ok()) best = s; }
+    lead.style.fontSize = best + 'pt'; lead.dataset.pt = best; }
+  // the sold steps grow (never shrink) to fill their column beside the photos, the closing line staying inside it
+  const stp = document.getElementById('steps');
+  if(stp){ const list = stp.querySelector('.pc-steps'), mx = big ? 13.5 : 12.75, PX = 96/72;
+    const used = () => [...stp.children].reduce((a, e) => a + e.offsetHeight + parseFloat(getComputedStyle(e).marginTop), 0);
+    let s = parseFloat(getComputedStyle(list).fontSize)*72/96;
+    while(s < mx){ list.style.fontSize = (s + 0.25) + 'pt'; if(used() > stp.clientHeight - 2*PX){ list.style.fontSize = s + 'pt'; break; } s += 0.25; }
+    list.dataset.pt = s; }
+  // 6 x 9 fronts: the agent block sits centered between the text above it and the card's bottom edge (10/25)
+  const sheetTop = () => document.querySelector('.sheet').getBoundingClientRect().top;
+  const ptOf = el => el.getBoundingClientRect().height / el.offsetHeight || 1;   // px per CSS px (zoom)
+  document.querySelectorAll('[data-center="1"]').forEach(blk => {
+    const above = blk.id === 'soldagent' ? document.getElementById('soldlead') : [...document.querySelectorAll('.pc-cap')].pop();
+    if(!above) return;
+    const k = ptOf(blk), toPt = px => px / k * 72 / 96;
+    // the note's last line: its text bottom, not the box (the box carries a negative margin for the descender)
+    const rg = document.createRange(); rg.selectNodeContents(above); const rs = [...rg.getClientRects()];
+    const end = toPt((rs.length ? Math.max(...rs.map(r => r.bottom)) : above.getBoundingClientRect().bottom) - sheetTop());
+    const bh = toPt(blk.getBoundingClientRect().height);
+    blk.style.top = (end + (H - end - bh)/2) + 'pt'; blk.dataset.above = end.toFixed(1);
+  });
+
   const cardIssues = Ivory.layoutCards();
+  // 6 x 11 Just Listed back: when the card beside the room sizes would need more than a smaller name (website dropped,
+  // name broken; a headshot usually), the card takes the full width and the room sizes make room for themselves:
+  // they move up beside the write-up, which gives up its least important sentences to fit
+  const rm = document.getElementById('rooms'), cc = document.querySelector('.cc[data-contactcard]');
+  if(rm && cc && /website dropped|broke at|first over last|three lines/.test(cc.dataset.steps || '')){
+    const X = 22.5, cw = W - 289.5 - 2*X, rw = parseFloat(rm.style.width), hairY = parseFloat(document.querySelector('.pc-hair').style.top);
+    cc.style.width = cw + 'pt'; ContactCard.fit(document); cc.dataset.roomsMoved = '1';
+    rm.style.left = (X + cw - rw) + 'pt'; rm.style.top = '176pt'; rm.style.height = (hairY - 8 - 176) + 'pt';
+    rm.firstElementChild.style.marginTop = '0';
+    if(about){ about.style.width = (cw - rw - 12) + 'pt'; fitAbout(); }
+    document.querySelectorAll('.pc-lbl').forEach(l => { if(/about this home/i.test(l.textContent)) l.style.width = (cw - rw - 12) + 'pt'; }); }
   window.brochureCheck = () => Ivory.check(cardIssues);
 });
 </script>

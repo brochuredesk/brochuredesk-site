@@ -78,7 +78,7 @@ OHL.start(['700 10pt "Asap Condensed"', '500 10pt "Asap Condensed"', '400 10pt O
   const by = 660;
   h += `<div class="band" style="top:${by}pt;height:${792-by}pt"></div>`;
   h += `<div class="abs addr" style="left:36pt;top:${by+10}pt;width:330pt;height:28pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:36pt;top:${by+38}pt;width:330pt;height:12pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${by+38}pt;width:330pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   h += OHL.contact(D, {x:36, y:by+54, w:540, h:60, tone:'light', nameSize:18, logoW:176, logoH:46, nameFont:"'Asap Condensed'", nameWeight:700, bodyFont:'Outfit'});
   h += `<div class="abs fine" style="left:36pt;top:${by+118}pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
   const f = OHL.frame(D, h);

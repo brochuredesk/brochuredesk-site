@@ -60,15 +60,8 @@ OHL.start(['500 10pt Spectral', '700 10pt Manrope', '600 10pt Manrope', '400 10p
   y += 58;
   h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:26pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
   y += 28;
-  h += `<div class="abs place" style="left:36pt;top:${y}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city, L.state].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   y += 26;
-  // facts row
-  const cells = OHL.factCells(L).slice(0, 3), cw = 540/cells.length;
-  cells.forEach(([ic, v, kk], i) => {
-    h += `<div class="fact" style="left:${36+i*cw}pt;top:${y}pt;width:${cw}pt;height:58pt"><div style="width:20pt;margin:0 auto">${OHL.icon(ic, 20, 'var(--accent-on-dark)')}</div><div class="v" data-slot="fact.${i}" data-lines="1">${esc(v)}</div><div class="k" data-slot="fact.${i}.k" data-lines="1">${esc(kk)}</div></div>`;
-    if(i) h += `<div class="vr" style="left:${36+i*cw}pt;top:${y+4}pt;height:50pt"></div>`;
-  });
-  y += 70;
   // date and time box
   const bh = 66;
   h += `<div class="box" style="left:36pt;top:${y}pt;width:540pt;height:${bh}pt"></div><div class="vr" style="left:330pt;top:${y+12}pt;height:${bh-24}pt;opacity:.5"></div>`;
@@ -80,10 +73,15 @@ OHL.start(['500 10pt Spectral', '700 10pt Manrope', '600 10pt Manrope', '400 10p
   if(E.time) h += `<div class="abs time" style="left:384pt;top:${y+26}pt;width:186pt;height:30pt" data-fit="18,18" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
   y += bh + 12;
   const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 36, y, 540, 13.5, 2);
-  h += ev.html;
+  h += ev.html; y += ev.h + (ev.h ? 8 : 0);
   const cy = 704;
-  const issues = y + ev.h > cy - 14 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the agent card'}] : [];
-  const shift = Math.max(0, (cy - 14 - (y + ev.h + 4))/2);
+  // three or four room photos across the freed space, margin to margin
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 4);
+  const G = 10, rh = Math.min(170, cy - 30 - y);
+  if(rooms.length && rh >= 70){ const pw = (540 - (rooms.length - 1)*G)/rooms.length;
+    rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${36 + i*(pw + G)}pt;top:${y}pt;width:${pw}pt;height:${rh}pt`)); y += rh; }
+  const issues = y > cy - 12 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the agent card'}] : [];
+  const shift = Math.max(0, (cy - 14 - y)/2);
   h = h.slice(0, mid0) + `<div class="abs" style="left:0;top:${shift}pt;width:612pt;height:0">` + h.slice(mid0) + `</div>`;
   h += `<div class="hr" style="top:${cy - 12}pt"></div>`;
   h += OHL.contact(D, {x:36, y:cy, w:540, h:62, tone:'dark', nameSize:18, phoneSize:13, lineSize:9.5, logoW:184, logoH:52});

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Charcoal Classic</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Charcoal Classic (from reference P10). Trim 612 x 792 pt. Public or REALTOR(R).
+  A conventional but composed invitation: the house fills the top, and the dark field below carries the event wording in centered serif
+  capitals, the facts, a rule, the date, time and address, and the agent card with the brokerage panel in the footer
+  (10/25: the hanging logo tab moved there). Kept distinct from Formal Invitation (B03) by the photo-first layout.
+  Type: Crimson Pro (headline, date), Jost (details).
+-->
+<style>
+  .sheet{background:var(--dark);color:var(--on-dark)}
+  .tab{position:absolute;background:var(--dark)}
+  .hl{font:600 48pt/54pt 'Crimson Pro';letter-spacing:3pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .facts{font:400 10pt/13pt Jost;letter-spacing:1.4pt;text-align:center;white-space:nowrap;overflow:hidden;opacity:.9}
+  .hr{position:absolute;left:156pt;width:300pt;height:1pt;background:var(--accent-on-dark)}
+  .date{font:500 28pt/34pt 'Crimson Pro';text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:500 19pt/24pt Jost;letter-spacing:1pt;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-dark)}
+  .addr{font:500 16pt/21pt Jost;text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Jost;text-align:center;opacity:.9}
+  .oh-agent-name{font-family:'Crimson Pro';font-weight:600}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;white-space:nowrap;opacity:.6;text-align:center}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['600 10pt "Crimson Pro"', '500 10pt "Crimson Pro"', '400 10pt Jost', '500 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {};
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = '';
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 66, 0, 480, 13, 2);
+  // the block under the photo, measured; the photo takes the rest of the page down to it
+  const block = 58 + 22 + 12 + 34 + (E.time ? 28 : 0) + 26 + (ev.h ? ev.h + 8 : 0);
+  const fr = OHL.fitHero(D, hero, 612, Math.min(480, 706 - 24 - block - 20));
+  h += OHL.photo(D, hero, `left:${(612 - fr.w)/2}pt;top:0;width:${fr.w}pt;height:${fr.h}pt`);
+  // (the brokerage's one logo is in the agent card's panel at the foot; the hanging logo tab is gone)
+  let y = fr.h + Math.max(20, (706 - 12 - block - fr.h)/2);
+  h += `<div class="abs hl" style="left:30pt;top:${y}pt;width:552pt;height:54pt" data-fit="48,26" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`; y += 58;
+  h += `<div class="abs facts" style="left:36pt;top:${y}pt;width:540pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.facts(L).join('  ·  '))}</div>`; y += 22;
+  h += `<div class="hr" style="top:${y}pt"></div>`; y += 12;
+  h += `<div class="abs date" style="left:36pt;top:${y}pt;width:540pt;height:34pt" data-fit="28,20" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`; y += 34;
+  if(E.time){ h += `<div class="abs time" style="left:36pt;top:${y}pt;width:540pt;height:24pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`; y += 28; }
+  h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:21pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join(', '))}</div>`; y += 26;   // with state and ZIP (owner 10/27/2026)
+  if(ev.h){ h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + y}pt`); y += ev.h + 8; }
+  const cy = 706;
+  const issues = y > cy - 8 ? [{slot:'oh.note', kind:'overflow', detail:'the event runs into the agent card'}] : [];
+  h += OHL.contact(D, {x:36, y:cy, w:540, h:62, tone:'dark', field:'dark', logoW:180, logoH:46, nameSize:18});
+  h += `<div class="abs fine" style="left:36pt;top:778pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

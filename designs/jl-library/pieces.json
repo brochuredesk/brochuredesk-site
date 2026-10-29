@@ -367,7 +367,7 @@
    "design": "M02",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M02 (Ivory panoramic farming card), 6 x 11, front"
   },
   {
@@ -384,7 +384,7 @@
    "design": "M02",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M02 (Ivory panoramic farming card), 6 x 11, back"
   },
   {
@@ -435,7 +435,7 @@
    "design": "M03",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M03 (Modern white property card), 6 x 11, front"
   },
   {
@@ -452,7 +452,7 @@
    "design": "M03",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M03 (Modern white property card), 6 x 11, back"
   },
   {
@@ -503,7 +503,7 @@
    "design": "M04",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M04 (Charcoal status band postcard), 6 x 11, front"
   },
   {
@@ -520,7 +520,7 @@
    "design": "M04",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M04 (Charcoal status band postcard), 6 x 11, back"
   },
   {
@@ -571,7 +571,7 @@
    "design": "M05",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M05 (Offset twilight photo), 6 x 11, front"
   },
   {
@@ -588,7 +588,7 @@
    "design": "M05",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M05 (Offset twilight photo), 6 x 11, back"
   },
   {
@@ -639,7 +639,7 @@
    "design": "M06",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M06 (Black and gold full-photo postcard), 6 x 11, front"
   },
   {
@@ -656,7 +656,7 @@
    "design": "M06",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M06 (Black and gold full-photo postcard), 6 x 11, back"
   },
   {
@@ -707,7 +707,7 @@
    "design": "M07",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M07 (Platinum Living vertical address stripe), 6 x 11, front"
   },
   {
@@ -724,7 +724,7 @@
    "design": "M07",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M07 (Platinum Living vertical address stripe), 6 x 11, back"
   },
   {
@@ -775,7 +775,7 @@
    "design": "M08",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M08 (Blue architectural sidebar), 6 x 11, front"
   },
   {
@@ -792,7 +792,7 @@
    "design": "M08",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M08 (Blue architectural sidebar), 6 x 11, back"
   },
   {
@@ -877,7 +877,7 @@
    "design": "M10",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M10 (Rounded four-room mosaic), 6 x 11, front"
   },
   {
@@ -894,7 +894,7 @@
    "design": "M10",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M10 (Rounded four-room mosaic), 6 x 11, back"
   },
   {
@@ -945,7 +945,7 @@
    "design": "M11",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M11 (Timeless twilight panorama), 6 x 11, front"
   },
   {
@@ -962,7 +962,7 @@
    "design": "M11",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M11 (Timeless twilight panorama), 6 x 11, back"
   },
   {
@@ -1013,7 +1013,7 @@
    "design": "M12",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M12 (Chalkboard split gallery), 6 x 11, front"
   },
   {
@@ -1030,7 +1030,7 @@
    "design": "M12",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M12 (Chalkboard split gallery), 6 x 11, back"
   },
   {
@@ -1217,7 +1217,7 @@
    "design": "M17",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M17 (Clean three-image modern grid), 6 x 11, front"
   },
   {
@@ -1234,7 +1234,7 @@
    "design": "M17",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M17 (Clean three-image modern grid), 6 x 11, back"
   },
   {
@@ -1285,7 +1285,7 @@
    "design": "M18",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M18 (Exterior with black footer), 6 x 11, front"
   },
   {
@@ -1302,7 +1302,7 @@
    "design": "M18",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M18 (Exterior with black footer), 6 x 11, back"
   },
   {
@@ -1353,7 +1353,7 @@
    "design": "M19",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M19 (Black interior with QR corner), 6 x 11, front"
   },
   {
@@ -1370,7 +1370,7 @@
    "design": "M19",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M19 (Black interior with QR corner), 6 x 11, back"
   },
   {
@@ -1421,7 +1421,7 @@
    "design": "M20",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M20 (White contact footer and panorama), 6 x 11, front"
   },
   {
@@ -1438,7 +1438,7 @@
    "design": "M20",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M20 (White contact footer and panorama), 6 x 11, back"
   },
   {
@@ -1489,7 +1489,7 @@
    "design": "M21",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M21 (Low black listing band), 6 x 11, front"
   },
   {
@@ -1506,7 +1506,7 @@
    "design": "M21",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M21 (Low black listing band), 6 x 11, back"
   },
   {
@@ -1557,7 +1557,7 @@
    "design": "M23",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M23 (Grid within a black frame), 6 x 11, front"
   },
   {
@@ -1574,7 +1574,7 @@
    "design": "M23",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M23 (Grid within a black frame), 6 x 11, back"
   },
   {
@@ -1625,7 +1625,7 @@
    "design": "M24",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M24 (Symmetrical split interior postcard), 6 x 11, front"
   },
   {
@@ -1642,7 +1642,7 @@
    "design": "M24",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M24 (Symmetrical split interior postcard), 6 x 11, back"
   },
   {
@@ -1693,7 +1693,7 @@
    "design": "M25",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M25 (Twin interior panels), 6 x 11, front"
   },
   {
@@ -1710,7 +1710,7 @@
    "design": "M25",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M25 (Twin interior panels), 6 x 11, back"
   },
   {
@@ -1761,7 +1761,7 @@
    "design": "M26",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M26 (Red status tab on exterior), 6 x 11, front"
   },
   {
@@ -1778,7 +1778,7 @@
    "design": "M26",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M26 (Red status tab on exterior), 6 x 11, back"
   },
   {
@@ -1829,7 +1829,7 @@
    "design": "M27",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M27 (Red information ribbon), 6 x 11, front"
   },
   {
@@ -1846,7 +1846,7 @@
    "design": "M27",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M27 (Red information ribbon), 6 x 11, back"
   },
   {
@@ -1897,7 +1897,7 @@
    "design": "M28",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M28 (Brand-new listing gallery), 6 x 11, front"
   },
   {
@@ -1914,7 +1914,7 @@
    "design": "M28",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M28 (Brand-new listing gallery), 6 x 11, back"
   },
   {
@@ -1965,7 +1965,7 @@
    "design": "M29",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M29 (Black border with red type), 6 x 11, front"
   },
   {
@@ -1982,7 +1982,7 @@
    "design": "M29",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M29 (Black border with red type), 6 x 11, back"
   },
   {
@@ -2033,7 +2033,7 @@
    "design": "M30",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M30 (Red tab and dark sidebar), 6 x 11, front"
   },
   {
@@ -2050,7 +2050,7 @@
    "design": "M30",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M30 (Red tab and dark sidebar), 6 x 11, back"
   },
   {
@@ -2101,7 +2101,7 @@
    "design": "M31",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M31 (Doorway and white text panel), 6 x 11, front"
   },
   {
@@ -2118,7 +2118,7 @@
    "design": "M31",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M31 (Doorway and white text panel), 6 x 11, back"
   },
   {
@@ -2169,7 +2169,7 @@
    "design": "M34",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M34 (Black two-room strip), 6 x 11, front"
   },
   {
@@ -2186,7 +2186,7 @@
    "design": "M34",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M34 (Black two-room strip), 6 x 11, back"
   },
   {
@@ -2237,7 +2237,7 @@
    "design": "M37",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M37 (White script-and-photo property card), 6 x 11, front"
   },
   {
@@ -2254,7 +2254,7 @@
    "design": "M37",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M37 (White script-and-photo property card), 6 x 11, back"
   },
   {
@@ -2271,7 +2271,7 @@
    "design": "M40",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M40 (Black gallery and white footer), 6 x 9, front"
   },
   {
@@ -2288,7 +2288,7 @@
    "design": "M40",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M40 (Black gallery and white footer), 6 x 9, back"
   },
   {
@@ -2305,7 +2305,7 @@
    "design": "M40",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M40 (Black gallery and white footer), 6 x 11, front"
   },
   {
@@ -2322,7 +2322,7 @@
    "design": "M40",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M40 (Black gallery and white footer), 6 x 11, back"
   },
   {
@@ -2373,7 +2373,7 @@
    "design": "M43",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M43 (Turquoise vertical headline), 6 x 11, front"
   },
   {
@@ -2390,7 +2390,7 @@
    "design": "M43",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M43 (Turquoise vertical headline), 6 x 11, back"
   },
   {
@@ -2441,7 +2441,7 @@
    "design": "M44",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M44 (Teal exterior gallery), 6 x 11, front"
   },
   {
@@ -2458,7 +2458,7 @@
    "design": "M44",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M44 (Teal exterior gallery), 6 x 11, back"
   },
   {
@@ -2509,7 +2509,7 @@
    "design": "M45",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M45 (Charcoal twilight announcement), 6 x 11, front"
   },
   {
@@ -2526,7 +2526,7 @@
    "design": "M45",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M45 (Charcoal twilight announcement), 6 x 11, back"
   },
   {
@@ -2577,7 +2577,7 @@
    "design": "M46",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M46 (Red corner announcement), 6 x 11, front"
   },
   {
@@ -2594,7 +2594,7 @@
    "design": "M46",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M46 (Red corner announcement), 6 x 11, back"
   },
   {
@@ -2645,7 +2645,7 @@
    "design": "M48",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M48 (Traditional three-photo postcard), 6 x 11, front"
   },
   {
@@ -2662,7 +2662,7 @@
    "design": "M48",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M48 (Traditional three-photo postcard), 6 x 11, back"
   },
   {
@@ -2713,7 +2713,7 @@
    "design": "M49",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M49 (White exterior and room grid), 6 x 11, front"
   },
   {
@@ -2730,7 +2730,7 @@
    "design": "M49",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M49 (White exterior and room grid), 6 x 11, back"
   },
   {
@@ -2781,7 +2781,7 @@
    "design": "M50",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M50 (Urbaprint framed interiors), 6 x 11, front"
   },
   {
@@ -2798,7 +2798,7 @@
    "design": "M50",
    "group": "main",
    "needs": [],
-   "approved": false,
+   "approved": true,
    "label": "Just Listed postcard M50 (Urbaprint framed interiors), 6 x 11, back"
   }
  ]

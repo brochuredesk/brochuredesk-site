@@ -69,7 +69,7 @@ Ivory.whenFonts(function(){
   h += Ivory.photo(D, '', s2, 'left:36pt;top:346pt;width:172pt;height:116pt');
   h += Ivory.photo(D, '', hero, 'left:216pt;top:222pt;width:360pt;height:240pt');
   h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
   h += `<div class="hair" style="left:36pt;top:522pt;width:540pt;opacity:.35"></div>`;
   [[s3,36],[s4,221],[s5,406]].forEach(([id,x])=> h += Ivory.photo(D, '', id, `left:${x}pt;top:534pt;width:170pt;height:106pt`));

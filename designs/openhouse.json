@@ -14,7 +14,10 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": true
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
   },
   {
    "design": "ivory",
@@ -30,7 +33,10 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": true
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
   },
   {
    "design": "ivory",
@@ -46,7 +52,10 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": true
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
   },
   {
    "design": "ivory",
@@ -62,7 +71,10 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": true
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
   },
   {
    "design": "ivory",
@@ -78,7 +90,10 @@
    "print": "margin",
    "margin": 18,
    "variant": "openhouse",
-   "fonts": true
+   "fonts": true,
+   "qr": false,
+   "audience": null,
+   "refreshments": null
   }
  ],
  "candidates": []

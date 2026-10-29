@@ -27,6 +27,8 @@
   // ---------- color ----------
   const rgb = h => { h = String(h||'').replace('#',''); if(h.length===3) h = h.split('').map(c=>c+c).join(''); const n = parseInt(h,16); return [n>>16&255, n>>8&255, n&255]; };
   const lum = h => { const c = rgb(h).map(v => { v/=255; return v <= .03928 ? v/12.92 : Math.pow((v+.055)/1.055, 2.4); }); return .2126*c[0] + .7152*c[1] + .0722*c[2]; };
+  // the line under the street on every open house flyer: city, state and ZIP (owner 10/27/2026), "Houston, TX 77023"
+  OHL.place = L => Ivory.placeZip(L);
   OHL.contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x,y)+.05)/(Math.min(x,y)+.05); };
   OHL.WHITE = '#ffffff'; OHL.BLACK = '#161616';
   OHL.on = bg => OHL.contrast(bg, OHL.WHITE) >= OHL.contrast(bg, OHL.BLACK) ? OHL.WHITE : OHL.BLACK;
@@ -72,6 +74,47 @@
     let best = null;
     for(let i=1;i<w.length;i++){ const a = w.slice(0,i).join(' '), b = w.slice(i).join(' '), d = Math.abs(a.length-b.length); if(!best || d < best.d) best = {d, l:[a,b]}; }
     return best.l;
+  };
+
+  // ---------- write-up ----------
+  // A paragraph that fills a box (owner 10/27/2026: larger, longer write-ups on several flyers). Built only from the
+  // writer's own sentences (companion.postcard.master, the same pool the postcards draw from; the flyer body when the
+  // pool is empty), in their order, always keeping the first: the most lines up to maxLines, last line at least 3/4 full.
+  // cls: the class that sets the font; w in pt; lh line height in pt. Returns {text, n, fill}.
+  OHL.measure = (cls, text, w, lh) => {
+    const m = document.createElement('div');
+    m.className = cls; m.textContent = text;
+    m.style.cssText = `position:absolute;left:-9999pt;top:0;visibility:hidden;width:${w}pt;height:auto;white-space:normal;overflow:visible`;
+    document.body.appendChild(m);
+    const r = document.createRange(); r.selectNodeContents(m);
+    const rows = [];
+    [...r.getClientRects()].filter(q => q.width > .5).forEach(q => { const l = rows.find(x => Math.abs(x.top - q.top) < 4); if(l){ l.l = Math.min(l.l, q.left); l.r = Math.max(l.r, q.right); } else rows.push({top:q.top, l:q.left, r:q.right}); });
+    const box = m.getBoundingClientRect().width; m.remove();
+    rows.sort((a, b) => a.top - b.top);
+    const last = rows[rows.length - 1];
+    return {n: rows.length, fill: last && box ? (last.r - last.l)/box : 0};
+  };
+  // shown (optional): the fact texts printed on the flyer; a sentence that repeats one is left out (owner 10/28/2026;
+  // needs templates/_shared/factrepeat.js on the page)
+  OHL.writeup = (D, cls, w, lh, maxLines, shown) => {
+    const C = D.companion || {};
+    if(!(maxLines >= 1)) return {text: '', n: 0, fill: 0};   // no room: no write-up
+    const pool = ((C.postcard || {}).master || []).map(t => String(t).trim()).filter(Boolean)
+      .filter(t => !(shown && window.FactRepeat && FactRepeat.repeats(t, shown).length));
+    if(!pool.length){   // no pool: the flyer body, only when it fits
+      const t = String((C.listing || {}).body || '').trim(), m = t ? OHL.measure(cls, t, w, lh) : null;
+      return m && m.n <= maxLines ? Object.assign({text: t}, m) : {text: '', n: 0, fill: 0};
+    }
+    let best = null;
+    const k = Math.min(pool.length, 10);
+    for(let mask = 1; mask < (1 << k); mask += 2){   // odd masks: the first sentence is always in
+      const pick = pool.filter((_, i) => i < k && mask & (1 << i)), text = pick.join(' ');
+      const m = OHL.measure(cls, text, w, lh);
+      if(m.n > maxLines) continue;
+      const score = (m.fill >= .75 ? 1000 : 0) + m.n*100 + m.fill*10 + pick.length;
+      if(!best || score > best.score) best = {text, n: m.n, fill: m.fill, score};
+    }
+    return best || {text: '', n: 0, fill: 0};
   };
 
   // ---------- photos ----------
@@ -143,7 +186,9 @@
     area:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 9h5M15 4v5M9 20v-5M20 15h-5"/></svg>',
     pin:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.4"/></svg>',
     cal:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
-    clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>'
+    clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>',
+    lot:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" stroke-dasharray="2.2 1.8"/><path d="M7.5 14.5l4.5-4 4.5 4M9 13.2V17h6v-3.8"/></svg>',
+    stories:'<svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6M6 9.5V20h12V9.5M6 14.5h12"/></svg>'
   };
   OHL.icon = (name, size, color) => OHL.ICON[name].replace('<svg', `<svg style="width:${size}pt;height:${size}pt;stroke:${color||'currentColor'};fill:none;stroke-width:1.5;display:block"`);
   // the listing facts as [icon, value, label] for highlight rows
@@ -152,7 +197,21 @@
     if(L.beds) f.push(['bed', L.beds, L.beds == 1 ? 'Bedroom' : 'Bedrooms']);
     if(L.baths) f.push(['bath', L.baths + (L.halfBaths ? ' / ' + L.halfBaths : ''), L.halfBaths ? 'Full / half baths' : (L.baths == 1 ? 'Full bath' : 'Full baths')]);
     if(L.sqft) f.push(['area', Number(L.sqft).toLocaleString('en-US'), 'Square feet']);
-    if(L.neighborhood) f.push(['pin', L.neighborhood, L.city || '']);
+    return f;
+  };
+
+  // the six MLS facts as [icon, text] (owner 10/27/2026, OH-P38 and OH-P45): beds, baths, square feet, year built, lot
+  // size, stories; each one only when the listing has it
+  OHL.factSix = L => {
+    const f = [], n = v => Number(v).toLocaleString('en-US');
+    if(L.beds) f.push(['bed', `${L.beds} bedroom${L.beds == 1 ? '' : 's'}`]);
+    if(L.baths) f.push(['bath', `${L.baths} full bath${L.baths == 1 ? '' : 's'}` + (L.halfBaths ? `, ${L.halfBaths} half` : '')]);
+    if(L.sqft) f.push(['area', `${n(L.sqft)} square feet`]);
+    const yr = L.yearBuilt || L.year; if(yr) f.push(['cal', `Built in ${yr}`]);
+    const lot = L.lotAcres ? (L.lotAcres >= 0.5 ? `${L.lotAcres} acre lot` : `${n(Math.round(L.lotAcres*43560))} sq ft lot`)
+      : L.lotSqft ? `${n(L.lotSqft)} sq ft lot` : L.lotSize ? String(L.lotSize).replace(/\bSq Ft\b/i, 'sq ft').replace(/\bLot\b/, 'lot') : '';
+    if(lot) f.push(['lot', lot]);
+    if(L.stories) f.push(['stories', L.stories == 1 ? 'One story' : `${L.stories} stories`]);
     return f;
   };
 
@@ -200,10 +259,10 @@
     const s = {name, nameFloor: o.w < 420 ? 14 : 15, hsW: o.w < 420 ? 54 : Math.round(H * 0.74), panelW: pw, inlineLabel: H < 72, wrap: o.w < 420, lock: Math.max(9.5, name * 0.5 + 0.5),
                logo: {wide: [pw - 20, lh], square: [H - 34, H - 34], tall: [H - 32, H - 32]}};
     const A = Object.assign({}, D.agent || {}, {headshot: OHL.cardMode(D) === 'headshot' ? (D.agent || {}).headshot : ''});
-    // on a colored band the card has no paper of its own: a hairline frame and a light veil of the text color for the panel
+    // on a colored band the card has no paper of its own: nothing behind the logo (owner 10/26: logos float)
     const onField = field !== 'paper';
     const card = ContactCard.html([o.x, o.y, o.w, H], A, b, {layout: 'panel', size: 'short', s, grow: 6, floor: 8.6, bottomGap: 0.5, brokerage: o.logo !== false,
-      logoStyle: ko ? 'filter:brightness(0) invert(1)' : '', panelBg: o.panelBg || (onField ? `color-mix(in srgb, ${ink} 10%, transparent)` : '')});
+      logoStyle: ko ? 'filter:brightness(0) invert(1)' : '', fieldAccent: !!(o.panelBg || onField)});
     const font = [o.nameFont ? `--cc-display:${o.nameFont}` : '', o.bodyFont ? `--cc-body:${o.bodyFont}` : ''].filter(Boolean).join(';');
     const look = `--cc-ink:${ink};--cc-muted:${ink};--cc-accent:${acc};` + (onField ? `--cc-paper:transparent;--cc-line:color-mix(in srgb, ${ink} 30%, transparent);` : '');
     return `<div class="oh-card" data-oh-card="${o.nameFont ? 'set' : ''}" data-name-weight="${o.nameWeight || ''}" style="${look}${font}">${card}</div>`;
@@ -231,8 +290,8 @@
   OHL.fitCards = () => {
     if(!window.ContactCard) return [{slot: 'agent', kind: 'agent-card-missing', detail: 'templates/_shared/agentcard.js did not load'}];
     ContactCard.fit(document);
-    // no box behind the whole card (owner, 10/25): it sits on the flyer's own background. The panel keeps its accent tint,
-    // worked out from the flyer's paper color (the fill is cleared after the fit; the card's hairline frame stays).
+    // no box behind the whole card (owner, 10/25): it sits on the flyer's own background. Nothing sits behind the
+    // logo either (owner 10/26: logos float): no panel tint, no frame.
     document.querySelectorAll('.cc[data-contactcard]').forEach(c => { c.style.background = 'transparent'; });
     return [];
   };
@@ -278,6 +337,7 @@
       if(printed < 8 && !el.dataset.fine) issues.push({slot:el.dataset.slot, kind:'type-too-small-printed', size:+printed.toFixed(1)});
       if(printed < 6) issues.push({slot:el.dataset.slot, kind:'fine-print-below-6pt-printed', size:+printed.toFixed(1)});
     });
+    // neighborhood names are allowed on every piece (owner 10/28/2026): no neighborhood-name check
     // No two pieces of text touch: compares where the words actually are (not their boxes).
     const leaves = [...document.querySelectorAll('[data-slot]')].filter(el => !el.querySelector('[data-slot]') && el.offsetWidth);
     // a text run's box holds empty room above the capitals and below the baseline; keep the letters only
@@ -319,6 +379,9 @@
   OHL.start = (fonts, build) => {
     D = Ivory.data();
     if(!D.listing){ document.getElementById('pages').innerHTML = '<p style="padding:20pt">No data injected.</p>'; return; }
+    // the approved library flyers were laid out without a neighborhood line, so the templates still don't get one;
+    // the writer's copy may name it (owner 10/28/2026, neighborhood names allowed on every piece)
+    D.listing.neighborhood = '';
     window.brochureReady = Promise.all([...fonts.map(f => document.fonts.load(f)), OHL.cardReady]).catch(()=>{}).then(() => {
       OHL.applyBrand(D);
       const f = build(D);

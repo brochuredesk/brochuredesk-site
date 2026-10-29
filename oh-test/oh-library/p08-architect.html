@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Architect</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Architect (from reference P08). Trim 612 x 792 pt. Public or REALTOR(R).
+  Large serif lettering on a stone-gray tint of the agent's dark color gives the event a restrained, architectural
+  character. The line drawing of the house is set aside for a later, higher-end product (lineup); here the house photo
+  sits at the foot inside thin drafting rules with corner ticks. Date at left and address at right on one ruled line,
+  "presented by" with the agent and the logo between.
+  Type: Libre Baskerville (headline, date, address), Instrument Sans (labels).
+-->
+<style>
+  .sheet{color:var(--ink)}
+  .eyebrow{font:500 11pt/14pt 'Instrument Sans';letter-spacing:3.2pt;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .hl{font:700 82pt/84pt 'Libre Baskerville';text-transform:uppercase;letter-spacing:-2pt;text-align:center;white-space:nowrap;overflow:hidden}
+  .date{font:400 22pt/27pt 'Libre Baskerville';white-space:nowrap;overflow:hidden}
+  .time{font:600 18pt/23pt 'Instrument Sans';white-space:nowrap;overflow:hidden}
+  .addr{font:400 19.5pt/27pt 'Libre Baskerville';text-align:right}
+  .place{font:500 9.5pt/12pt 'Instrument Sans';letter-spacing:1.6pt;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:hidden}
+  .ev{font:500 10pt/13pt 'Instrument Sans';text-align:center}
+  .hr{position:absolute;height:1pt;background:var(--ink)}
+  .tick{position:absolute;width:10pt;height:10pt;border-color:var(--ink);border-style:solid;border-width:0}
+  .by{font:500 9.5pt/12pt 'Instrument Sans';letter-spacing:2.8pt;text-transform:uppercase;text-align:center;white-space:nowrap}
+  .name{font:400 17pt/22pt 'Libre Baskerville';text-align:center;white-space:nowrap;overflow:hidden}
+  .cline{font:500 10pt/13pt 'Instrument Sans';text-align:center;white-space:nowrap;overflow:hidden}
+  .fine{font:400 6.6pt/8pt 'Instrument Sans';white-space:nowrap;opacity:.6;text-align:center}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Libre Baskerville"', '400 10pt "Libre Baskerville"', '500 10pt "Instrument Sans"', '600 10pt "Instrument Sans"'], D => {
+  const esc = Ivory.esc, L = D.listing, A = D.agent || {}, B = D.brand || {}, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  let h = `<div class="abs" style="left:0;top:0;width:612pt;height:792pt;background:${OHL.mix(k.dark, '#d9d6cf', .82)}"></div>`;
+  h += `<div class="abs eyebrow" style="left:36pt;top:34pt;width:540pt;height:14pt">You are invited to our</div>`;
+  const lines = OHL.labelLines(E.label);
+  lines.forEach((t, i) => h += `<div class="abs hl" style="left:30pt;top:${54 + i*80}pt;width:552pt;height:86pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
+  let y = 54 + lines.length*80 + 18;
+  const top0 = y;
+  // date left, address right on the date's line (owner 10/27/2026: no dash between them, the address a size up)
+  h += `<div class="abs date" style="left:40pt;top:${y}pt;width:262pt;height:27pt" data-fit="22,18" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  if(E.time) h += `<div class="abs time" style="left:40pt;top:${y+30}pt;width:240pt;height:23pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  const an = Ivory.linesNeeded('addr', L.address, 266, 27);
+  h += `<div class="abs addr" style="left:306pt;top:${y}pt;width:266pt;height:${an*27+2}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  h += `<div class="abs place" style="left:306pt;top:${y+an*27+5}pt;width:266pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  y += Math.max(58, an*27 + 18) + 14;
+  const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 66, y, 480, 13, 2);
+  h += ev.html; y += ev.h + (ev.h ? 14 : 0);
+  // the house inside drafting rules, right under the event; the card sits at the foot (on the flyer's own color)
+  const cardY = 688, cardH = 80;
+  const py = y + 6, ph = cardY - 28 - py;
+  const fr = OHL.fitHero(D, hero, 500, Math.max(ph, 120));
+  const px = 306 - fr.w/2;
+  h += OHL.photo(D, hero, `left:${px}pt;top:${py}pt;width:${fr.w}pt;height:${fr.h}pt`);
+  [[px-8, py-8, '1pt 0 0 1pt'], [px+fr.w-2, py-8, '1pt 1pt 0 0'], [px-8, py+fr.h-2, '0 0 1pt 1pt'], [px+fr.w-2, py+fr.h-2, '0 1pt 1pt 0']].forEach(([x, yy, bw]) => h += `<div class="tick" style="left:${x}pt;top:${yy}pt;border-width:${bw}"></div>`);
+  // presented by
+  h += `<div class="abs by" style="left:36pt;top:${cardY - 20}pt;width:540pt;height:12pt">Presented by</div>`;
+  h += OHL.contact(D, {x:36, y:cardY, w:540, h:cardH, tone:'light', nameSize:18, logoW:160, logoH:46, nameFont:"'Libre Baskerville'", nameWeight:400, bodyFont:"'Instrument Sans'"});
+  const issues = ph < 150 ? [{slot:'oh.note', kind:'overflow', detail:'the house photo is squeezed too small'}] : [];
+  h += `<div class="abs fine" style="left:36pt;top:776pt;width:540pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc([[A.designation, B.brokerage].filter(Boolean).join(', '), C.fineprint || 'Information deemed reliable but not guaranteed.'].join('  ·  '))}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  f.after = () => {
+    // the address never outsizes the date (a long weekday steps the date down)
+    const dt = document.querySelector('.date'), ad = document.querySelector('.addr');
+    if(dt && ad){ const s = Math.min(19.5, parseFloat(getComputedStyle(dt).fontSize)*72/96); ad.style.fontSize = s + 'pt'; }
+    return OHL.stack([...document.querySelectorAll('.hl')], 82, 40, 54, 0.98);
+  };
+  return f;
+});
+</script>
+</body>
+</html>

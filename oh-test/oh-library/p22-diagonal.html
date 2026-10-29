@@ -58,7 +58,7 @@ OHL.start(['700 10pt Barlow', '600 10pt Barlow', '500 10pt Barlow', '400 10pt Ba
   h += ev.html;
   const an = Ivory.linesNeeded('addr', L.address, 230, 24);
   h += `<div class="abs addr" style="left:348pt;top:${y+2}pt;width:230pt;height:${an*24+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:348pt;top:${y+6+an*24}pt;width:230pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:348pt;top:${y+6+an*24}pt;width:230pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   h += `<div class="abs facts" style="left:348pt;top:${y+22+an*24}pt;width:230pt;height:13pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;
   const barTop = 704;
   const issues = (y + 66 + ev.h > barTop - 6) ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run into the bar'}] : [];

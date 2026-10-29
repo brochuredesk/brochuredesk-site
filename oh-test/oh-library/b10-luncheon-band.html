@@ -49,7 +49,7 @@ OHL.start(['700 10pt "Plex Condensed"', '400 10pt "Plex Condensed"', '400 10pt "
   const fw0 = (E.hasRefresh && food) ? 150 : 0, tw0 = 324 - 18 - 36 - (fw0 ? fw0 + 14 : 0), aw0 = 576 - 342;
   const noteH = E.note ? Ivory.linesNeeded('ev', E.note, 540, 13)*13 + 8 : 0;
   const bandH = 70 + 36 + (E.time ? 29 : 0) + noteH + 16;
-  const pl0 = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : '')].filter(Boolean).join(', ');
+  const pl0 = OHL.place(L);
   let addrNeed = 22 + Ivory.linesNeeded('addr', L.address, aw0, 25)*25 + Ivory.linesNeeded('place', pl0, aw0, 12.5)*12.5 + 15;
   const refNeed = E.hasRefresh ? 18 + (E.refreshText ? Ivory.linesNeeded('rx', E.refreshText, tw0, 17)*17 : 28) : 0;
   const over = need => 36 + 360 + 18 + bandH + 20 + need + 14 - 696;
@@ -94,7 +94,7 @@ OHL.start(['700 10pt "Plex Condensed"', '400 10pt "Plex Condensed"', '400 10pt "
   h += `<div class="abs k" style="left:${ax}pt;top:${by+2}pt;width:${aw}pt;height:11pt">Join us at</div>`;
   const an = Ivory.linesNeeded('addr', L.address, aw, 25);
   h += `<div class="abs addr" style="left:${ax}pt;top:${by+18}pt;width:${aw}pt;height:${an*25+4}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  const pl = [L.neighborhood, [L.city, L.state].filter(Boolean).join(', ') + (L.zip ? ' ' + L.zip : '')].filter(Boolean).join(', ');
+  const pl = OHL.place(L);
   const pn = Ivory.linesNeeded('place', pl, aw, 12.5);
   h += `<div class="abs place" style="left:${ax}pt;top:${by+22+an*25}pt;width:${aw}pt;height:${pn*12.5+3}pt" data-slot="place" data-lines="${pn}">${esc(pl)}</div>`;
   if(showFacts) h += `<div class="abs place" style="left:${ax}pt;top:${by+26+an*25+pn*12.5}pt;width:${aw}pt;height:15pt;white-space:nowrap;overflow:hidden" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '  ·  '))}</div>`;

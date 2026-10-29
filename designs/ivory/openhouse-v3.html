@@ -10,7 +10,7 @@
   The hero runs edge to edge from the top of the page; a solid panel in the agent's accent color sits into its lower
   left corner and carries the whole event knocked out in ivory: the label at 22 pt tracked caps, the weekday, the month
   and day at 56 pt, the time at 24 pt bold, then a hairline and the special-notes and refreshments lines. The panel is 384 x 250 pt
-  (about 30% of the page). Address and facts below, a rule, three captioned photos, then the contact card (the one logo).
+  (10/25: trimmed to hug the event, bottom edge fixed at 450 pt). Address and facts below, a rule, three captioned photos, then the contact card (the one logo).
 -->
 <style>
   .panel{position:absolute;left:36pt;top:200pt;width:384pt;height:250pt;background:var(--accent)}
@@ -24,7 +24,7 @@
   .oh-strong{height:15pt;font:700 11.5pt/15pt var(--font-body);color:var(--paper);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .address{left:35pt;top:462pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt}
   .placeline{left:36pt;top:496pt;width:380pt;height:9pt}
-  .factline{left:336pt;top:495pt;width:240pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .factline{left:336pt;top:495pt;width:240pt;height:16pt;font:600 12.5pt/16pt var(--font-body);color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -58,24 +58,29 @@ Ivory.whenFonts(function(){
     h += `<div class="abs display pn-raw" data-slot="oh.date" data-lines="2">${esc(O.long)}</div>`;
   } else h += Ivory.ghost(58, 260, 240, 2, 40);
   h += O.time ? `<div class="abs pn-time" data-slot="oh.time" data-lines="1">${esc(O.time)}</div>` : '';
+  // 10/25 A09 round 2: the panel hugs the event (20 pt over the label, 18 pt under the last line); its bottom edge stays
+  // at 450 pt, so the top comes down and more of the house shows above it. Longer notes grow it downward as before.
   { const ls = [[O.note,'oh.note','oh-strong'],[O.refreshments,'oh.refreshments','pn-note']].filter(l=>l[0]);
+    const PT = 20, PB = 18, B = 450;
+    let dy, ev = null;
     if(ls.length){
-      const ev = Ivory.eventLines(ls, 58, 402, 344, 15, 2);
-      grow = Math.max(0, 402 + ev.h + 10 - 450);
-      h += `<div class="pn-hair"></div>` + ev.html;
-    } else {
-      // no special notes or refreshments: the panel keeps its size and the event sits centered in it
-      h += `<style>.pn-label,.pn-wd,.pn-date,.pn-raw,.pn-time{margin-top:22pt}</style>`;
-    } }
+      ev = Ivory.eventLines(ls, 58, 402, 344, 15, 2);
+      const end = 402 + ev.h;
+      dy = Math.max(0, B - PB - end); grow = Math.max(0, end + PB - B);
+      ev = Ivory.eventLines(ls, 58, 402 + dy, 344, 15, 2);
+    } else { dy = B - PB - 386; }
+    const top = 218 + dy - PT;
+    h += `<style>.pn-label,.pn-wd,.pn-date,.pn-raw,.pn-time,.pn-hair{margin-top:${dy}pt}.panel{top:${top}pt;height:${B + grow - top}pt}</style>`;
+    if(ev) h += `<div class="pn-hair"></div>` + ev.html; }
 
-  if(grow) h += `<style>.panel{height:${250+grow}pt}.address{top:${462+grow}pt}.placeline{top:${496+grow}pt}.factline{top:${495+grow}pt}</style>`;
+  if(grow) h += `<style>.address{top:${462+grow}pt}.placeline{top:${496+grow}pt}.factline{top:${495+grow}pt}</style>`;
   h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
   h += Ivory.fullRule(D, 612, 514+grow);
-  [[s1,36],[s2,221],[s3,406]].forEach(([id,x],i)=> h += Ivory.photo(D, '', id, `left:${x}pt;top:${524+grow}pt;width:170pt;height:${104-grow}pt`) + Ivory.captionHTML(D, id, x, 632, 170, 'row'+i));
+  [[s1,36],[s2,221],[s3,406]].forEach(([id,x],i)=> h += Ivory.photo(D, '', id, `left:${x}pt;top:${524+grow}pt;width:170pt;height:${100-grow}pt`) + Ivory.captionHTML(D, id, x, 628, 170, 'row'+i));
 
-  h += Ivory.card(D, {x:36, y:656, w:540, h:100, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:54, logoH:26, gap:18, brkMin:170,
+  h += Ivory.card(D, {x:36, y:652, w:540, h:104, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:15, qr:0, brkShift:9, logoH:36, gap:18, brkMin:230,
                       top:{name:8, title:39, callLbl:51, phone:59}});
   h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
 

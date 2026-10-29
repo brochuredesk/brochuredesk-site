@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BrochureDesk · Open house library · Pale Gallery</title>
+<link rel="stylesheet" href="ohlib.css">
+<script src="../ivory/ivory.js"></script>
+<script src="ohlib.js"></script>
+<!--
+  Pale Gallery (from reference P15). Trim 612 x 792 pt. Public or REALTOR(R).
+  The owner: "a great looking flyer, I love it." A pale tint of the agent's main color for the page, the house large at top,
+  a band of the main color with the event wording in wide capitals, the date, time and address (the address here is
+  large, not the reference's small line), then a row of three rooms and the agent card with the logo.
+  Type: Josefin Sans (headline, date, address), Jost (details).
+-->
+<style>
+  .sheet{color:var(--ink)}
+  .band{position:absolute;background:var(--main)}
+  .band~.on{color:var(--on-main)}
+  .hl{font:700 46pt/52pt 'Josefin Sans';letter-spacing:5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden}
+  .date{font:600 25pt/30pt 'Josefin Sans';letter-spacing:1pt;text-align:center;white-space:nowrap;overflow:hidden}
+  .time{font:600 20pt/26pt 'Josefin Sans';letter-spacing:1.5pt;text-transform:uppercase;text-align:center;white-space:nowrap;overflow:hidden;color:var(--accent-on-main)}
+  .addr{font:400 16pt/22pt 'Josefin Sans';letter-spacing:1pt;text-align:center;white-space:nowrap;overflow:hidden}
+  .ev{font:400 10pt/13pt Jost;text-align:center}
+  .oh-agent-name{font-family:'Josefin Sans';font-weight:700}
+  .oh-agent{font-family:Jost}
+  .fine{font:400 6.6pt/8pt Jost;white-space:nowrap;opacity:.6}
+</style>
+</head>
+<body>
+<script id="brochure-data" type="application/json">{}</script>
+<div id="pages"></div>
+<script>
+OHL.start(['700 10pt "Josefin Sans"', '600 10pt "Josefin Sans"', '400 10pt "Josefin Sans"', '400 10pt Jost'], D => {
+  const esc = Ivory.esc, L = D.listing, C = D.companion || {}, k = OHL.colors(D);
+  const E = OHL.event(D), hero = OHL.hero(D, 'straight');
+  const rooms = OHL.photos(D).filter(id => id !== hero && !Ivory.fullHouse(D, id)).slice(0, 3);
+  const X = 30, W = 552;
+  let h = `<div class="abs" style="left:0;top:0;width:612pt;height:792pt;background:${OHL.mix(k.main, '#ffffff', .88)}"></div>`;
+  const ev = Ivory.eventLines([[E.note,'oh.note','on ev'],[E.refreshments,'oh.refreshments','on ev']], X + 30, 0, W - 60, 13, 2);
+  const bh = 18 + 52 + 6 + 30 + 26 + 8 + 22 + (ev.h ? ev.h + 8 : 0) + 18;
+  // the house as tall as the band and a 100 pt row of rooms allow (narrower, never cropped more, when it must be)
+  const fr = OHL.fitHero(D, hero, W, Math.min(336, 676 - 100 - 8 - bh - 8 - 30)), ph = fr.h;
+  h += OHL.photo(D, hero, `left:${X + (W - fr.w)/2}pt;top:30pt;width:${fr.w}pt;height:${ph}pt`);
+  const bt = 30 + ph + 8;
+  h += `<div class="band" style="left:${X}pt;top:${bt}pt;width:${W}pt;height:${bh}pt"></div>`;
+  let y = bt + 18;
+  h += `<div class="abs on hl" style="left:${X+16}pt;top:${y}pt;width:${W-32}pt;height:52pt" data-fit="46,24" data-slot="oh.label" data-lines="1">${esc(E.label)}</div>`;
+  y += 58;
+  h += `<div class="abs on date" style="left:${X+16}pt;top:${y}pt;width:${W-32}pt;height:30pt" data-fit="25,20" data-slot="oh.date" data-lines="1">${esc(E.long)}</div>`;
+  y += 30;
+  if(E.time) h += `<div class="abs on time" style="left:${X+16}pt;top:${y}pt;width:${W-32}pt;height:26pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;
+  y += 34;
+  h += `<div class="abs on addr" style="left:${X+16}pt;top:${y}pt;width:${W-32}pt;height:22pt" data-slot="address" data-lines="1">${esc([L.address, OHL.place(L)].filter(Boolean).join(', '))}</div>`;   // with state and ZIP (owner 10/27/2026)
+  y += 30;
+  if(ev.h) h += ev.html.replace(/top:(\d+(\.\d+)?)pt/g, (m, t) => `top:${+t + y}pt`);
+  // three rooms
+  const ry = bt + bh + 8, rh = 676 - ry, rw = (W - 16)/3;
+  rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${X + i*(rw+8)}pt;top:${ry}pt;width:${rw}pt;height:${rh}pt`));
+  const issues = rh < 86 ? [{slot:'oh.note', kind:'overflow', detail:'the room photos are squeezed too thin'}] : [];
+  h += OHL.contact(D, {x:X, y:690, w:W, h:62, tone:'light', nameSize:17, phoneSize:13, lineSize:9.5, logoW:176, logoH:50});
+  h += `<div class="abs fine" style="left:${X}pt;top:776pt;width:${W}pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
+  const f = OHL.frame(D, h);
+  f.issues = issues;
+  return f;
+});
+</script>
+</body>
+</html>

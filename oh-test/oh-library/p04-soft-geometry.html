@@ -24,7 +24,8 @@
   .ev{font:500 10pt/13pt Urbanist}
   .host{font:700 8.6pt/11pt Urbanist;letter-spacing:2pt;text-transform:uppercase;color:var(--main-on-paper);white-space:nowrap}
   .wedge{position:absolute;background:var(--accent);color:var(--on-accent)}
-  .addr{font:700 17pt/21pt Urbanist;text-align:right}
+  .addr{font:700 19pt/23pt Urbanist;text-align:right}
+  .wu{font:500 11pt/14pt Urbanist;white-space:nowrap;color:var(--ink)}
   .place{font:600 9pt/12pt Urbanist;letter-spacing:1.6pt;text-transform:uppercase;text-align:right;white-space:nowrap;overflow:hidden}
   .oh-agent-name{font-family:Urbanist;font-weight:700}
   .oh-agent{font-family:Urbanist}
@@ -44,8 +45,8 @@ OHL.start(['700 10pt Urbanist', '600 10pt Urbanist', '500 10pt Urbanist'], D => 
   const lines = OHL.labelLines(E.label);
   lines.forEach((t, i) => h += `<div class="abs hl" style="left:38pt;top:${54 + i*58}pt;width:440pt;height:62pt" data-slot="oh.label" data-lines="1">${esc(t)}</div>`);
   const rays = [...Array(16)].map((_, i) => { const a = i*Math.PI/8; return `<line x1="${30+9*Math.cos(a)}" y1="${30+9*Math.sin(a)}" x2="${30+27*Math.cos(a)}" y2="${30+27*Math.sin(a)}"/>`; }).join('');
-  h += `<svg class="burst" style="left:500pt;top:70pt;width:60pt;height:60pt" viewBox="0 0 60 60"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${rays}</g></svg>`;
   const hb = 54 + lines.length*58 + 14;
+  h += `<svg class="burst" style="left:462pt;top:${hb/2 - 60}pt;width:120pt;height:120pt" viewBox="0 0 60 60"><g stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${rays}</g></svg>`;
   // the house
   const fr = OHL.fitHero(D, hero, 612, 300), py = hb;
   h += OHL.photo(D, hero, `left:${(612 - fr.w)/2}pt;top:${py}pt;width:${fr.w}pt;height:${fr.h}pt`);
@@ -63,11 +64,44 @@ OHL.start(['700 10pt Urbanist', '600 10pt Urbanist', '500 10pt Urbanist'], D => 
   const ev = Ivory.eventLines([[E.note,'oh.note','ev'],[E.refreshments,'oh.refreshments','ev']], 40, y, 320, 13, 2, 'color:var(--ink)');
   h += ev.html; y += ev.h + (ev.h ? 10 : 2);
   const issues = y > 690 - 6 ? [{slot:'oh.note', kind:'overflow', detail:'the event lines run off the pale block'}] : [];
-  // address on the accent wedge
-  const an = Ivory.linesNeeded('addr', L.address, 160, 21);
-  h += `<div class="abs addr" style="left:416pt;top:${by + 22}pt;width:160pt;height:${an*21+4}pt;color:var(--on-accent)" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:416pt;top:${by + 26 + an*21}pt;width:160pt;height:12pt;color:var(--on-accent)" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city].filter(Boolean).join('  ·  '))}</div>`;
-  Ivory.facts(L).map(t => t.replace(' square feet', ' sq ft')).forEach((t, i) => h += `<div class="abs place" style="left:416pt;top:${by + 46 + an*21 + i*14}pt;width:160pt;height:13pt;color:var(--on-accent);letter-spacing:.8pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  // address block centered top to bottom in the accent wedge (kept clear of the dark diagonal)
+  const aw = 124, ax = 452;
+  const an = Ivory.linesNeeded('addr', L.address, aw, 23);
+  const facts = Ivory.facts(L).map(t => t.replace(' square feet', ' sq ft'));
+  const blockH = an*23 + 4 + 14 + 8 + facts.length*14;
+  let ay = by + (bh - blockH)/2;
+  h += `<div class="abs addr" style="left:${ax}pt;top:${ay}pt;width:${aw}pt;height:${an*23+3}pt;color:var(--on-accent)" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
+  ay += an*23 + 4;
+  h += `<div class="abs place" style="left:${ax}pt;top:${ay}pt;width:${aw}pt;height:12pt;color:var(--on-accent)" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
+  ay += 22;
+  facts.forEach((t, i) => h += `<div class="abs place" style="left:${ax}pt;top:${ay + i*14}pt;width:${aw}pt;height:13pt;color:var(--on-accent);letter-spacing:.8pt" data-slot="fact.${i}" data-lines="1">${esc(t)}</div>`);
+  // write-up under the day and time: each line stops short of the diagonal edge, so the lines step shorter
+  {
+    const lh = 14, maxL = Math.floor((690 - 8 - y)/lh);
+    const ctx = document.createElement('canvas').getContext('2d'); ctx.font = `500 ${11*4/3}px Urbanist`;
+    const tw = t => ctx.measureText(t).width*3/4;
+    const lineW = i => 430 - 50*((y + (i+1)*lh - by)/bh) - 22 - 40;
+    const wrap = text => {
+      const words = text.split(/\s+/), out = []; let cur = '';
+      for(const w of words){
+        const t = cur ? cur + ' ' + w : w;
+        if(tw(t) <= lineW(out.length) || !cur) cur = t; else { out.push(cur); cur = w; }
+      }
+      out.push(cur);
+      return out;
+    };
+    const pool = ((C.postcard || {}).master || []).map(t => String(t).trim()).filter(Boolean);
+    let best = null;
+    const k = Math.min(pool.length, 10);
+    for(let mask = 1; mask < (1 << k) && maxL >= 1; mask += 2){
+      const text = pool.filter((_, i) => i < k && mask & (1 << i)).join(' '), ls = wrap(text);
+      if(ls.length > maxL) continue;
+      const fill = tw(ls[ls.length-1])/lineW(ls.length-1);
+      const score = (fill >= .75 && fill <= 1 ? 1000 : 0) + ls.length*100 + fill*10;
+      if(!best || score > best.score) best = {ls, score};
+    }
+    if(best) h += `<div class="abs wu" style="left:40pt;top:${y}pt;width:${lineW(0)+10}pt;height:${best.ls.length*lh+2}pt" data-slot="oh.writeup" data-lines="${best.ls.length}">${best.ls.map(esc).join('<br>')}</div>`;
+  }
   // foot: the agent card with the logo on the dark field
   h += OHL.contact(D, {x:40, y:700, w:536, h:62, tone:'dark', nameSize:18, logoW:180, logoH:50, nameFont:'Urbanist', nameWeight:700, bodyFont:'Urbanist'});
   h += `<div class="abs fine" style="left:40pt;top:776pt;width:536pt;height:8pt" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;

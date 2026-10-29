@@ -25,7 +25,7 @@
   .oh-strong{height:16pt;font:700 11.5pt/16pt var(--font-body);color:var(--paper);white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .address{left:35pt;top:470pt;width:540pt;height:30pt;font-size:24pt;line-height:30pt}
   .placeline{left:36pt;top:504pt;width:300pt;height:9pt}
-  .factline{left:336pt;top:502pt;width:240pt;height:11pt;font:600 8.5pt/11pt var(--font-body);color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
+  .factline{left:336pt;top:502pt;width:240pt;height:16pt;font:600 12.5pt/16pt var(--font-body);color:var(--ink);text-align:right;white-space:nowrap;overflow:hidden;letter-spacing:.2pt}
   .fine{left:36pt;top:760pt;width:540pt;font-size:6pt;line-height:8pt;height:8pt;white-space:nowrap;color:var(--muted)}
 </style>
 </head>
@@ -69,12 +69,12 @@ Ivory.whenFonts(function(){
   h += Ivory.photo(D, '', s2, 'left:36pt;top:346pt;width:172pt;height:116pt');
   h += Ivory.photo(D, '', hero, 'left:216pt;top:222pt;width:360pt;height:240pt');
   h += `<div class="abs display address" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.place(L))}</div>`;
+  h += `<div class="abs place placeline" data-slot="place" data-lines="1" data-fine="1">${esc(Ivory.placeZip(L))}</div>`;
   h += `<div class="abs factline" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L))}</div>`;
   h += `<div class="hair" style="left:36pt;top:522pt;width:540pt;opacity:.35"></div>`;
   [[s3,36],[s4,221],[s5,406]].forEach(([id,x])=> h += Ivory.photo(D, '', id, `left:${x}pt;top:534pt;width:170pt;height:106pt`));
 
-  h += Ivory.card(D, {x:36, y:656, w:540, h:100, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:12, qr:54, logoH:26, gap:18, brkMin:170,
+  h += Ivory.card(D, {x:36, y:656, w:540, h:100, nameSize:26, phoneSize:16, lineSize:8.5, officeSize:15, qr:0, brkShift:9, logoH:36, gap:18, brkMin:230,
                       top:{name:8, title:39, callLbl:51, phone:59}});
   h += `<div class="abs fine" data-slot="fineprint" data-lines="1" data-fine="1">${esc(C.fineprint || 'Information deemed reliable but not guaranteed.')}</div>`;
 

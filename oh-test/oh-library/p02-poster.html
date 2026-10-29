@@ -58,7 +58,7 @@ OHL.start(['700 10pt Archivo', '400 10pt Archivo'], D => {
   const y = py + ph + 26;
   const an = Ivory.linesNeeded('addr', L.address, 280, 30);
   h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:280pt;height:${an*30+5}pt" data-slot="address" data-lines="${an}">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:36pt;top:${y+an*30+6}pt;width:280pt;height:12pt" data-slot="place" data-lines="1">${esc(Ivory.place(L).replace(/  \/  /g, '  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y+an*30+6}pt;width:280pt;height:12pt" data-slot="place" data-lines="1">${esc(OHL.place(L))}</div>`;
   h += `<div class="abs facts" style="left:36pt;top:${y+an*30+24}pt;width:280pt;height:14pt" data-slot="oh.facts" data-lines="1">${esc(Ivory.factsShort(L).replace(/  \/  /g, '   ·   '))}</div>`;
   h += `<div class="abs long" style="left:326pt;top:${y}pt;width:250pt;height:24pt" data-fit="20,15" data-slot="oh.long" data-lines="1">${esc(E.long)}</div>`;
   if(E.time) h += `<div class="abs time" style="left:326pt;top:${y+28}pt;width:250pt;height:27pt" data-slot="oh.time" data-lines="1">${esc(E.time)}</div>`;

@@ -66,7 +66,7 @@ OHL.start(['700 10pt Archivo', '400 10pt Archivo'], D => {
   // address and rooms
   let y = ground + 18;
   h += `<div class="abs addr" style="left:36pt;top:${y}pt;width:540pt;height:20pt" data-slot="address" data-lines="1">${esc(L.address)}</div>`;
-  h += `<div class="abs place" style="left:36pt;top:${y+22}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([L.neighborhood, L.city, Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  '))}</div>`;
+  h += `<div class="abs place" style="left:36pt;top:${y+22}pt;width:540pt;height:12pt" data-slot="place" data-lines="1">${esc([OHL.place(L), Ivory.factsShort(L).replace(/  \/  /g, '  ·  ')].filter(Boolean).join('  ·  '))}</div>`;
   y += 44;
   const rw = (540 - 2*14)/3, rh = 692 - y;
   rooms.forEach((id, i) => h += OHL.photo(D, id, `left:${36 + i*(rw+14)}pt;top:${y}pt;width:${rw}pt;height:${rh}pt`));
