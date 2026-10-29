@@ -1237,18 +1237,10 @@
       $('#writeRetry').hidden = false;
     }
   }
-  // The floor plan at Finalize (product.md "Floor plans"): once per plan, one AI read marks every room, then this browser
-  // colors the listing's own plan from it (pkg.plan: masks every design tints, our own labels), so a design switch never
-  // reads it again; a new plan (an upload) does.
-  // A plan the checks turn down leaves pkg.plan empty and the design takes its no-plan version.
-  // the kitchen facts already in the lookup (description, kitchen and room fields), for the plan read to find on the plan
-  // (the owner 10/28). Plain text matching, no AI.
-  function kitchenFacts(l){
-    const t = [l.description, l.facts && l.facts['Kitchen Description'], l.kitchenDescription, l.interior, JSON.stringify(l.rooms || [])].filter(Boolean).join(' ').toLowerCase();
-    const inch = t.match(/(\d{2})\s*(?:"|''|-?\s*inch|in\.?)\s*(?:\w+\s){0,3}?(?:range|cooktop|stove)/);
-    return {ranges: /(two|double|dual|2)\s+(ranges|stoves|cooktops)/.test(t) ? 2 : null, rangeInches: inch ? +inch[1] : null,
-      secondSink: /(prep|second|bar|island)\s+sink/.test(t) || null, scullery: /scullery|butler'?s pantry|prep kitchen|catering kitchen/.test(t) || null};
-  }
+  // The floor plan at Finalize (product.md "Floor plans"): placed exactly as the agent gave it, no AI (the owner 10/28 late,
+  // 10/29: take the paid plan read out). Each plan page is one floor, cut to its drawing, white paper made clear, colors
+  // kept; the template turns and sizes it. Done once per plan (pkg.plan), so a design switch never redoes it; a new plan
+  // (an upload) does. A plan that can't be placed leaves pkg.plan empty and the design takes its no-plan version.
   async function redrawPlan(){
     const F = pkg.floorPlan;
     if(!F || !F.active) return;
@@ -1260,21 +1252,13 @@
       catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artCanvases(F.art); }
       const st = +pkg.listing.stories || 0;
       if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
-      const canvases = pages; pages = canvases.map(PT.forRead);
-      const body = {action: 'redraw-plan', packageId: pkg.id, pages: pages.map((p, i) => Object.assign(p, {label: (F.art && F.art[i] && F.art[i].label) || ''})),
-        stories: st || null, sqft: +pkg.listing.sqft || null, kitchen: kitchenFacts(pkg.listing)};
-      // the first read, then (turned down) the more careful retry as a request of its own: a slow first read on the
-      // strongest model leaves too little of the 150 s limit for a second in the same request
-      let j = await ai(Object.assign({attempt: 'first'}, body)), cost = j.cost || 0;
-      if(!j.plan && j.retry){ j = await ai(Object.assign({}, body, {attempt: 'retry'})); cost += j.cost || 0; }
-      // the listing's own plan, colored from the read (in this browser, no AI cost)
-      let plan = null;
-      if(j.plan){ try { plan = PT.colorPlan(canvases, j.plan); if(!plan.levels.length) plan = null; } catch(e){ j.why = ['coloring: ' + e.message]; } }
-      Object.assign(pkg, {plan, planKey: key, planCost: (pkg.planCost || 0) + cost});
-      store.event(pkg.id, plan ? 'plan-redraw' : 'plan-redraw-failed', plan ? {model: j.model, cost} : {why: j.why, cost});
+      let plan = PT.givenPlan(pages);
+      if(!plan.levels.length) plan = null;
+      Object.assign(pkg, {plan, planKey: key});
+      store.event(pkg.id, plan ? 'plan-placed' : 'plan-place-failed', plan ? {floors: plan.levels.length} : {why: ['no drawing found']});
     } catch(e) {
-      // a failed call is tried again at the next Finalize (no key saved)
-      pkg.plan = null; store.event(pkg.id, 'plan-redraw-failed', {why: [e.message]});
+      // a failure is tried again at the next Finalize (no key saved)
+      pkg.plan = null; store.event(pkg.id, 'plan-place-failed', {why: [e.message]});
     }
   }
   async function ai(body){

@@ -1207,6 +1207,10 @@
     return {kind: 'color', source: redraw ? (plan.source || 'Floor plan from the listing, colored for this brochure.') : 'Floor plan from the listing.',
       levels, detached, finished: !redraw, colored: fin.colored > 0.1, watermark: fin.watermark, noSizes: redraw && levels.length > 0 && levels.every(l => l.noSizes)};
   };
+  // the listing's plan as the agent gave it, with no AI read (the owner 10/29): each page is one floor, cut to its drawing
+  // (PT.drawingBox), white paper made clear, colors kept. No room boxes, so no split blocks or detached-garage box.
+  PT.givenPlan = canvases => PT.colorPlan(canvases, {levels: canvases.map((c, i) => ({page: i + 1, floor: i + 1, name: FLOORS[i] || '',
+    outline: {left: 0, top: 0, right: 1, bottom: 1}, rooms: [], feet: null}))});
   // the agent said yes to sizes from the MLS room list: each label takes the size of the MLS room with its name on its
   // floor (Primary for Master; "Bedroom 2" or the next unused bedroom), rounded to feet. A room with no match stays unsized.
   PT.mlsSizes = (plan, mls) => {
