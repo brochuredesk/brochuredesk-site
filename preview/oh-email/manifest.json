@@ -1,0 +1,914 @@
+{
+ "address": "4127 Larkspur Bend Street",
+ "emails": [
+  {
+   "id": "ivory-open-house-v1",
+   "set": "Ivory",
+   "title": "Ivory Invitation",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/ivory-open-house-v1-email.png",
+   "print": "img/ivory-open-house-v1-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "ivory-open-house-v2",
+   "set": "Ivory",
+   "title": "Ivory Date Band",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/ivory-open-house-v2-email.png",
+   "print": "img/ivory-open-house-v2-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "ivory-open-house-v3",
+   "set": "Ivory",
+   "title": "Ivory Hero Panel",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/ivory-open-house-v3-email.png",
+   "print": "img/ivory-open-house-v3-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "ivory-open-house-v4",
+   "set": "Ivory",
+   "title": "Ivory Calendar",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/ivory-open-house-v4-email.png",
+   "print": "img/ivory-open-house-v4-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "ivory-open-house-v5",
+   "set": "Ivory",
+   "title": "Ivory Editorial",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/ivory-open-house-v5-email.png",
+   "print": "img/ivory-open-house-v5-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b01-twilight-frame",
+   "set": "Library",
+   "title": "Twilight Frame",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b01-twilight-frame-email.png",
+   "print": "img/oh-library-lib-b01-twilight-frame-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b16-evening-panel",
+   "set": "Library",
+   "title": "Evening Panel",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b16-evening-panel-email.png",
+   "print": "img/oh-library-lib-b16-evening-panel-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b10-luncheon-band",
+   "set": "Library",
+   "title": "Luncheon Band",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b10-luncheon-band-email.png",
+   "print": "img/oh-library-lib-b10-luncheon-band-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p02-poster",
+   "set": "Library",
+   "title": "Poster",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p02-poster-email.png",
+   "print": "img/oh-library-lib-p02-poster-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p17-angle",
+   "set": "Library",
+   "title": "Angle",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p17-angle-email.png",
+   "print": "img/oh-library-lib-p17-angle-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p49-arc",
+   "set": "Library",
+   "title": "Arc",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p49-arc-email.png",
+   "print": "img/oh-library-lib-p49-arc-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b02-gallery-line",
+   "set": "Library",
+   "title": "Gallery Line",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b02-gallery-line-email.png",
+   "print": "img/oh-library-lib-b02-gallery-line-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b03-formal-invitation",
+   "set": "Library",
+   "title": "Formal Invitation",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b03-formal-invitation-email.png",
+   "print": "img/oh-library-lib-b03-formal-invitation-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b14-photo-grid",
+   "set": "Library",
+   "title": "Photo Grid",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b14-photo-grid-email.png",
+   "print": "img/oh-library-lib-b14-photo-grid-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b26-agent-preview",
+   "set": "Library",
+   "title": "Agent Preview",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b26-agent-preview-email.png",
+   "print": "img/oh-library-lib-b26-agent-preview-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b46a-arrow",
+   "set": "Library",
+   "title": "Arrow",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b46a-arrow-email.png",
+   "print": "img/oh-library-lib-b46a-arrow-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b46b-chevron",
+   "set": "Library",
+   "title": "Chevron",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b46b-chevron-email.png",
+   "print": "img/oh-library-lib-b46b-chevron-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p15-pale-gallery",
+   "set": "Library",
+   "title": "Pale Gallery",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p15-pale-gallery-email.png",
+   "print": "img/oh-library-lib-p15-pale-gallery-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p18-asymmetric",
+   "set": "Library",
+   "title": "Asymmetric",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p18-asymmetric-email.png",
+   "print": "img/oh-library-lib-p18-asymmetric-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p22-diagonal",
+   "set": "Library",
+   "title": "Diagonal",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p22-diagonal-email.png",
+   "print": "img/oh-library-lib-p22-diagonal-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b08-night-fade",
+   "set": "Library",
+   "title": "Night Fade",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b08-night-fade-email.png",
+   "print": "img/oh-library-lib-b08-night-fade-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-b13-tasting-table",
+   "set": "Library",
+   "title": "Tasting Table",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-b13-tasting-table-email.png",
+   "print": "img/oh-library-lib-b13-tasting-table-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p01-ruled-editorial",
+   "set": "Library",
+   "title": "Ruled Editorial",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p01-ruled-editorial-email.png",
+   "print": "img/oh-library-lib-p01-ruled-editorial-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p04-soft-geometry",
+   "set": "Library",
+   "title": "Soft Geometry",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p04-soft-geometry-email.png",
+   "print": "img/oh-library-lib-p04-soft-geometry-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p05-rounded-frame",
+   "set": "Library",
+   "title": "Rounded Frame",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p05-rounded-frame-email.png",
+   "print": "img/oh-library-lib-p05-rounded-frame-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p06-warm-collage",
+   "set": "Library",
+   "title": "Warm Collage",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p06-warm-collage-email.png",
+   "print": "img/oh-library-lib-p06-warm-collage-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p08-architect",
+   "set": "Library",
+   "title": "Architect",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p08-architect-email.png",
+   "print": "img/oh-library-lib-p08-architect-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p10-charcoal-classic",
+   "set": "Library",
+   "title": "Charcoal Classic",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p10-charcoal-classic-email.png",
+   "print": "img/oh-library-lib-p10-charcoal-classic-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p12-archway",
+   "set": "Library",
+   "title": "Archway",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p12-archway-email.png",
+   "print": "img/oh-library-lib-p12-archway-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p13-logo-grid",
+   "set": "Library",
+   "title": "Logo Grid",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p13-logo-grid-email.png",
+   "print": "img/oh-library-lib-p13-logo-grid-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p16-modern-frame",
+   "set": "Library",
+   "title": "Modern Frame",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p16-modern-frame-email.png",
+   "print": "img/oh-library-lib-p16-modern-frame-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p19-color-grid",
+   "set": "Library",
+   "title": "Color Grid",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p19-color-grid-email.png",
+   "print": "img/oh-library-lib-p19-color-grid-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p20-garden-serif",
+   "set": "Library",
+   "title": "Garden Serif",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p20-garden-serif-email.png",
+   "print": "img/oh-library-lib-p20-garden-serif-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p24-white-editorial",
+   "set": "Library",
+   "title": "White Editorial",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p24-white-editorial-email.png",
+   "print": "img/oh-library-lib-p24-white-editorial-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p26-tall-column",
+   "set": "Library",
+   "title": "Tall Column",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p26-tall-column-email.png",
+   "print": "img/oh-library-lib-p26-tall-column-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p37-clear-collage",
+   "set": "Library",
+   "title": "Clear Collage",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p37-clear-collage-email.png",
+   "print": "img/oh-library-lib-p37-clear-collage-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p38-serif-headline",
+   "set": "Library",
+   "title": "Serif Headline",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p38-serif-headline-email.png",
+   "print": "img/oh-library-lib-p38-serif-headline-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p39-black-rules",
+   "set": "Library",
+   "title": "Black Rules",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p39-black-rules-email.png",
+   "print": "img/oh-library-lib-p39-black-rules-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "oh-library-lib-p45-civic-diagonal",
+   "set": "Library",
+   "title": "Civic Diagonal",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/oh-library-lib-p45-civic-diagonal-email.png",
+   "print": "img/oh-library-lib-p45-civic-diagonal-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "atlas-open-house-a",
+   "set": "Atlas",
+   "title": "Atlas Map Below",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/atlas-open-house-a-email.png",
+   "print": "img/atlas-open-house-a-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "outside-first-open-house-b",
+   "set": "Outside First",
+   "title": "Outside First Garden Gate",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/outside-first-open-house-b-email.png",
+   "print": "img/outside-first-open-house-b-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "room-proportions-open-house-b",
+   "set": "Room Proportions",
+   "title": "Room Proportions Calendar Block",
+   "label": "Open House",
+   "status": "in review",
+   "png": "img/room-proportions-open-house-b-email.png",
+   "print": "img/room-proportions-open-house-b-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  },
+  {
+   "id": "swatchbook-open-house-a",
+   "set": "Swatchbook",
+   "title": "Swatchbook Cover Swatch",
+   "label": "Open House",
+   "status": "in review (flyer not approved yet)",
+   "png": "img/swatchbook-open-house-a-email.png",
+   "print": "img/swatchbook-open-house-a-print.jpg",
+   "text": "Public Open House, Saturday, November 7, 1:00 to 4:00 pm. 4127 Larkspur Bend Street, Houston, TX 77023"
+  }
+ ],
+ "socials": [
+  {
+   "set": "Ivory",
+   "moments": [
+    {
+     "id": "jl",
+     "title": "Just Listed",
+     "base": "social/ivory/jl/",
+     "manifest": {
+      "places": [
+       {
+        "id": "instagram-post",
+        "label": "Instagram post",
+        "shape": "post",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet.\n\nCall or text for a private showing. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "instagram-carousel",
+        "label": "Instagram carousel",
+        "shape": "post",
+        "carousel": true,
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet.\n\nCall or text for a private showing. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "instagram-story",
+        "label": "Instagram story / Reels cover",
+        "shape": "story",
+        "caption": "",
+        "file": "story.jpg"
+       },
+       {
+        "id": "facebook-post",
+        "label": "Facebook post",
+        "shape": "post",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet.\n\nCall or text for a private showing. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "facebook-story",
+        "label": "Facebook story",
+        "shape": "story",
+        "caption": "",
+        "file": "story.jpg"
+       },
+       {
+        "id": "tiktok",
+        "label": "TikTok photo post",
+        "shape": "story",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "story.jpg"
+       },
+       {
+        "id": "youtube-shorts",
+        "label": "YouTube Shorts cover",
+        "shape": "story",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "story.jpg"
+       },
+       {
+        "id": "linkedin",
+        "label": "LinkedIn post",
+        "shape": "post",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet.\n\nCall or text for a private showing. Avery Morgan 713.555.0123",
+        "check": "LinkedIn shows 4:5 portrait in the feed; some guides still give 1080 x 1080 or 1200 x 628",
+        "file": "post.jpg"
+       },
+       {
+        "id": "x",
+        "label": "X post",
+        "shape": "wide",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "wide.jpg"
+       },
+       {
+        "id": "nextdoor",
+        "label": "Nextdoor post",
+        "shape": "square",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "check": "no current published spec found; square is the safe default",
+        "file": "square.jpg"
+       },
+       {
+        "id": "google-business",
+        "label": "Google Business Profile post",
+        "shape": "gbp",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "check": "guides give 1200 x 900 (4:3) for posts and 720 x 720 for photos",
+        "file": "gbp.jpg"
+       },
+       {
+        "id": "pinterest",
+        "label": "Pinterest pin",
+        "shape": "pin",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "pin.jpg"
+       },
+       {
+        "id": "threads",
+        "label": "Threads post",
+        "shape": "post",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "post.jpg"
+       },
+       {
+        "id": "facebook-marketplace",
+        "label": "Facebook Marketplace photo",
+        "shape": "square",
+        "caption": "Just listed: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text for a private showing.",
+        "file": "square.jpg"
+       }
+      ],
+      "carousel": [
+       "post",
+       "slide-1",
+       "slide-2",
+       "slide-3",
+       "slide-4",
+       "slide-5",
+       "slide-6",
+       "slide-7",
+       "slide-8"
+      ],
+      "files": {
+       "post": {
+        "file": "post.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 312180
+       },
+       "story": {
+        "file": "story.jpg",
+        "px": [
+         1080,
+         1920
+        ],
+        "bytes": 416845
+       },
+       "square": {
+        "file": "square.jpg",
+        "px": [
+         1080,
+         1080
+        ],
+        "bytes": 246919
+       },
+       "pin": {
+        "file": "pin.jpg",
+        "px": [
+         1000,
+         1500
+        ],
+        "bytes": 329170
+       },
+       "wide": {
+        "file": "wide.jpg",
+        "px": [
+         1600,
+         900
+        ],
+        "bytes": 262772
+       },
+       "gbp": {
+        "file": "gbp.jpg",
+        "px": [
+         1200,
+         900
+        ],
+        "bytes": 236391
+       },
+       "slide-1": {
+        "file": "slide-1.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 153885
+       },
+       "slide-2": {
+        "file": "slide-2.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 202631
+       },
+       "slide-3": {
+        "file": "slide-3.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 209202
+       },
+       "slide-4": {
+        "file": "slide-4.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 163869
+       },
+       "slide-5": {
+        "file": "slide-5.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 193737
+       },
+       "slide-6": {
+        "file": "slide-6.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 203282
+       },
+       "slide-7": {
+        "file": "slide-7.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 173648
+       },
+       "slide-8": {
+        "file": "slide-8.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 203968
+       }
+      }
+     }
+    },
+    {
+     "id": "js",
+     "title": "Just Sold",
+     "base": "social/ivory/js/",
+     "manifest": {
+      "places": [
+       {
+        "id": "instagram-post",
+        "label": "Instagram post",
+        "shape": "post",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. If you have thought about selling, now is a good time to talk.\n\nCall or text if you'd like to know what your home might bring today. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "instagram-carousel",
+        "label": "Instagram carousel",
+        "shape": "post",
+        "carousel": true,
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. If you have thought about selling, now is a good time to talk.\n\nCall or text if you'd like to know what your home might bring today. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "instagram-story",
+        "label": "Instagram story / Reels cover",
+        "shape": "story",
+        "caption": "",
+        "file": "story.jpg"
+       },
+       {
+        "id": "facebook-post",
+        "label": "Facebook post",
+        "shape": "post",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. If you have thought about selling, now is a good time to talk.\n\nCall or text if you'd like to know what your home might bring today. Avery Morgan 713.555.0123",
+        "file": "post.jpg"
+       },
+       {
+        "id": "facebook-story",
+        "label": "Facebook story",
+        "shape": "story",
+        "caption": "",
+        "file": "story.jpg"
+       },
+       {
+        "id": "tiktok",
+        "label": "TikTok photo post",
+        "shape": "story",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text if you'd like to know what your home might bring today.",
+        "file": "story.jpg"
+       },
+       {
+        "id": "youtube-shorts",
+        "label": "YouTube Shorts cover",
+        "shape": "story",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text if you'd like to know what your home might bring today.",
+        "file": "story.jpg"
+       },
+       {
+        "id": "linkedin",
+        "label": "LinkedIn post",
+        "shape": "post",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX.\n\n3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. If you have thought about selling, now is a good time to talk.\n\nCall or text if you'd like to know what your home might bring today. Avery Morgan 713.555.0123",
+        "check": "LinkedIn shows 4:5 portrait in the feed; some guides still give 1080 x 1080 or 1200 x 628",
+        "file": "post.jpg"
+       },
+       {
+        "id": "x",
+        "label": "X post",
+        "shape": "wide",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text if you'd like to know what your home might bring today.",
+        "file": "wide.jpg"
+       },
+       {
+        "id": "nextdoor",
+        "label": "Nextdoor post",
+        "shape": "square",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. Call or text if you'd like to know what your home might bring today.",
+        "check": "no current published spec found; square is the safe default",
+        "file": "square.jpg"
+       },
+       {
+        "id": "google-business",
+        "label": "Google Business Profile post",
+        "shape": "gbp",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. Call or text if you'd like to know what your home might bring today.",
+        "check": "guides give 1200 x 900 (4:3) for posts and 720 x 720 for photos",
+        "file": "gbp.jpg"
+       },
+       {
+        "id": "pinterest",
+        "label": "Pinterest pin",
+        "shape": "pin",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. Call or text if you'd like to know what your home might bring today.",
+        "file": "pin.jpg"
+       },
+       {
+        "id": "threads",
+        "label": "Threads post",
+        "shape": "post",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Call or text if you'd like to know what your home might bring today.",
+        "file": "post.jpg"
+       },
+       {
+        "id": "facebook-marketplace",
+        "label": "Facebook Marketplace photo",
+        "shape": "square",
+        "caption": "Just sold: 4127 Larkspur Bend Street, Houston, TX. 3 bedrooms, 2 full baths and 1,385 square feet. Buyers who toured it are still looking nearby. Call or text if you'd like to know what your home might bring today.",
+        "file": "square.jpg"
+       }
+      ],
+      "carousel": [
+       "post",
+       "slide-1",
+       "slide-2",
+       "slide-3",
+       "slide-4",
+       "slide-5",
+       "slide-6",
+       "slide-7",
+       "slide-8"
+      ],
+      "files": {
+       "post": {
+        "file": "post.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 313433
+       },
+       "story": {
+        "file": "story.jpg",
+        "px": [
+         1080,
+         1920
+        ],
+        "bytes": 417711
+       },
+       "square": {
+        "file": "square.jpg",
+        "px": [
+         1080,
+         1080
+        ],
+        "bytes": 246342
+       },
+       "pin": {
+        "file": "pin.jpg",
+        "px": [
+         1000,
+         1500
+        ],
+        "bytes": 330348
+       },
+       "wide": {
+        "file": "wide.jpg",
+        "px": [
+         1600,
+         900
+        ],
+        "bytes": 263710
+       },
+       "gbp": {
+        "file": "gbp.jpg",
+        "px": [
+         1200,
+         900
+        ],
+        "bytes": 236292
+       },
+       "slide-1": {
+        "file": "slide-1.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 153708
+       },
+       "slide-2": {
+        "file": "slide-2.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 202470
+       },
+       "slide-3": {
+        "file": "slide-3.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 209039
+       },
+       "slide-4": {
+        "file": "slide-4.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 163709
+       },
+       "slide-5": {
+        "file": "slide-5.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 193537
+       },
+       "slide-6": {
+        "file": "slide-6.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 203087
+       },
+       "slide-7": {
+        "file": "slide-7.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 173524
+       },
+       "slide-8": {
+        "file": "slide-8.jpg",
+        "px": [
+         1080,
+         1350
+        ],
+        "bytes": 203795
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

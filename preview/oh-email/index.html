@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Open House email and socials · test page</title>
+<style>
+  :root{--ec-accent:#1f4e5f;--ec-ink:#1d2326;--ec-line:#d5d8db;--ec-font:system-ui,-apple-system,"Segoe UI",sans-serif}
+  body{margin:0;background:#f6f6f4;font-family:var(--ec-font);color:var(--ec-ink)}
+  main{max-width:1080px;margin:0 auto;padding:24px 16px 60px}
+  h1{font-size:26px;margin:0 0 6px} h2{font-size:20px;margin:36px 0 10px}
+  p.lead{margin:0 0 18px;color:#4b5357}
+  .pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}
+  select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--ec-line);background:#fff;max-width:100%}
+  .tag{font-size:12px;padding:3px 8px;border-radius:999px;background:#f3ead9;color:#7a5512}
+</style>
+</head>
+<body>
+<main>
+  <h1>Open House email version</h1>
+  <p class="lead">Test page. Pick a flyer, then copy it and paste it into an email. Sample listing (made-up address) and sample logo.</p>
+  <div class="pick"><label for="fl">Flyer</label><select id="fl"></select><span class="tag" id="st"></span></div>
+  <div id="panel"></div>
+  <h2>Share your listing</h2>
+  <div class="pick"><label for="set">Design</label><select id="set"></select></div>
+  <div id="socials"></div>
+</main>
+<script src="/designs/shared/emailcopy.js"></script>
+<script src="/designs/shared/socialshare.js"></script>
+<script>
+fetch('manifest.json').then(r => r.json()).then(M => {
+  const fl = document.getElementById('fl'), set = document.getElementById('set');
+  const hooks = {log: row => console.log('track', row), hintSeen: () => false, markHintSeen: () => {}};
+  fl.innerHTML = M.emails.map((e, i) => `<option value="${i}">${e.set} · ${e.title}</option>`).join('');
+  const show = () => { const e = M.emails[+fl.value];
+    document.getElementById('st').textContent = e.status;
+    EmailCopy.mount(document.getElementById('panel'), {png: e.png, printPng: e.print, subject: `${e.label}: ${M.address}`, to: 'Your contacts', text: e.text, name: e.id, hooks}); };
+  fl.onchange = show; show();
+  set.innerHTML = M.socials.map((s, i) => `<option value="${i}">${s.set}</option>`).join('');
+  const showS = () => { const s = M.socials[+set.value];
+    SocialShare.mount(document.getElementById('socials'), {moments: s.moments, hooks: Object.assign({hidden: () => [], setHidden: () => {}}, hooks)}); };
+  set.onchange = showS; showS();
+});
+</script>
+</body>
+</html>
