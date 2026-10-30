@@ -81,8 +81,7 @@
      "title": "Extras flyer FX01 (from JL-S12)",
      "approved": false,
      "review": [
-      "front",
-      "back"
+      "front"
      ],
      "images": [
       {
@@ -106,10 +105,8 @@
     {
      "id": "FX02",
      "title": "Extras flyer FX02 (from JL-S25)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX02-front.jpg",
@@ -460,11 +457,8 @@
     {
      "id": "FX14",
      "title": "Extras flyer FX14 (from JL-S31)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX14-front.jpg",
@@ -503,10 +497,8 @@
     {
      "id": "FX15",
      "title": "Extras flyer FX15 (from JL-S19)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX15-front.jpg",
@@ -629,8 +621,7 @@
      "title": "Extras flyer FX18 (from JS-S47)",
      "approved": false,
      "review": [
-      "front",
-      "back"
+      "front"
      ],
      "images": [
       {
@@ -670,10 +661,8 @@
     {
      "id": "FX19",
      "title": "Extras flyer FX19 (from JS-S12)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX19-front.jpg",
@@ -754,11 +743,8 @@
     {
      "id": "FX21",
      "title": "Extras flyer FX21 (from JL-M02)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX21-front.jpg",
@@ -799,8 +785,7 @@
      "title": "Extras flyer FX22 (from JL-M04)",
      "approved": false,
      "review": [
-      "front",
-      "back"
+      "front"
      ],
      "images": [
       {
@@ -840,10 +825,8 @@
     {
      "id": "FX23",
      "title": "Extras flyer FX23 (from JL-M06)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX23-front.jpg",
@@ -882,10 +865,8 @@
     {
      "id": "FX24",
      "title": "Extras flyer FX24 (from JL-M08)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX24-front.jpg",
@@ -924,10 +905,8 @@
     {
      "id": "FX25",
      "title": "Extras flyer FX25 (from JL-M10)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX25-front.jpg",
@@ -966,11 +945,8 @@
     {
      "id": "FX26",
      "title": "Extras flyer FX26 (from JL-M12)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX26-front.jpg",
@@ -1011,8 +987,7 @@
      "title": "Extras flyer FX27 (from JL-M26)",
      "approved": false,
      "review": [
-      "front",
-      "back"
+      "front"
      ],
      "images": [
       {
@@ -1052,10 +1027,8 @@
     {
      "id": "FX28",
      "title": "Extras flyer FX28 (from JL-M43)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX28-front.jpg",
@@ -1094,11 +1067,8 @@
     {
      "id": "FX29",
      "title": "Extras flyer FX29 (from JL-S17)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX29-front.jpg",
@@ -1137,10 +1107,8 @@
     {
      "id": "FX31",
      "title": "Extras flyer FX31 (from JL-M05)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX31-front.jpg",
@@ -1179,10 +1147,8 @@
     {
      "id": "FX32",
      "title": "Extras flyer FX32 (from JL-M45)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX32-front.jpg",
@@ -1221,10 +1187,8 @@
     {
      "id": "FX33",
      "title": "Extras flyer FX33 (from JL-M11)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX33-front.jpg",
@@ -1263,11 +1227,8 @@
     {
      "id": "FX34",
      "title": "Extras flyer FX34 (from JL-M20)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX34-front.jpg",
@@ -1306,11 +1267,8 @@
     {
      "id": "FX35",
      "title": "Extras flyer FX35 (from JL-M23)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX35-front.jpg",
@@ -1349,11 +1307,8 @@
     {
      "id": "FX36",
      "title": "Extras flyer FX36 (from JL-M29)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX36-front.jpg",
@@ -1392,11 +1347,8 @@
     {
      "id": "FX37",
      "title": "Extras flyer FX37 (from JL-M37)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX37-front.jpg",
@@ -1515,10 +1467,8 @@
     {
      "id": "FX40",
      "title": "Extras flyer FX40 (from JL-S39)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX40-front.jpg",
@@ -1597,10 +1547,8 @@
     {
      "id": "FX43",
      "title": "Extras flyer FX43 (from JL-M34)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX43-front.jpg",
@@ -1639,10 +1587,8 @@
     {
      "id": "FX44",
      "title": "Extras flyer FX44 (from JL-M40)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX44-front.jpg",
@@ -1681,11 +1627,8 @@
     {
      "id": "FX45",
      "title": "Extras flyer FX45 (from JL-M46)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX45-front.jpg",
@@ -1724,11 +1667,8 @@
     {
      "id": "FX46",
      "title": "Extras flyer FX46 (from JL-M49)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX46-front.jpg",
@@ -1767,11 +1707,8 @@
     {
      "id": "FX47",
      "title": "Extras flyer FX47 (from JL-S29)",
-     "approved": false,
-     "review": [
-      "front",
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX47-front.jpg",
@@ -1810,10 +1747,8 @@
     {
      "id": "FX49",
      "title": "Extras flyer FX49 (from JL-S48)",
-     "approved": false,
-     "review": [
-      "back"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX49-front.jpg",
@@ -1852,10 +1787,8 @@
     {
      "id": "FX50",
      "title": "Extras flyer FX50 (from JL-S50)",
-     "approved": false,
-     "review": [
-      "front"
-     ],
+     "approved": true,
+     "review": [],
      "images": [
       {
        "src": "img/FX50-front.jpg",
