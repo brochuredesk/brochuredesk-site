@@ -13,7 +13,7 @@
   const PICK_CAP = 13;
   const PICK_FULL = 'You need to remove an active photo to pull in a new photo.';   // the owner's wording; don't change without asking
   const PICK_LABELS = {upper: 'In your package', lower: 'More listing photos'};     // draft wording
-  const PLAN_NOTE = "Your floor plan will be redrawn in this design's style.";      // draft wording (the owner's call)
+  const PLAN_NOTE = "Your floor plan will be colored in this design's style, with clear room labels.";      // draft wording (the owner's call)
   const PT = window.PreviewTools;
   const FINE_PRINT = 'Information deemed reliable but not guaranteed.';
   const PRICE = {full: 2500, essentials: 2000, single: 1000};
@@ -555,12 +555,7 @@
     try {
       // one place's files only (a plan found as a document and again as a photo is the same plan, not two floors)
       files = files.filter(f => !f.from || !source || f.from === source);
-      const blobs = [];
-      for(const f of files.slice(0, 4)){
-        if(f.blob){ blobs.push(f.blob); continue; }
-        const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
-        blobs.push(await r.blob());
-      }
+      const blobs = await planBlobs(files);
       let art = await PT.cleanPlan(blobs, files.map(f => /\b(1st|first|ground|main)\b/i.test(f.label || '') ? 'First floor' : /\b(2nd|second|upper)\b/i.test(f.label || '') ? 'Second floor' : ''));
       // a plan PDF often ends with a page of every floor together (1030 Chamboard Ln: 3 pages, 2 floors): with the
       // story count known, the pages past it are not more floors
@@ -570,6 +565,16 @@
       Object.assign(lookup.floorPlan, {source, art, active: true, removed: false});
     } catch(e) { Object.assign(lookup.floorPlan, {art: null, active: false, failed: true}); }
     drawPlanBox();
+  }
+  async function planBlobs(files){
+    const blobs = [];
+    for(const f of files.slice(0, 4)){
+      if(f.blob){ blobs.push(f.blob); continue; }
+      if(!f.url) throw new Error('plan');
+      const r = await fetch(`${FN_MATRIX}?plan=${encodeURIComponent(f.url)}`); if(!r.ok) throw new Error('plan');
+      blobs.push(await r.blob());
+    }
+    return blobs;
   }
   function drawPlanBox(){
     const F = lookup.floorPlan, box = $('#planBody'); $('#planBox').hidden = false;
@@ -727,8 +732,8 @@
       copy: written ? written.copy : pre.copy,
       companion: written ? Object.assign({fineprint: FINE_PRINT}, written.companion) : pre.companion,
       copyPending: false}, written ? {} : {preview: true}, plan ? {planPreview: plan, planNote: PLAN_NOTE} : {},
-      // the redrawn plan is saved as linework (rooms, walls, levels); each design restyles it in code, never a second redraw
-      written && pkg.plan ? {plan: pkg.plan} : {});
+      // the colored plan is saved as masks and labels; each design tints it in its own colors, never a second read
+      written && pkg.plan && fp && fp.active ? {plan: pkg.plan} : {});
   }
   // The design's own example copy gives the shape and the length of every slot. Photo sections get the room heading of
   // the photo placed there and a line about that room; other text gets a line about what that part will say.
@@ -1205,6 +1210,7 @@
       'Checking every line: Fair Housing, no price, plain English…', 'Laying it all out…'];
     let i = 0; const tick = () => { $('#writeStatus').textContent = lines[Math.min(i, lines.length - 1)]; $('#writeFill').style.width = Math.min(92, 10 + i * 18) + '%'; i++; };
     tick(); const timer = setInterval(tick, 9000);
+    const planDone = redrawPlan();   // runs while the copy is written
     try {
       const ex = await example(pkg.design);
       const d = await dataFor(pkg.design, false);
@@ -1223,6 +1229,7 @@
         if(m.master) pkg.master = m.master;
         pkg.copy[pkg.design].cost += m.cost || 0;
       } catch(e) { console.error('master set', e); }
+      await planDone;
       pkg.stage = 'final'; save(true);
       clearInterval(timer); $('#writeFill').style.width = '100%';
       await openFinal(piecesOf(pkg)[0]);
@@ -1233,6 +1240,30 @@
       pkg.stage = 'rough'; save();
       $('#writeErr').textContent = e.message === 'daily-cap' ? "We've hit today's writing limit for test drives. Try again tomorrow." : "We couldn't finish writing just now. Your design is saved; try again.";
       $('#writeRetry').hidden = false;
+    }
+  }
+  // The floor plan at Finalize (product.md "Floor plans"): placed exactly as the agent gave it, no AI (the owner 10/28 late,
+  // 10/29: take the paid plan read out). Each plan page is one floor, cut to its drawing, white paper made clear, colors
+  // kept; the template turns and sizes it. Done once per plan (pkg.plan), so a design switch never redoes it; a new plan
+  // (an upload) does. A plan that can't be placed leaves pkg.plan empty and the design takes its no-plan version.
+  async function redrawPlan(){
+    const F = pkg.floorPlan;
+    if(!F || !F.active) return;
+    const key = JSON.stringify([F.source, (F.files || []).filter(f => !f.from || f.from === F.source).map(f => f.url || f.label)]);
+    if(pkg.planKey === key) return;
+    try {
+      let pages;
+      try { pages = await PT.planCanvases(await planBlobs((F.files || []).filter(f => !f.from || !F.source || f.from === F.source))); }
+      catch(e) { if(!F.art || !F.art.length) throw e; pages = await PT.artCanvases(F.art); }
+      const st = +pkg.listing.stories || 0;
+      if(st && pages.length > st) pages = pages.slice(0, st);   // pages past the story count are not floors (same as the preview)
+      let plan = PT.givenPlan(pages);
+      if(!plan.levels.length) plan = null;
+      Object.assign(pkg, {plan, planKey: key});
+      store.event(pkg.id, plan ? 'plan-placed' : 'plan-place-failed', plan ? {floors: plan.levels.length} : {why: ['no drawing found']});
+    } catch(e) {
+      // a failure is tried again at the next Finalize (no key saved)
+      pkg.plan = null; store.event(pkg.id, 'plan-place-failed', {why: [e.message]});
     }
   }
   async function ai(body){
@@ -1259,6 +1290,13 @@
   // ---------- 4. final proof ----------
   let finalPiece = null;
   function nextPiece(){ const ps = piecesOf(pkg); return ps.find(id => !pkg.approvals[id]) || ps[0]; }
+  // a listing plan with no room sizes (the owner 10/27): ask once whether to take them from the MLS room list (draft wording)
+  function planSizesBox(){
+    const P = pkg.plan, mls = (pkg.listing.rooms || []).filter(r => r && r.size);
+    $('#planSizes').hidden = !(P && P.noSizes && !pkg.paid && mls.length && pkg.planSizes == null);
+    $('#planSizesYes').onclick = async () => { pkg.plan = PT.mlsSizes(P, mls); pkg.planSizes = 'mls'; store.event(pkg.id, 'plan-sizes', {from: 'mls'}); save(); planSizesBox(); await drawFinal(); };
+    $('#planSizesNo').onclick = () => { pkg.planSizes = 'none'; store.event(pkg.id, 'plan-sizes', {from: 'none'}); save(); planSizesBox(); };
+  }
   async function openFinal(piece){
     if(!pkg.copy[pkg.design]) return openRough();
     show('vFinal');
@@ -1267,7 +1305,7 @@
     $('#finalPiece').innerHTML = ps.map(id => `<option value="${id}"${id === finalPiece ? ' selected' : ''}>${pieceLabel(id)}${pkg.approvals[id] ? ' (approved)' : ''}</option>`).join('');
     $('#finalTitle').textContent = `Proof: ${pkg.listing.address}`;
     $('#backToRough').hidden = !!pkg.paid;
-    ohFields(); approveBox(); switchTiles(); await drawFinal();
+    ohFields(); planSizesBox(); approveBox(); switchTiles(); await drawFinal();
     // a proof that hasn't had its fill pass or outside AI check yet (written before it existed, or interrupted) gets one now
     const w = pkg.copy[pkg.design]; if(w && !pkg.paid && pkg.stage === 'final'){ if(!w.filled) await fillPass(); if(!w.aiCheck) await aiCheckPass(); }
   }
