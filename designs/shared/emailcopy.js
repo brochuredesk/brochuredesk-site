@@ -1,7 +1,10 @@
 /* designs/shared/emailcopy.js: the Open House email version panel (brief docs/briefs/open-house-email-build.md in the
    BrochureDesk repo, 10/20/2026). The agent sees the email version inside a simple mock email window, then copies
-   it as ONE image and pastes it into any email (Gmail, Outlook, Apple Mail). Image only, never HTML: pasted HTML
-   breaks in most clients and Outlook blocks hosted images.
+   it as ONE image and pastes it into any email (Gmail, Outlook, Apple Mail). One image, never an HTML email: pasted
+   email HTML breaks in most clients and Outlook blocks hosted images. The clipboard carries the PNG and, beside it,
+   a one-tag HTML copy of the same picture (<img> with the PNG inline as a data URL, width 600): the paste test of
+   10/30/2026 found Gmail fitting a bare PNG to the window (260 px) and Outlook web pasting it at its full 1200 px.
+   Apps that read HTML take the sized copy; the rest take the PNG.
 
      EmailCopy.mount(el, {png, printPng, subject, to, text, name, hooks})
        png       the 600 px email version (1200 px PNG at 2x), same origin
@@ -11,7 +14,7 @@
        hooks.log(row)        {event: 'copy'|'copy-failed'|'share'|'download'|'text-copy', flyer, browser, os, detail}
        hooks.hintSeen()      true when this agent account has seen the first-use hint (saved on the account, not
                              browser storage); hooks.markHintSeen() saves it
-   Desktop: "Copy for email" (navigator.clipboard.write with a ClipboardItem of image/png; the blob is fetched ahead,
+   Desktop: "Copy for email" (navigator.clipboard.write with a ClipboardItem of image/png and text/html; fetched ahead,
    and a Promise goes into the ClipboardItem so Safari keeps the write inside the click). Phones and tablets: "Share"
    (navigator.share with the PNG file; the agent picks Mail or Gmail). If the copy fails or isn't supported: says so in
    plain words and offers Download image right there.
@@ -67,6 +70,13 @@
     const blob = fetch(o.png).then(r => { if(!r.ok) throw new Error('image ' + r.status); return r.blob(); })
       .then(b => b.type === 'image/png' ? b : new Blob([b], {type: 'image/png'}));
     blob.catch(() => {});
+    // the same picture as one sized <img> (600 px wide at its own proportions), for mail apps that paste HTML
+    const html = blob.then(b => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(b); })
+      .then(url => b.slice(16, 24).arrayBuffer().then(buf => {   // the PNG header holds the pixel size
+        const v = new DataView(buf), w = v.getUint32(0), hh = v.getUint32(4), W = 600, H = Math.round(hh*W/w);
+        return new Blob([`<img src="${url}" width="${W}" height="${H}" alt="${esc(o.text || 'Open House flyer')}" style="width:${W}px;max-width:100%;height:auto;display:block">`], {type: 'text/html'});
+      })));
+    html.catch(() => {});
     const fileName = (o.name || 'open-house') + '-email.png';
     el.innerHTML = `<div class="ec">
       ${o.printPng ? `<div class="ec-tabs" role="tablist"><button class="ec-tab" role="tab" data-t="print" aria-selected="false">Print</button><button class="ec-tab" role="tab" data-t="email" aria-selected="true">Email</button></div>` : ''}
@@ -108,7 +118,11 @@
       }
       if(!canCopy) return failed('clipboard-unsupported');
       // a Promise inside the ClipboardItem: Safari needs the write to start inside the click
-      navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(() => {
+      const item = () => new ClipboardItem({'image/png': blob, 'text/html': html});
+      navigator.clipboard.write([item()]).catch(e => {   // a browser that won't take the HTML copy gets the PNG alone
+        if(e && e.name === 'NotAllowedError') throw e;
+        return navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+      }).then(() => {
         log('copy');
         btn.dataset.done = '1'; label.textContent = `Copied. Now paste it into your email (${paste})`;
         hooks.markHintSeen && hooks.markHintSeen();
