@@ -3,8 +3,7 @@
 //   PreviewTools.load() / heading / line    room headings and the "what you'll get" lines (/designs/shared/preview-lines.json)
 //   PreviewTools.isPreview(text)            true when a text holds a preview line (exports refuse it)
 //   PreviewTools.cleanPlan(blob)            the agent's own floor plan as simple line art, one image per floor
-//   PreviewTools.planPages(blobs) / artPages(art)   the plan pages as JPEGs for the plan read at Finalize, cropped to the drawing
-//   PreviewTools.planCanvases(blobs) / colorPlan(canvases, plan)   the listing's own plan, colored from that read (pkg.plan)
+//   PreviewTools.planCanvases(blobs) / givenPlan(canvases)   the listing's own plan placed as given at Finalize, no AI (pkg.plan)
 //   PreviewTools.picker(root, opts)         the two-box photo picker (upper: in the package, lower: the rest)
 (function(){
   const PT = window.PreviewTools = {};
@@ -152,15 +151,6 @@
     for(const b of [].concat(blobs)) for(const c of await withRetry(b)){ if(out.length >= 4) break; const a = lineArt(c); if(a) out.push(a); }
     return out.map((a, i) => Object.assign(a, {label: (labels && labels[i]) || (out.length > 1 ? FLOORS[i] : '')}));
   };
-  // the plan pages as the redraw at Finalize reads them: the page as printed (room names and sizes stay sharp, no line
-  // cleanup), cropped to the drawing, JPEG at most 1568 px on the long side (what the model reads at full detail).
-  // A PDF is drawn large first (4200 px), so a floor that fills a third of its page still reaches the model sharp.
-  // -> [{data (base64), w, h}]
-  const forRead = c => {
-    const b = drawingBox(c), k = Math.min(1, 1568 / Math.max(b.w, b.h)), o = canvas(b.w * k, b.h * k), g = o.getContext('2d');
-    g.fillStyle = '#fff'; g.fillRect(0, 0, o.width, o.height); g.imageSmoothingQuality = 'high'; g.drawImage(c, b.x, b.y, b.w, b.h, 0, 0, o.width, o.height);
-    return {data: o.toDataURL('image/jpeg', .88).split(',')[1], w: o.width, h: o.height};
-  };
   // where the drawing is on the page: anything not paper, in a coarse grid, joined across small gaps; the largest piece and
   // any piece at least a fifth its size (two floors side by side) are kept, so the fine print, logo and page number drop out
   PT.drawingBox = drawingBox;
@@ -186,21 +176,18 @@
     const pad = Math.round(Math.max(x1 - x0, y1 - y0) * 0.03), x = Math.max(0, x0 - pad), y = Math.max(0, y0 - pad);
     return {x, y, w: Math.min(W, x1 + pad) - x, h: Math.min(H, y1 + pad) - y};
   }
-  // the plan pages drawn large (4200 px), once: the read gets forRead of each, and the coloring the canvases themselves
+  // the plan pages drawn large (4200 px), once: the free finder (givenPlan) works on these canvases
   PT.planCanvases = async blobs => {
     const out = [];
     for(const b of [].concat(blobs)) for(const c of await withRetry(b, 4200)){ if(out.length >= 4) break; out.push(c); }
     return out;
   };
-  PT.forRead = forRead;
-  PT.planPages = async blobs => (await PT.planCanvases(blobs)).map(forRead);
   // no file to read again (an upload from an earlier visit): the cleaned line art, on white
   PT.artCanvases = art => Promise.all([].concat(art).slice(0, 4).map(a => new Promise((res, rej) => {
     const im = new Image(); im.onload = () => { const c = canvas(im.naturalWidth, im.naturalHeight), g = c.getContext('2d');
       g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0); res(c); };
     im.onerror = rej; im.src = a.src;
   })));
-  PT.artPages = async art => (await PT.artCanvases(art)).map(forRead);
 
   // ---------- the listing's own plan, colored (the owner 10/27: dress up the listing's plan, don't redraw it) ----------
   // canvases: the pages planCanvases drew (the read's fractions are of each page's drawingBox, as forRead sent it);

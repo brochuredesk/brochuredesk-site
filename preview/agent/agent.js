@@ -13,7 +13,7 @@
   const PICK_CAP = 13;
   const PICK_FULL = 'You need to remove an active photo to pull in a new photo.';   // the owner's wording; don't change without asking
   const PICK_LABELS = {upper: 'In your package', lower: 'More listing photos'};     // draft wording
-  const PLAN_NOTE = "Your floor plan will be colored in this design's style, with clear room labels.";      // draft wording (the owner's call)
+  const PLAN_NOTE = "Your floor plan is placed just as the listing gives it, sized to fit this design.";      // draft wording (the owner's call)
   const PT = window.PreviewTools;
   const FINE_PRINT = 'Information deemed reliable but not guaranteed.';
   const PRICE = {full: 2500, essentials: 2000, single: 1000};
@@ -1312,7 +1312,7 @@
 
   // ---------- see it in another design (brief master-copy-design-switch-10-24) ----------
   // The master copy set fits the new design in code; only a spot no saved version fits gets one small rewrite. Photo
-  // picks and the agent's text edits carry over; the floor plan keeps its redrawn linework (restyled by the design).
+  // picks and the agent's text edits carry over; the floor plan keeps its placed pages (pkg.plan), never found again.
   async function switchTiles(){
     const box = $('#switchTiles'); if(!box) return;
     const l = (await eligible()).filter(({d}) => d.id !== pkg.design);
