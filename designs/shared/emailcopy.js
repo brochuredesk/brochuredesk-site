@@ -1,10 +1,11 @@
 /* designs/shared/emailcopy.js: the Open House email version panel (brief docs/briefs/open-house-email-build.md in the
    BrochureDesk repo, 10/20/2026). The agent sees the email version inside a simple mock email window, then copies
    it as ONE image and pastes it into any email (Gmail, Outlook, Apple Mail). One image, never an HTML email: pasted
-   email HTML breaks in most clients and Outlook blocks hosted images. The clipboard carries the PNG and, beside it,
-   a one-tag HTML copy of the same picture (<img> with the PNG inline as a data URL, width 600): the paste test of
-   10/30/2026 found Gmail fitting a bare PNG to the window (260 px) and Outlook web pasting it at its full 1200 px.
-   Apps that read HTML take the sized copy; the rest take the PNG.
+   email HTML breaks in most clients and Outlook blocks hosted images. The clipboard carries the picture as one sized
+   <img> (the PNG inline as a data URL, width 600 at its own proportions; both apps turn it into an inline picture on
+   paste). Paste test 10/30/2026 (Chrome): a bare PNG came in fitted to the window in Gmail (260 px) and at its full
+   1200 px in Outlook web; the sized copy came in at 600 px in both. With a PNG beside it Gmail takes the PNG, so the
+   PNG goes on alone only when a browser refuses the HTML.
 
      EmailCopy.mount(el, {png, printPng, subject, to, text, name, hooks})
        png       the 600 px email version (1200 px PNG at 2x), same origin
@@ -14,7 +15,7 @@
        hooks.log(row)        {event: 'copy'|'copy-failed'|'share'|'download'|'text-copy', flyer, browser, os, detail}
        hooks.hintSeen()      true when this agent account has seen the first-use hint (saved on the account, not
                              browser storage); hooks.markHintSeen() saves it
-   Desktop: "Copy for email" (navigator.clipboard.write with a ClipboardItem of image/png and text/html; fetched ahead,
+   Desktop: "Copy for email" (navigator.clipboard.write with a ClipboardItem of the sized text/html; fetched ahead,
    and a Promise goes into the ClipboardItem so Safari keeps the write inside the click). Phones and tablets: "Share"
    (navigator.share with the PNG file; the agent picks Mail or Gmail). If the copy fails or isn't supported: says so in
    plain words and offers Download image right there.
@@ -118,8 +119,7 @@
       }
       if(!canCopy) return failed('clipboard-unsupported');
       // a Promise inside the ClipboardItem: Safari needs the write to start inside the click
-      const item = () => new ClipboardItem({'image/png': blob, 'text/html': html});
-      navigator.clipboard.write([item()]).catch(e => {   // a browser that won't take the HTML copy gets the PNG alone
+      navigator.clipboard.write([new ClipboardItem({'text/html': html})]).catch(e => {   // a browser that won't take the HTML gets the PNG
         if(e && e.name === 'NotAllowedError') throw e;
         return navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
       }).then(() => {
